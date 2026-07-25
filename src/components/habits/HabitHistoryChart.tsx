@@ -9,7 +9,7 @@ interface WindowData {
   daysInWindow: number
 }
 
-export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
+export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: number; refreshKey: number }) {
   const user = useUser()
   const [data, setData] = useState<WindowData[]>([])
   const now = new Date()
@@ -53,7 +53,7 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
         setData([...windows])
       }
     })
-  }, [user, habitsLength])
+  }, [user, habitsLength, refreshKey])
 
   if (data.length === 0) return null
   const maxPct = Math.max(...data.map((d) => d.pct), 10)
