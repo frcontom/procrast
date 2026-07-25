@@ -210,7 +210,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                               </span>
                               <span className="text-white/20 shrink-0">|</span>
                               <span className="tabular-nums text-text-secondary/60 shrink-0">⌛ {formatMinutes(displayCompleted + displayEstimated)}</span>
-                              <div className="w-[60%] bg-white/5 rounded-full h-2 overflow-hidden ring-1 ring-white/5 relative">
+                              <div className="w-[75%] bg-white/5 rounded-full h-2 overflow-hidden ring-1 ring-white/5 relative">
                                 <div className="h-full rounded-full transition-all duration-700"
                                   style={{ width: `${bestPct}%`, background: bestPct >= 100 ? 'linear-gradient(90deg, #28C76F, #81E6A0)' : bestPct >= 50 ? 'linear-gradient(90deg, #FF9800, #FFB74D)' : 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
                                 {bestPct > displayPct && (
