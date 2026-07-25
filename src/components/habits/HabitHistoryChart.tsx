@@ -63,9 +63,9 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
       <div className="flex gap-2 mb-1">
         {data.map((w) => (
           <div key={w.label} className="flex-1 text-center">
-            <span className="text-[10px] font-bold tabular-nums text-text-secondary/50">
-              {w.daysWithLogs}/{w.daysInWindow}
-            </span>
+              <span className="text-[10px] font-bold tabular-nums text-text-secondary/50">
+                {(w.daysWithLogs ?? 0)}/{(w.daysInWindow ?? 30)}
+              </span>
           </div>
         ))}
       </div>
