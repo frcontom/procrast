@@ -66,22 +66,20 @@ export function HexCalendar({ startDate, deadline, estimatedMinutes, completedMi
         <span className="text-[13px] font-semibold text-white">📅 Calendario de ejecución</span>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2.5 mb-2.5 text-[11px] text-text-secondary">
-        <span>✅ {completedDays} cumplidos</span>
-        <span>❌ {failedDays} fallados</span>
-        <span>⏳ {futureDays} futuros</span>
-        <span>⏱ {completedMinutes}min</span>
-      </div>
-
-      <div className="flex items-center gap-2 text-[11px] text-text-secondary mb-2">
-        <span>🔥 {streak}d racha</span>
-      </div>
-
-      {failedDays > 0 && (
-        <div className="text-[11px] text-[#EA5455] mb-2">
-          Fallaste {failedDays} día(s). Necesitas ~{neededDaily}min extra.
+      <div className="flex items-start justify-between gap-2 mb-2.5">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-text-secondary">
+          <span>✅ {completedDays} cumplidos</span>
+          <span>❌ {failedDays} fallados</span>
+          <span>⏳ {futureDays} futuros</span>
+          <span>⏱ {completedMinutes}min</span>
+          <span>🔥 {streak}d racha</span>
         </div>
-      )}
+        {failedDays > 0 && (
+          <div className="text-[11px] text-[#EA5455] shrink-0">
+            Fallaste {failedDays} día(s). Necesitas ~{neededDaily}min extra.
+          </div>
+        )}
+      </div>
 
       <div className="flex flex-wrap gap-[5px] justify-center">
         {days.map((date) => {
