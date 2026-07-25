@@ -77,6 +77,18 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           </div>
         </div>
 
+        {rhythm.behind && (
+          <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs text-[#EA5455] mb-3"
+            style={{ backgroundColor: 'rgba(234,84,85,0.1)', border: '1px solid rgba(234,84,85,0.3)' }}>
+            <span className="text-base shrink-0">⚠️</span>
+            <span className="flex-1">
+              <strong>ATRASADO</strong> — Deberías tener <strong>{rhythm.expectedNow}min</strong>, llevas <strong>{totalCompleted}min</strong>. Necesitas <strong>{rhythm.neededDaily}min/día</strong>.
+            </span>
+            <button className="shrink-0 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider text-white transition-colors hover:opacity-90"
+              style={{ backgroundColor: '#EA5455' }}>🔒 Activar Lockdown</button>
+          </div>
+        )}
+
         <div className="mb-3">
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="text-text-secondary">Progreso</span>
