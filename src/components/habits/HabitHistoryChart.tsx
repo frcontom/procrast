@@ -1,4 +1,6 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
+import { supabase } from '../../supabase/client'
+import { useUser } from '../../supabase/auth'
 
 interface MonthData {
   label: string
@@ -9,27 +11,35 @@ interface MonthData {
 }
 
 export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: number; refreshKey: number }) {
+  const user = useUser()
+  const [data, setData] = useState<MonthData[]>([])
   const now = new Date()
 
-  const data: MonthData[] = useMemo(() => {
+  const buildEmpty = () => {
     const months: MonthData[] = []
-    const pattern = [15, 20, 8, 30, 25, 18, 12, 22, 5, 10, 28, 6]
     for (let i = 0; i < 12; i++) {
       const d = new Date(now.getFullYear(), i, 1)
       const daysInMonth = new Date(now.getFullYear(), i + 1, 0).getDate()
-      const isCurrent = i === now.getMonth()
-      const effectiveDays = isCurrent ? now.getDate() : daysInMonth
-      const daysWithLogs = Math.min(pattern[i], effectiveDays)
-      months.push({
-        label: d.toLocaleDateString('es-ES', { month: 'short' }),
-        month: i,
-        pct: Math.round((daysWithLogs / effectiveDays) * 100),
-        daysWithLogs,
-        daysInMonth,
-      })
+      months.push({ label: d.toLocaleDateString('es-ES', { month: 'short' }), month: i, pct: 0, daysWithLogs: 0, daysInMonth })
     }
     return months
-  }, [refreshKey])
+  }
+
+  useEffect(() => {
+    if (!user) return
+    const months = buildEmpty()
+    supabase.from('habit_logs').select('date').eq('user_id', user.id).gte('date', `${now.getFullYear()}-01-01`).then(({ data: logs }: any) => {
+      if (logs && logs.length > 0) {
+        months.forEach((m, i) => {
+          const monthStr = `${now.getFullYear()}-${String(i + 1).padStart(2, '0')}`
+          m.daysWithLogs = new Set(logs.filter((l: any) => l.date.startsWith(monthStr)).map((l: any) => l.date)).size
+          const effectiveDays = (i === now.getMonth()) ? now.getDate() : m.daysInMonth
+          m.pct = Math.round((m.daysWithLogs / effectiveDays) * 100)
+        })
+      }
+      setData(months)
+    })
+  }, [user, habitsLength, refreshKey])
 
   if (data.length === 0) return null
 
