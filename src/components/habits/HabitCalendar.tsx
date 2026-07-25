@@ -33,9 +33,8 @@ export function HabitCalendar({ habits, logs, year, month, onDayClick }: Props) 
     if (isToday) { bg = 'bg-accent/10 border border-accent/30'; icon = '◉' }
     else if (isPast && doneCount > 0) {
       const color = pct >= 100 ? '#28C76F' : pct >= 75 ? '#00BCD4' : pct >= 50 ? '#3B82F6' : pct >= 25 ? '#FF9800' : '#EA5455'
-      const intensity = Math.max(0.1, Math.min(0.2, pct / 500))
       bg = ''
-      bgStyle = { backgroundColor: `${color}${Math.round(intensity * 255).toString(16).padStart(2, '0')}` }
+      bgStyle = { backgroundColor: color + '25' }
       icon = pct >= 100 ? '✅' : '⚡'
       if (pct < 100) label = `${doneCount}/${habits.length}`
     }
