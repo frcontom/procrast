@@ -54,6 +54,20 @@ export function DashboardPage() {
     return streak
   }, [sessions])
 
+  // Mejor racha histórica
+  const bestStreakDays = useMemo(() => {
+    const dates = [...new Set(
+      sessions.filter((s) => s.state === 'completed' && s.started_at).map((s) => s.started_at.slice(0, 10))
+    )].sort()
+    if (dates.length === 0) return 0
+    let best = 1, curr = 1
+    for (let i = 1; i < dates.length; i++) {
+      const diff = Math.round((new Date(dates[i]).getTime() - new Date(dates[i - 1]).getTime()) / 86400000)
+      if (diff === 1) { curr++; best = Math.max(best, curr) } else curr = 1
+    }
+    return Math.max(best, curr)
+  }, [sessions])
+
   const avgMinutes = completed > 0 ? Math.round(totalMinutes / completed) : 0
 
   return (
@@ -84,9 +98,10 @@ export function DashboardPage() {
              <div className="text-sm text-text-secondary mb-1 uppercase tracking-wider font-semibold">🔥 Racha</div>
              <div className="text-4xl font-bold text-[#FF9800]">{streakDays}</div>
             <div className="text-[10px] text-text-secondary/60 mt-0.5">días seguidos</div>
+            <div className="mt-1 text-[9px] text-text-secondary/40">Mejor: {bestStreakDays} días</div>
             {streakDays > 0 && (
-              <div className="mt-2 w-full bg-white/5 rounded-full h-1 overflow-hidden">
-                <div className="h-full rounded-full bg-gradient-to-r from-[#FF9800] to-[#FFB74D] transition-all" style={{ width: `${Math.min(100, (streakDays / 30) * 100)}%` }} />
+              <div className="mt-1 w-full bg-white/5 rounded-full h-1 overflow-hidden">
+                <div className="h-full rounded-full bg-gradient-to-r from-[#FF9800] to-[#FFB74D] transition-all" style={{ width: `${(streakDays / Math.max(1, bestStreakDays)) * 100}%` }} />
               </div>
             )}
           </div>
