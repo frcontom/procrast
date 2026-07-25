@@ -39,7 +39,7 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
 
   return (
     <div>
-      <div className="flex items-end gap-2" style={{ height: 100 }}>
+      <div className="flex items-end gap-2" style={{ height: 110 }}>
         {data.map((m, i) => {
           const isCurrent = i === data.length - 1
           const h = Math.max(6, (m.pct / maxPct) * 100)

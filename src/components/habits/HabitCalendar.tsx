@@ -25,15 +25,23 @@ export function HabitCalendar({ habits, logs, year, month, onDayClick }: Props) 
     const allDone = habits.length > 0 && doneCount >= habits.length
     const someDone = doneCount > 0 && !allDone
 
+    const pct = habits.length > 0 ? Math.round((doneCount / habits.length) * 100) : 0
+
     let bg = 'bg-secondary/30'
+    let bgStyle: React.CSSProperties | undefined
     let icon = '—'
     let label = ''
     if (isToday) { bg = 'bg-accent/10 border border-accent/30'; icon = '◉' }
-    else if (allDone) { bg = 'bg-[#28C76F]/15'; icon = '✅'; label = '' }
-    else if (someDone) { bg = 'bg-[#FF9800]/10'; icon = '⚡'; label = `${doneCount}/${habits.length}` }
+    else if (isPast && doneCount > 0) {
+      const intensity = Math.max(0.08, pct / 100)
+      bg = ''
+      bgStyle = { backgroundColor: `rgba(40,199,111,${intensity})` }
+      icon = pct >= 100 ? '✅' : '⚡'
+      if (pct < 100) label = `${doneCount}/${habits.length}`
+    }
     else if (isPast && doneCount === 0 && habits.length > 0) { bg = 'bg-[#EA5455]/8'; icon = '❌' }
 
-    return { day, dateStr, isToday, isPast, bg, icon, label, doneCount, allDone }
+    return { day, dateStr, isToday, isPast, bg, bgStyle, icon, label, doneCount }
   })
 
   return (
@@ -45,11 +53,12 @@ export function HabitCalendar({ habits, logs, year, month, onDayClick }: Props) 
       </div>
       <div className="grid grid-cols-7 gap-[3px]">
         {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} />)}
-        {days.map(({ day, dateStr, isToday, bg, icon, label, allDone }) => (
+        {days.map(({ day, dateStr, isToday, bg, bgStyle, icon, label, allDone }) => (
           <button
             key={dateStr}
             onClick={() => onDayClick(dateStr)}
             className={`${bg} rounded-lg px-1 py-1.5 text-center cursor-pointer transition-all hover:ring-1 hover:ring-white/20 min-h-[38px]`}
+            style={bgStyle}
           >
             <div className={`text-[11px] font-bold ${isToday ? 'text-accent' : 'text-white/80'}`}>{day}</div>
             <div className="text-[10px] leading-tight">
