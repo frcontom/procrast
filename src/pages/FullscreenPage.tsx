@@ -109,7 +109,7 @@ function SparkleBurst({ color }: { color: string }) {
 export function FullscreenPage() {
   const navigate = useNavigate()
   const store = useTimerStore()
-  const { state, remainingSeconds, elapsedSeconds, durationMinutes, activityType, sessionName, cycleCount, isStopwatch, strictMode } = store
+  const { state, remainingSeconds, elapsedSeconds, durationMinutes, activityType, sessionName, cycleCount, cycleTotal, isStopwatch, strictMode } = store
   const [bgIndex, setBgIndex] = useState(0)
   const prevStateRef = useRef(state)
   const cursorTimerRef = useRef<number | undefined>(undefined)
@@ -262,9 +262,9 @@ export function FullscreenPage() {
 
         {cycleCount > 0 && (
           <div className="flex items-center gap-2 text-sm text-white/50">
-            <span>🔄 Ciclo {cycleCount}/{cycleCount}</span>
+            <span>🔄 Ciclo {cycleCount}/{cycleTotal}</span>
             <div className="flex gap-1">
-              {Array.from({ length: cycleCount }, (_, i) => (
+              {Array.from({ length: cycleTotal }, (_, i) => (
                 <div key={i} className={`w-2 h-2 rounded-full ${i < cycleCount ? 'bg-accent' : 'bg-white/10'}`} />
               ))}
             </div>
