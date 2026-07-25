@@ -118,19 +118,22 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
                 <span className="text-sm font-semibold text-text-secondary">📅 Actividad semanal</span>
                 <span className="text-[10px] text-text-secondary">Total: {totalWeek}min · Prom: {avgWeek}min</span>
               </div>
-              <div id="task-wa-bars" className="flex items-end gap-[6px] h-[130px]">
+              <div id="task-wa-bars" style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '130px' }}>
                 {weekData.map((v, i) => {
                   const isToday = i === todayIdx
-                  const height = v > 0 ? (v / maxVal) * 100 : 0
+                  const hasActivity = v > 0
+                  const barHeight = hasActivity ? Math.max(4, (v / maxVal) * 100) : 0
                   return (
-                    <div key={i} className="flex-1 flex flex-col items-center h-full justify-end">
-                      <span className="text-[9px] font-semibold mb-1" style={{ color: v > 0 ? (isToday ? '#A66CFF' : '#a0a0b0') : 'transparent' }}>{v}</span>
-                      {v > 0 ? (
-                        <div className="w-[70%] rounded-t transition-all duration-300" style={{ height: `${height}%`, backgroundColor: isToday ? '#A66CFF' : '#156390', minHeight: '4px', borderRadius: '3px 3px 0 0' }} />
-                      ) : (
-                        <div className="w-[70%] h-[2px] rounded transition-all" style={{ backgroundColor: 'rgba(255,255,255,0.08)' }} />
-                      )}
-                      <span className="text-[9px] mt-1" style={{ color: isToday ? '#A66CFF' : '#a0a0b0' }}>{DAY_NAMES[i]}</span>
+                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '130px' }}>
+                      <span style={{ fontSize: '9px', fontWeight: 600, marginBottom: '2px', color: hasActivity ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.2)' }}>{v}</span>
+                      <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center' }}>
+                        {hasActivity ? (
+                          <div style={{ width: '70%', height: `${barHeight}%`, minHeight: '4px', borderRadius: '3px 3px 0 0', transition: 'height 0.3s', backgroundColor: isToday ? '#A66CFF' : '#156390', boxShadow: isToday ? '0 0 8px rgba(166,108,255,0.4)' : 'none' }} />
+                        ) : (
+                          <div style={{ width: '70%', height: '2px', backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: '1px' }} />
+                        )}
+                      </div>
+                      <span style={{ fontSize: '9px', marginTop: '3px', color: isToday ? '#A66CFF' : 'rgba(255,255,255,0.5)', fontWeight: isToday ? 700 : 400 }}>{DAY_NAMES[i]}</span>
                     </div>
                   )
                 })}
