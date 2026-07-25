@@ -68,7 +68,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
     })
   }, [user, subtasks])
 
-  const subtaskDays = links.map((l: any) => l.date)
+  const subtaskDays = links.filter((l: any) => !l.subtask_name?.includes('(cancelado)')).map((l: any) => l.date)
 
   return (
     <>
