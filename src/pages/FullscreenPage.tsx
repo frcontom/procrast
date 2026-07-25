@@ -483,7 +483,10 @@ export function FullscreenPage() {
             <p className="text-sm text-text-secondary mb-6">Si cancelas ahora perderás el progreso de esta sesión.</p>
             <div className="flex gap-2">
               <button onClick={() => setShowCancelConfirm(false)}
-                className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold bg-accent hover:bg-accent-hover text-white transition-all active:scale-[0.97] shadow-lg shadow-accent/20">
+                className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold text-white transition-all active:scale-[0.97] shadow-lg"
+                style={{ backgroundColor: 'var(--accent)' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}>
                 💪 Seguir
               </button>
               <button onClick={handleCancel}
