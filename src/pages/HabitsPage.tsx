@@ -161,9 +161,9 @@ export function HabitsPage() {
           <div id="hm-summary-title" className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-3">📊 Resumen</div>
           <div id="hm-summary-grid" className="grid grid-cols-3 gap-2 mb-3">
             {[
-              { label: 'Consist.', value: `${Math.round((new Set(logs.map((l) => l.date)).size / daysInMonth) * 100)}%` },
+              { label: 'Consistencia', value: `${Math.round((new Set(logs.map((l) => l.date)).size / daysInMonth) * 100)}%` },
               { label: 'Perfectos', value: new Set(logs.filter((l) => habits.every((h) => logs.some((ll) => ll.habit_id === h.id && ll.date === l.date))).map((l) => l.date)).size.toString() },
-              { label: 'C/Log', value: new Set(logs.map((l) => l.date)).size.toString() },
+              { label: 'C/Logs', value: new Set(logs.map((l) => l.date)).size.toString() },
             ].map((s) => (
               <div key={s.label} className="bg-secondary rounded-lg p-2 text-center">
                 <div className="text-lg font-bold text-white">{s.value}</div>
