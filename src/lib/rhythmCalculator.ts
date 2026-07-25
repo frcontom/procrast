@@ -30,9 +30,9 @@ export function calculateRhythm(goal: GoalData): RhythmResult {
   const remainingDays = Math.max(0, daysBetween(today, goal.deadline))
 
   const rhythmDaily = Math.round(goal.estimatedMinutes / totalDays)
-  const expectedNow = rhythmDaily * Math.min(elapsedDays + 1, totalDays)
+  const expectedNow = rhythmDaily * elapsedDays
   const progressPct = Math.min(100, Math.round((goal.completedMinutes / goal.estimatedMinutes) * 100))
-  const behind = goal.completedMinutes < expectedNow * 0.8
+  const behind = elapsedDays >= 1 && goal.completedMinutes < expectedNow * 0.8
   const neededDaily = remainingDays > 0
     ? Math.round((goal.estimatedMinutes - goal.completedMinutes) / remainingDays)
     : (goal.estimatedMinutes - goal.completedMinutes)
