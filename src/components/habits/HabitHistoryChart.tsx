@@ -12,11 +12,11 @@ interface MonthData {
 export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
   const user = useUser()
   const [data, setData] = useState<MonthData[]>([])
+  const now = new Date()
 
   useEffect(() => {
     if (!user || habitsLength === 0) return
     const months: MonthData[] = []
-    const now = new Date()
     for (let i = 0; i < 12; i++) {
       const d = new Date(now.getFullYear(), i, 1)
       months.push({ year: d.getFullYear(), month: i + 1, label: d.toLocaleDateString('es-ES', { month: 'short' }), pct: 0 })
@@ -41,7 +41,7 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
   return (
     <div>
       <div className="flex items-end gap-2" style={{ height: 110 }}>
-        {data.map((m, i) => {
+        {data.map((m) => {
           const isCurrent = m.year === now.getFullYear() && m.month === now.getMonth() + 1
           const h = Math.max(6, (m.pct / maxPct) * 100)
           return (
