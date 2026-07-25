@@ -165,7 +165,7 @@ export function FullscreenPage() {
   const hasImages = bgImages.length > 0
 
   return (
-    <div id="fullscreenOverlay" className="fixed inset-0 z-[2000] flex items-center justify-center overflow-hidden bg-black select-none">
+    <div id="fullscreenOverlay" className="fixed inset-0 z-[2000] flex items-center overflow-hidden bg-black select-none">
 
       <div id="fullscreenBg" key={bgIndex} className={`absolute inset-0 bg-cover bg-center z-0 animate-[bgFadeIn_1s_ease] ${soloMode ? 'opacity-0' : ''}`}
         style={{ backgroundImage: hasImages ? `url(${bgImages[bgIndex % bgImages.length]})` : GRADIENTS[bgIndex % GRADIENTS.length] }} />
@@ -174,7 +174,7 @@ export function FullscreenPage() {
       {soloMode && <div className="absolute inset-0 bg-black z-[1]" />}
 
       {!soloMode && (
-        <div id="fullscreenContent" className="relative z-[2] flex flex-col items-center gap-5 max-w-[650px] w-1/2 animate-[fullscreenEnter_500ms_ease]">
+        <div id="fullscreenContent" className="relative z-[2] flex flex-col items-center gap-5 w-1/2 pl-10 max-w-lg animate-[fullscreenEnter_500ms_ease]">
           <div id="fullscreenName" className="text-[22px] font-medium text-white/60 text-center min-h-[1.5em] drop-shadow-lg">{name}</div>
 
           {floatXp > 0 && <div className="text-accent text-xl font-bold animate-[floatUp_2.5s_ease-out] pointer-events-none">+{floatXp} XP</div>}
@@ -243,9 +243,9 @@ export function FullscreenPage() {
       )}
 
       <div id="fullscreenTimerRingContainer"
-        className={soloMode ? 'fixed inset-0 z-[2] flex items-center justify-center' : 'relative z-[2]'}
-        style={{ width: soloMode ? 'min(80vw, 80vh)' : '360px', height: soloMode ? 'min(80vw, 80vh)' : '360px' }}>
-        <div className="relative w-full h-full">
+        className={`z-[2] flex items-center justify-center ${soloMode ? 'fixed inset-0' : 'w-1/2'}`}
+        style={soloMode ? { width: 'min(80vw, 80vh)', height: 'min(80vw, 80vh)' } : {}}>
+        <div className="relative" style={{ width: soloMode ? '100%' : 'min(360px, 35vw)', height: soloMode ? '100%' : 'min(360px, 35vw)' }}>
           <div id="fullscreenRingTrack" className="absolute inset-0 rounded-full"
             style={{
               background: `conic-gradient(${ringColor}18 0deg, ${ringColor}18 360deg)`,
