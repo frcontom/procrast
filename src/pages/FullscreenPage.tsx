@@ -251,7 +251,7 @@ export function FullscreenPage() {
   useEffect(() => {
     if (state !== 'PAUSED') { setPauseCountdown(null); return }
     if (pauseCountdown !== null) return
-    const maxSec = useSettingsStore.getState().maxPauseMinutes * 60
+    const maxSec = useSettingsStore.getState().timerConfig.maxPauseMinutes * 60
     setPauseCountdown(maxSec)
   }, [state, pauseCountdown])
 

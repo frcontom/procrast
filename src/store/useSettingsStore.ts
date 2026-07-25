@@ -11,13 +11,11 @@ interface SettingsStore {
   activityType: string
   strictMode: boolean
   timerConfig: TimerConfig
-  maxPauseMinutes: number
   loaded: boolean
   setName: (name: string) => void
   setActivityType: (type: string) => void
   setStrictMode: (strict: boolean) => void
   setTimerConfig: (config: TimerConfig) => void
-  setMaxPauseMinutes: (min: number) => void
   setLoaded: (loaded: boolean) => void
 }
 
@@ -26,12 +24,10 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   activityType: 'focus',
   strictMode: false,
   timerConfig: { workMinutes: 25, breakMinutes: 5, maxPauseMinutes: 5 },
-  maxPauseMinutes: 5,
   loaded: false,
   setName: (name) => set({ name }),
   setActivityType: (activityType) => set({ activityType }),
   setStrictMode: (strictMode) => set({ strictMode }),
   setTimerConfig: (timerConfig) => set({ timerConfig }),
-  setMaxPauseMinutes: (maxPauseMinutes) => set({ maxPauseMinutes }),
   setLoaded: (loaded) => set({ loaded }),
 }))
