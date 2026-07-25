@@ -26,21 +26,27 @@ export function HabitCalendar({ habits, logs, year, month, onDayClick }: Props) 
 
     const pct = habits.length > 0 ? Math.round((doneCount / habits.length) * 100) : 0
 
-    let bg = 'bg-secondary/30'
-    let bgStyle: React.CSSProperties | undefined
+    let bgStyle: React.CSSProperties = { backgroundColor: 'rgba(255,255,255,0.02)' }
+    let borderStyle = ''
     let icon = '—'
     let label = ''
-    if (isToday) { bg = 'bg-accent/10 border border-accent/30'; icon = '◉' }
+    if (isToday) {
+      bgStyle = { backgroundColor: 'rgba(166,108,255,0.1)' }
+      borderStyle = 'border border-accent/30'
+      icon = '◉'
+    }
     else if (isPast && doneCount > 0) {
       const color = pct >= 100 ? '#28C76F' : pct >= 75 ? '#00BCD4' : pct >= 50 ? '#3B82F6' : pct >= 25 ? '#FF9800' : '#EA5455'
-      bg = ''
-      bgStyle = { backgroundColor: color + '40' }
+      bgStyle = { backgroundColor: color + '45' }
       icon = pct >= 100 ? '✅' : '⚡'
       if (pct < 100) label = `${doneCount}/${habits.length}`
     }
-    else if (isPast && doneCount === 0 && habits.length > 0) { bg = 'bg-[#EA5455]/8'; icon = '❌' }
+    else if (isPast && doneCount === 0 && habits.length > 0) {
+      bgStyle = { backgroundColor: 'rgba(234,84,85,0.08)' }
+      icon = '❌'
+    }
 
-    return { day, dateStr, isToday, isPast, bg, bgStyle, icon, label, allDone }
+    return { day, dateStr, isToday, isPast, bgStyle, borderStyle, icon, label, allDone }
   })
 
   return (
@@ -52,11 +58,11 @@ export function HabitCalendar({ habits, logs, year, month, onDayClick }: Props) 
       </div>
       <div className="grid grid-cols-7 gap-[3px]">
         {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} />)}
-        {days.map(({ day, dateStr, isToday, bg, bgStyle, icon, label, allDone }) => (
+        {days.map(({ day, dateStr, isToday, bgStyle, borderStyle, icon, label, allDone }) => (
           <button
             key={dateStr}
             onClick={() => onDayClick(dateStr)}
-            className={`${bg} rounded-lg px-1 py-1.5 text-center cursor-pointer transition-all hover:ring-1 hover:ring-white/20 min-h-[38px]`}
+            className={`rounded-lg px-1 py-1.5 text-center cursor-pointer transition-all hover:ring-1 hover:ring-white/20 min-h-[38px] ${borderStyle}`}
             style={bgStyle}
           >
             <div className={`text-[11px] font-bold ${isToday ? 'text-accent' : 'text-white/80'}`}>{day}</div>
