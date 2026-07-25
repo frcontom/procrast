@@ -2,17 +2,19 @@ import { useState, useEffect } from 'react'
 import type { TaskSubtask } from '../../supabase/types'
 
 interface Props {
-  onSave: (data: { name: string; estimated_minutes: number; difficulty: string }) => void
+  onSave: (data: { name: string; estimated_minutes: number; difficulty: string; depends_on?: string | null }) => void
   onImport?: (tasks: { name: string; estimated_minutes: number; difficulty: string }[]) => void
   editSubtask?: TaskSubtask | null
   onCloseEdit?: () => void
+  subtaskList?: TaskSubtask[]
 }
 
-export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit }: Props) {
+export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtaskList }: Props) {
   const [open, setOpen] = useState<'add' | 'import' | null>(null)
   const [name, setName] = useState('')
   const [minutes, setMinutes] = useState(30)
   const [difficulty, setDifficulty] = useState('normal')
+  const [dependsOn, setDependsOn] = useState<string>('')
   const [importText, setImportText] = useState('')
 
   useEffect(() => {
@@ -20,15 +22,25 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit }: Prop
       setName(editSubtask.name)
       setMinutes(editSubtask.estimated_minutes)
       setDifficulty(editSubtask.difficulty)
+      setDependsOn(editSubtask.depends_on || '')
     }
   }, [editSubtask])
+
+  const openAdd = () => {
+    setName('')
+    setMinutes(30)
+    setDifficulty('normal')
+    setDependsOn('')
+    setOpen('add')
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
-    onSave({ name: name.trim(), estimated_minutes: minutes, difficulty })
+    onSave({ name: name.trim(), estimated_minutes: minutes, difficulty, depends_on: dependsOn || null })
     setName('')
     setMinutes(30)
+    setDependsOn('')
     if (editSubtask) { onCloseEdit?.(); return }
     setOpen(null)
   }
@@ -50,13 +62,17 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit }: Prop
 
   const close = () => {
     if (editSubtask) { onCloseEdit?.(); return }
+    setName('')
+    setMinutes(30)
+    setDifficulty('normal')
+    setDependsOn('')
     setOpen(null)
   }
 
   return (
     <>
       <div className="flex items-center gap-2">
-        <button onClick={() => setOpen('add')}
+        <button onClick={openAdd}
           className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white transition-all">+ Tarea</button>
         <button onClick={() => setOpen('import')}
           className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-secondary hover:bg-white/10 text-text-secondary transition-all">📄 Masivo</button>
@@ -82,7 +98,8 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit }: Prop
                   <div className="flex-1">
                     <label className="text-[10px] text-text-secondary uppercase tracking-wider mb-1 block">Minutos</label>
                     <input type="number" value={minutes} onChange={(e) => setMinutes(Number(e.target.value))}
-                      className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent" min={1} />
+                      className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent" min={0} />
+                    <span className="text-[9px] text-text-secondary/60 mt-0.5 block">0 = tarea checklist</span>
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] text-text-secondary uppercase tracking-wider mb-1 block">Dificultad</label>
@@ -94,6 +111,18 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit }: Prop
                     </select>
                   </div>
                 </div>
+                {subtaskList && subtaskList.length > 0 && (
+                  <div>
+                    <label className="text-[10px] text-text-secondary uppercase tracking-wider mb-1 block">Depende de</label>
+                    <select value={dependsOn} onChange={(e) => setDependsOn(e.target.value)}
+                      className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent text-text-secondary">
+                      <option value="">— Sin dependencia —</option>
+                      {subtaskList.filter((s) => s.id !== editSubtask?.id).map((s) => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <button type="submit" className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-2 rounded-lg text-sm font-medium transition-all">{isEdit ? 'Guardar cambios' : 'Crear tarea'}</button>
               </form>
             ) : (

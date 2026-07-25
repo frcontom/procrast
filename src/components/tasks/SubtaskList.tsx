@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { TaskSubtask } from '../../supabase/types'
 
 interface Props {
@@ -5,6 +6,8 @@ interface Props {
   onToggle: (id: string, status: string) => void
   onDelete: (id: string) => void
   onEdit?: (st: TaskSubtask) => void
+  onReorder?: (ids: string[]) => void
+  onStartPomodoro?: (st: TaskSubtask) => void
 }
 
 const DIFFICULTY_BADGE: Record<string, { icon: string; color: string }> = {
@@ -13,9 +16,35 @@ const DIFFICULTY_BADGE: Record<string, { icon: string; color: string }> = {
   hard: { icon: '🔴', color: '#FF6B6B' },
 }
 
-export function SubtaskList({ subtasks, onToggle, onDelete, onEdit }: Props) {
+export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onStartPomodoro }: Props) {
   const sorted = [...subtasks].sort((a, b) => a.sort_order - b.sort_order)
   const doneCount = sorted.filter((s) => s.status === 'completed').length
+  const [dragIdx, setDragIdx] = useState<number | null>(null)
+  const [overIdx, setOverIdx] = useState<number | null>(null)
+
+  const handleDragStart = (idx: number) => {
+    setDragIdx(idx)
+  }
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault()
+    setOverIdx(idx)
+  }
+
+  const handleDrop = (idx: number) => {
+    if (dragIdx === null || dragIdx === idx || !onReorder) return
+    const reordered = [...sorted]
+    const [moved] = reordered.splice(dragIdx, 1)
+    reordered.splice(idx, 0, moved)
+    onReorder(reordered.map((s) => s.id))
+    setDragIdx(null)
+    setOverIdx(null)
+  }
+
+  const handleDragEnd = () => {
+    setDragIdx(null)
+    setOverIdx(null)
+  }
 
   return (
     <div>
@@ -30,26 +59,46 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit }: Props) {
         </div>
       ) : (
         <div className="space-y-1.5">
-          {sorted.map((st) => {
+          {sorted.map((st, idx) => {
+            const isDragging = dragIdx === idx
+            const isOver = overIdx === idx
+
             const isDone = st.status === 'completed'
             const isChecklist = st.estimated_minutes === 0
             const pct = st.estimated_minutes > 0 ? Math.min(100, Math.round((st.completed_minutes / st.estimated_minutes) * 100)) : 0
             const diff = DIFFICULTY_BADGE[st.difficulty] || DIFFICULTY_BADGE.normal
 
+            const depSubtask = st.depends_on ? subtasks.find((s) => s.id === st.depends_on) : null
+            const isLocked = !!depSubtask && depSubtask.status !== 'completed'
+
             return (
               <div
                 key={st.id}
-                className={`group rounded-lg border transition-all ${
+                draggable
+                onDragStart={() => handleDragStart(idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDrop={() => handleDrop(idx)}
+                onDragEnd={handleDragEnd}
+                className={`group rounded-lg border transition-all cursor-grab active:cursor-grabbing ${
+                  isDragging ? 'opacity-40 border-accent/50' : ''
+                } ${
+                  isOver ? 'border-accent/50 ring-1 ring-accent/30' : ''
+                } ${
+                  isLocked ? 'opacity-40 border-white/5' : ''
+                } ${
                   isDone
                     ? 'bg-white/[0.02] border-white/5 opacity-55'
                     : 'bg-secondary/70 border-white/[0.06] hover:bg-secondary hover:border-white/10'
                 }`}
               >
                 <div className="px-3 py-2.5">
-                  <div className="flex items-start gap-2.5">
+                  <div className="flex items-start gap-1.5">
+                    <span className="mt-1.5 text-text-secondary/20 group-hover:text-text-secondary/40 transition-colors cursor-grab active:cursor-grabbing text-xs select-none shrink-0">⠿</span>
                     <button
-                      onClick={() => onToggle(st.id, isDone ? 'pending' : 'completed')}
+                      onClick={() => !isLocked && onToggle(st.id, isDone ? 'pending' : 'completed')}
                       className={`mt-0.5 w-4 h-4 rounded-sm flex items-center justify-center text-xs shrink-0 transition-all ${
+                        isLocked ? 'opacity-30 cursor-not-allowed' : ''
+                      } ${
                         isDone
                           ? 'bg-success/20 text-success'
                           : isChecklist
@@ -59,14 +108,17 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit }: Props) {
                               : 'border border-white/20 hover:border-accent'
                       }`}
                     >
-                      {isDone ? '✓' : isChecklist ? '◯' : st.completed_minutes > 0 ? '◐' : ''}
+                      {isLocked ? '🔒' : isDone ? '✓' : isChecklist ? '◯' : st.completed_minutes > 0 ? '◐' : ''}
                     </button>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className={`text-sm font-medium truncate ${isDone ? 'line-through text-text-secondary/60' : 'text-white'}`}>
+                        <span className={`text-sm font-medium truncate ${isDone ? 'line-through text-text-secondary/60' : isLocked ? 'text-text-secondary/60' : 'text-white'}`}>
                           {st.name}
                         </span>
+                        {isLocked && depSubtask && (
+                          <span className="text-[10px] text-warning/60 shrink-0">🔒 {depSubtask.name}</span>
+                        )}
                         <span className="text-xs shrink-0" title={diff.icon}>{diff.icon}</span>
                       </div>
 
@@ -95,19 +147,17 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit }: Props) {
                     </div>
 
                     <div className="flex items-center gap-0.5 shrink-0">
-                      {!isChecklist && (
-                        <button className="w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Iniciar Pomodoro">▶ {st.estimated_minutes}min</button>
+                      {!isChecklist && !isLocked && (
+                        <button onClick={() => onStartPomodoro?.(st)} className="w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Iniciar Pomodoro">▶ {st.estimated_minutes}min</button>
                       )}
                       <div className={`flex items-center gap-0.5 ${isDone ? 'opacity-0 group-hover:opacity-100' : ''}`}>
-                      {!isDone && (
+                      {!isDone && !isLocked && (
                         <>
-                          <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary/40 hover:bg-white/10 hover:border-white/20 transition-all" title="Subir">▲</button>
-                          <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary/40 hover:bg-white/10 hover:border-white/20 transition-all" title="Bajar">▼</button>
                           <button onClick={() => onEdit?.(st)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Editar">✏️</button>
                           <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Historial">🕐</button>
                         </>
                       )}
-                      <button onClick={() => onDelete(st.id)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-danger/50 hover:bg-danger/10 hover:border-danger/30 hover:text-danger transition-all" title="Eliminar">🗑️</button>
+                      <button onClick={() => !isLocked && onDelete(st.id)} className={`w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] transition-all ${isLocked ? 'text-text-secondary/20 cursor-not-allowed' : 'text-danger/50 hover:bg-danger/10 hover:border-danger/30 hover:text-danger'}`} title="Eliminar">🗑️</button>
                       </div>
                     </div>
                   </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase/client'
 import { useUser } from '../supabase/auth'
 import type { TaskGoal, TaskSubtask } from '../supabase/types'
@@ -8,11 +9,14 @@ import { GoalDetail } from '../components/tasks/GoalDetail'
 import { GoalForm } from '../components/tasks/GoalForm'
 import { GoalHistory } from '../components/tasks/GoalHistory'
 import { TodayView } from '../components/tasks/TodayView'
+import { sessionManager } from '../lib/sessionManager'
+import { useTimerStore } from '../store/useTimerStore'
 
 type TabView = 'metas' | 'hoy' | 'history'
 
 export function TasksPage() {
   const user = useUser()
+  const navigate = useNavigate()
   const [goals, setGoals] = useState<TaskGoal[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -61,7 +65,22 @@ export function TasksPage() {
 
   const updateSubtaskStatus = async (id: string, status: string) => {
     await supabase.from('task_subtasks').update({ status: status as 'pending' | 'completed' }).eq('id', id)
-    setSubtasks((prev) => prev.map((s) => (s.id === id ? { ...s, status: status as 'pending' | 'completed' } : s)))
+    const updated = subtasks.map((s) => (s.id === id ? { ...s, status: status as 'pending' | 'completed' } : s))
+    setSubtasks(updated)
+    const allDone = updated.every((s) => s.status === 'completed')
+    if (allDone && selectedId && selectedGoal?.status === 'active') {
+      await supabase.from('task_goals').update({ status: 'completed', completed_at: new Date().toISOString() }).eq('id', selectedId)
+      loadGoals()
+    }
+  }
+
+  const startPomodoroFromSubtask = async (st: TaskSubtask) => {
+    const store = useTimerStore.getState()
+    store.setDuration(st.estimated_minutes)
+    store.setActivityType('focus')
+    store.setSessionName(st.name)
+    await sessionManager.startSession(st.estimated_minutes, 'focus', st.name, false, false)
+    navigate('/focus/fullscreen')
   }
 
   const activeGoals = goals.filter((g) => g.status === 'active')
@@ -128,6 +147,16 @@ export function TasksPage() {
                   const { data }: any = await supabase.from('task_subtasks').insert(toInsert).select()
                   if (data) setSubtasks((prev) => [...prev, ...data])
                 }}
+                onReorderSubtasks={async (ids) => {
+                  if (!user) return
+                  const updates = ids.map((id, i) => supabase.from('task_subtasks').update({ sort_order: i }).eq('id', id))
+                  await Promise.all(updates)
+                  setSubtasks((prev) => {
+                    const map = new Map(prev.map((s) => [s.id, s]))
+                    return ids.map((id, i) => ({ ...map.get(id)!, sort_order: i }))
+                  })
+                }}
+                onStartPomodoro={startPomodoroFromSubtask}
               />
             ) : (
               <TaskDashboard goals={activeGoals} onSelectGoal={selectGoal} />

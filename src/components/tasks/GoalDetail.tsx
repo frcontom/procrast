@@ -14,13 +14,15 @@ interface Props {
   onSubtaskDelete: (id: string) => void
   onAddSubtask: (data: any) => void
   onEditSubtask?: (id: string, data: any) => void
+  onReorderSubtasks?: (ids: string[]) => void
+  onStartPomodoro?: (st: TaskSubtask) => void
   onImportSubtasks?: (tasks: any[]) => void
 }
 
 const PRIORITY_LABELS: Record<string, string> = { critical: 'Crítica', high: 'Alta', normal: 'Normal', low: 'Baja' }
 const PRIORITY_COLORS: Record<string, string> = { critical: '#FF6B6B', high: '#FF9800', normal: '#60A5FA', low: '#4CAF50' }
 
-export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onEditSubtask, onImportSubtasks }: Props) {
+export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onEditSubtask, onReorderSubtasks, onStartPomodoro, onImportSubtasks }: Props) {
   const user = useUser()
   const [links, setLinks] = useState<any[]>([])
   const [todayMin, setTodayMin] = useState(0)
@@ -134,10 +136,10 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           <SubtaskForm onSave={(data) => {
             if (editingSubtask) onEditSubtask?.(editingSubtask.id, data)
             else onAddSubtask(data)
-          }} onImport={onImportSubtasks} editSubtask={editingSubtask} onCloseEdit={() => setEditingSubtask(null)} />
+          }} onImport={onImportSubtasks} editSubtask={editingSubtask} onCloseEdit={() => setEditingSubtask(null)} subtaskList={subtasks} />
         </div>
 
-        <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} />
+        <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} onReorder={onReorderSubtasks} onStartPomodoro={onStartPomodoro} />
       </div>
 
       {goal.notes && (
