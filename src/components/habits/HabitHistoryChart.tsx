@@ -60,7 +60,7 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
       </div>
 
       {/* Percentage row */}
-      <div className="flex gap-2 mb-0.5">
+      <div className="flex gap-2 -mt-0.5 mb-0.5">
         {data.map((m) => {
           const effectiveDays = (m.month === now.getMonth()) ? now.getDate() : m.daysInMonth
           const pct = Math.round((m.daysWithLogs / Math.max(1, effectiveDays)) * 100)
