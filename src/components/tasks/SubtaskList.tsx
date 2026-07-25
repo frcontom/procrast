@@ -11,6 +11,7 @@ interface Props {
   onSetDependency?: (id: string, dependsOn: string | null) => void
   onStartPomodoro?: (st: TaskSubtask) => void
   onShowHistory?: (st: TaskSubtask) => void
+  bestProgress?: Record<string, number>
 }
 
 const DIFFICULTY_BADGE: Record<string, { icon: string; color: string }> = {
@@ -63,7 +64,7 @@ function sumSubtree(subtasks: TaskSubtask[], parentId: string): { estimated: num
   return { estimated, completed }
 }
 
-export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro, onShowHistory }: Props) {
+export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro, onShowHistory, bestProgress }: Props) {
   const doneCount = subtasks.filter((s) => s.status === 'completed').length
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
@@ -151,6 +152,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
             const displayEstimated = isChecklist && subtree && (subtree.estimated > 0 || subtree.completed > 0) ? subtree.estimated : st.estimated_minutes
             const displayCompleted = isChecklist && subtree && (subtree.estimated > 0 || subtree.completed > 0) ? subtree.completed : st.completed_minutes
             const displayPct = displayEstimated > 0 ? Math.min(100, Math.round((displayCompleted / displayEstimated) * 100)) : 0
+            const bestPct = bestProgress && bestProgress[st.id] !== undefined ? Math.max(displayPct, bestProgress[st.id]) : displayPct
 
             return (
               <div key={st.id} className="relative">
@@ -199,8 +201,13 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                               <span className="tabular-nums text-text-secondary/60 shrink-0">⌛ {formatMinutes(displayCompleted + displayEstimated)}</span>
                               <div className="w-[60%] bg-white/5 rounded-full h-2 overflow-hidden ring-1 ring-white/5 relative">
                                 <div className="h-full rounded-full transition-all duration-700"
-                                  style={{ width: `${displayPct}%`, background: displayPct >= 100 ? 'linear-gradient(90deg, #28C76F, #81E6A0)' : displayPct >= 50 ? 'linear-gradient(90deg, #FF9800, #FFB74D)' : 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
+                                  style={{ width: `${bestPct}%`, background: bestPct >= 100 ? 'linear-gradient(90deg, #28C76F, #81E6A0)' : bestPct >= 50 ? 'linear-gradient(90deg, #FF9800, #FFB74D)' : 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
+                                {bestPct > displayPct && (
+                                  <div className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white/60">{displayPct}% · mejor {bestPct}%</div>
+                                )}
+                                {bestPct === displayPct && (
                                 <span className={`absolute inset-0 flex items-center justify-center text-[9px] font-bold ${displayPct >= 50 ? 'text-white' : 'text-text-secondary'}`}>{displayPct}%</span>
+                                )}
                               </div>
                             </>
                           )}
