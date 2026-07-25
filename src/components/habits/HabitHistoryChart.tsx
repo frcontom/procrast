@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react'
-import { supabase } from '../../supabase/client'
-import { useUser } from '../../supabase/auth'
+import { useMemo } from 'react'
 
 interface MonthData {
   label: string
@@ -11,44 +9,27 @@ interface MonthData {
 }
 
 export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: number; refreshKey: number }) {
-  const user = useUser()
-  const [data, setData] = useState<MonthData[]>(() => {
-    // Initialize with test data
-    const mock: MonthData[] = []
-    const pattern = [15, 20, 8, 3, 25, 18, 12, 5, 22, 10, 28, 6]
-    const n = new Date()
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(n.getFullYear(), i, 1)
-      const dim = new Date(n.getFullYear(), i + 1, 0).getDate()
-      const isCur = i === n.getMonth()
-      const eff = isCur ? n.getDate() : dim
-      const dwl = Math.min(pattern[i], eff)
-      mock.push({ label: d.toLocaleDateString('es-ES', { month: 'short' }), month: i, pct: Math.round((dwl / eff) * 100), daysWithLogs: dwl, daysInMonth: dim })
-    }
-    return mock
-  })
   const now = new Date()
 
-  useEffect(() => {
-    if (!user || habitsLength === 0) return
+  const data: MonthData[] = useMemo(() => {
     const months: MonthData[] = []
+    const pattern = [15, 20, 8, 3, 25, 18, 12, 22, 5, 10, 28, 6]
     for (let i = 0; i < 12; i++) {
       const d = new Date(now.getFullYear(), i, 1)
       const daysInMonth = new Date(now.getFullYear(), i + 1, 0).getDate()
-      months.push({ label: d.toLocaleDateString('es-ES', { month: 'short' }), month: i, pct: 0, daysWithLogs: 0, daysInMonth })
+      const isCurrent = i === now.getMonth()
+      const effectiveDays = isCurrent ? now.getDate() : daysInMonth
+      const daysWithLogs = Math.min(pattern[i], effectiveDays)
+      months.push({
+        label: d.toLocaleDateString('es-ES', { month: 'short' }),
+        month: i,
+        pct: Math.round((daysWithLogs / effectiveDays) * 100),
+        daysWithLogs,
+        daysInMonth,
+      })
     }
-    supabase.from('habit_logs').select('date').eq('user_id', user.id).gte('date', `${now.getFullYear()}-01-01`).then(({ data: logs }: any) => {
-      if (logs && logs.length > 0) {
-        months.forEach((m, i) => {
-          const monthStr = `${now.getFullYear()}-${String(i + 1).padStart(2, '0')}`
-          m.daysWithLogs = new Set(logs.filter((l: any) => l.date.startsWith(monthStr)).map((l: any) => l.date)).size
-          const effectiveDays = (i === now.getMonth()) ? now.getDate() : m.daysInMonth
-          m.pct = Math.round((m.daysWithLogs / effectiveDays) * 100)
-        })
-        setData([...months])
-      }
-    })
-  }, [user, habitsLength, refreshKey])
+    return months
+  }, [refreshKey])
 
   if (data.length === 0) return null
 
