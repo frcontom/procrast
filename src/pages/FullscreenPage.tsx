@@ -222,10 +222,8 @@ export function FullscreenPage() {
     return () => window.removeEventListener('keydown', handleKey)
   }, [strictMode])
 
-  const handleCancel = () => {
-    sessionManager.cancel()
-    if (returnGoalId) navigate(`/tasks?goal=${returnGoalId}`)
-    else navigate('/focus')
+  const handleCancel = async () => {
+    await sessionManager.cancel()
   }
 
   const prevState = prevStateRef.current
@@ -239,7 +237,8 @@ export function FullscreenPage() {
       setTimeout(() => setFloatXp(0), 3000)
     }
     if (justCancelled) {
-      navigate('/focus')
+      if (returnGoalId) navigate(`/tasks?goal=${returnGoalId}`)
+      else navigate('/focus')
     }
   }, [state])
 
