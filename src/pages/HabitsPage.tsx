@@ -118,23 +118,23 @@ export function HabitsPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div id="hm-header" className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-white flex items-center gap-2">
           <span className="text-accent">📋</span> HÁBITOS
         </h2>
-        <div className="flex items-center gap-1">
+        <div id="hm-nav" className="flex items-center gap-1">
           <button onClick={prevMonth} className="px-2 py-1 rounded text-xs text-text-secondary hover:text-white hover:bg-white/5 transition-all">←</button>
-          <span className="text-sm font-bold min-w-[120px] text-center text-white capitalize">{monthLabel}</span>
+          <span id="hm-month-label" className="text-sm font-bold min-w-[120px] text-center text-white capitalize">{monthLabel}</span>
           <button onClick={nextMonth} className="px-2 py-1 rounded text-xs text-text-secondary hover:text-white hover:bg-white/5 transition-all">→</button>
         </div>
       </div>
 
       {/* Habit List */}
-      <div className="bg-card rounded-xl border border-white/10 p-4">
-        <div className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-3">📌 Hábitos de {monthLabel}</div>
-        <HabitList habits={habits} logs={logs} daysInMonth={daysInMonth} onDelete={deleteHabit} onRename={renameHabit} />
-        <div className="flex items-center gap-2 mt-3">
-          <input
+      <div id="hm-list-card" className="bg-card rounded-xl border border-white/10 p-4">
+        <div id="hm-list-title" className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-3">📌 Hábitos de {monthLabel}</div>
+        <div id="hm-list"><HabitList habits={habits} logs={logs} daysInMonth={daysInMonth} onDelete={deleteHabit} onRename={renameHabit} /></div>
+        <div id="hm-add-row" className="flex items-center gap-2 mt-3">
+          <input id="hm-new-input"
             type="text"
             placeholder="Nuevo hábito..."
             className="flex-1 bg-secondary border border-white/10 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-accent text-white"
@@ -145,32 +145,31 @@ export function HabitsPage() {
               }
             }}
           />
-          <button onClick={() => setShowForm(true)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-accent hover:opacity-90 text-white transition-all shrink-0">+ Añadir</button>
-          <button onClick={() => setShowImport(true)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-secondary hover:bg-white/10 text-text-secondary transition-all shrink-0">📄</button>
+          <button id="hm-add-btn" onClick={() => setShowForm(true)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-accent hover:opacity-90 text-white transition-all shrink-0">+ Añadir</button>
+          <button id="hm-import-btn" onClick={() => setShowImport(true)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-secondary hover:bg-white/10 text-text-secondary transition-all shrink-0">📄</button>
         </div>
       </div>
 
       {/* Weekly Circles */}
       {habits.length > 0 && (
-        <div className="bg-card rounded-xl border border-white/10 p-4">
-          <div className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-3">Últimos 7 días</div>
-          <HabitWeekCircles habits={habits} logs={logs} />
+        <div id="hm-week-card" className="bg-card rounded-xl border border-white/10 p-4">
+          <div id="hm-week-circles"><HabitWeekCircles habits={habits} logs={logs} /></div>
         </div>
       )}
 
       {/* Calendar */}
       {habits.length > 0 && (
-        <div className="bg-card rounded-xl border border-white/10 p-4">
-          <div className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-3">📅 {monthLabel}</div>
-          <HabitCalendar habits={habits} logs={logs} year={year} month={month} onDayClick={setDayModal} />
+        <div id="hm-calendar-card" className="bg-card rounded-xl border border-white/10 p-4">
+          <div id="hm-calendar-title" className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-3">📅 {monthLabel}</div>
+          <div id="hm-calendar"><HabitCalendar habits={habits} logs={logs} year={year} month={month} onDayClick={setDayModal} /></div>
         </div>
       )}
 
       {/* Summary */}
       {consistencyData.length > 0 && (
-        <div className="bg-card rounded-xl border border-white/10 p-4">
-          <div className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-3">📊 Resumen</div>
-          <div className="grid grid-cols-3 gap-2 mb-3">
+        <div id="hm-summary-card" className="bg-card rounded-xl border border-white/10 p-4">
+          <div id="hm-summary-title" className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-3">📊 Resumen</div>
+          <div id="hm-summary-grid" className="grid grid-cols-3 gap-2 mb-3">
             {[
               { label: 'Consist.', value: `${Math.round((new Set(logs.map((l) => l.date)).size / daysInMonth) * 100)}%` },
               { label: 'Perfectos', value: new Set(logs.filter((l) => habits.every((h) => logs.some((ll) => ll.habit_id === h.id && ll.date === l.date))).map((l) => l.date)).size.toString() },
@@ -188,16 +187,17 @@ export function HabitsPage() {
 
       {/* History Chart */}
       {habits.length > 0 && (
-        <div className="bg-card rounded-xl border border-white/10 p-4">
-          <div className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-3">📊 Historial mensual</div>
-          <HabitHistoryChart habitsLength={habits.length} />
+        <div id="hm-history-card" className="bg-card rounded-xl border border-white/10 p-4">
+          <div id="hm-history-title" className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-3">📊 Historial mensual</div>
+          <div id="hm-history-chart"><HabitHistoryChart habitsLength={habits.length} /></div>
         </div>
       )}
 
       {/* Consistency Analysis */}
       {consistencyData.length > 0 && (
-        <div className="bg-card rounded-xl border border-white/10 p-4">
-          <div className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-3">📊 Análisis de consistencia</div>
+        <div id="hm-analysis-card" className="bg-card rounded-xl border border-white/10 p-4">
+          <div id="hm-analysis-title" className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-3">📊 Análisis de consistencia</div>
+          <div id="hm-analysis-content">
           {bestHabit && <div className="text-[11px] mb-1">🏆 Mejor: <span className="text-[#28C76F]">{bestHabit.name}</span> ({bestHabit.pct}%)</div>}
           {worstHabit && <div className="text-[11px] mb-1">⚠️ Peor: <span className="text-[#EA5455]">{worstHabit.name}</span> ({worstHabit.pct}%)</div>}
           {worstHabit && worstHabit.pct < 25 && (
@@ -206,12 +206,13 @@ export function HabitsPage() {
           {abandonedHabits.map((h) => (
             <div key={h.id} className="text-[11px] text-warning/80 mb-1">⏳ "{h.name}" sin registrar desde hace {h.daysSinceLast} días.</div>
           ))}
+          </div>
         </div>
       )}
 
       {/* Export */}
       {habits.length > 0 && (
-        <button onClick={exportMonth} className="px-4 py-2 rounded-lg text-xs font-medium bg-secondary hover:bg-white/10 text-text-secondary hover:text-white transition-all">
+        <button id="hm-export-btn" onClick={exportMonth} className="px-4 py-2 rounded-lg text-xs font-medium bg-secondary hover:bg-white/10 text-text-secondary hover:text-white transition-all">
           📥 Exportar mes
         </button>
       )}
