@@ -13,7 +13,7 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
 
   const data: MonthData[] = useMemo(() => {
     const months: MonthData[] = []
-    const pattern = [15, 20, 8, 3, 25, 18, 12, 22, 5, 10, 28, 6]
+    const pattern = [15, 20, 8, 30, 25, 18, 12, 22, 5, 10, 28, 6]
     for (let i = 0; i < 12; i++) {
       const d = new Date(now.getFullYear(), i, 1)
       const daysInMonth = new Date(now.getFullYear(), i + 1, 0).getDate()
