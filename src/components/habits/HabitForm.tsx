@@ -25,10 +25,18 @@ export function HabitForm({ onSave, onClose }: Props) {
             autoFocus required />
 
           <div className="flex gap-2.5">
-            <button type="submit" className="flex-1 px-4 py-2.5 rounded-xl text-xs font-semibold bg-accent hover:bg-[var(--accent-hover)] text-white transition-all active:scale-[0.97] shadow-lg shadow-accent/20">
+            <button type="submit"
+              className="flex-1 px-4 py-2.5 rounded-xl text-xs font-semibold text-white transition-all active:scale-[0.97]"
+              style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 14px rgba(166,108,255,0.25)' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}>
               + Crear
             </button>
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl text-xs font-medium border border-white/10 text-text-secondary hover:text-white hover:border-white/30 hover:bg-white/5 transition-all active:scale-[0.97]">
+            <button type="button" onClick={onClose}
+              className="flex-1 px-4 py-2.5 rounded-xl text-xs font-medium text-text-secondary hover:text-white transition-all active:scale-[0.97]"
+              style={{ border: '1px solid rgba(255,255,255,0.1)', backgroundColor: 'transparent' }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.backgroundColor = 'transparent' }}>
               Cancelar
             </button>
           </div>
