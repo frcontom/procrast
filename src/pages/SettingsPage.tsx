@@ -18,7 +18,7 @@ export function SettingsPage() {
       if (data) {
         setName(data.name)
         setActivityType(data.activity_type)
-        if (data.config?.timer) setTimerConfig(data.config.timer)
+        if (data.config?.timer) setTimerConfig({ workMinutes: 25, breakMinutes: 5, maxPauseMinutes: 5, ...data.config.timer })
       }
     })
   }, [user])
@@ -41,7 +41,8 @@ export function SettingsPage() {
       <TimerSettings
         workMinutes={timerConfig.workMinutes}
         breakMinutes={timerConfig.breakMinutes}
-        onChange={(c) => setTimerConfig({ workMinutes: c.workMinutes, breakMinutes: c.breakMinutes })}
+        maxPauseMinutes={timerConfig.maxPauseMinutes}
+        onChange={(c) => setTimerConfig(c)}
       />
 
       <ThemeSettings />

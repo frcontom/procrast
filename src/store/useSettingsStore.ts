@@ -3,6 +3,7 @@ import { create } from 'zustand'
 interface TimerConfig {
   workMinutes: number
   breakMinutes: number
+  maxPauseMinutes: number
 }
 
 interface SettingsStore {
@@ -24,7 +25,7 @@ export const useSettingsStore = create<SettingsStore>((set) => ({
   name: 'Focus',
   activityType: 'focus',
   strictMode: false,
-  timerConfig: { workMinutes: 25, breakMinutes: 5 },
+  timerConfig: { workMinutes: 25, breakMinutes: 5, maxPauseMinutes: 5 },
   maxPauseMinutes: 5,
   loaded: false,
   setName: (name) => set({ name }),
