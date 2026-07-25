@@ -5,7 +5,7 @@ interface Props {
   logs: HabitLog[]
 }
 
-const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
 export function HabitWeekCircles({ habits, logs }: Props) {
   const today = new Date()
@@ -92,7 +92,7 @@ export function HabitWeekCircles({ habits, logs }: Props) {
                   <span className="text-white/15 font-normal text-xs drop-shadow-sm">{d.dayNum}</span>
                 )}
               </div>
-              <span className={`text-[9px] ${d.isToday ? 'text-accent font-semibold' : 'text-text-secondary/40'} tracking-wide`}>{d.dayName}</span>
+              <span className={`text-[8px] ${d.isToday ? 'text-accent font-semibold' : 'text-text-secondary/40'} tracking-wide truncate max-w-[48px]`}>{d.dayName}</span>
             </div>
           )
         })}
