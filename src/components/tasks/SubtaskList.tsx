@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { TaskSubtask } from '../../supabase/types'
 import { formatMinutes } from '../../lib/formatters'
+import { supabase } from '../../supabase/client'
+import { useUser } from '../../supabase/auth'
 
 interface Props {
   subtasks: TaskSubtask[]
@@ -11,7 +13,6 @@ interface Props {
   onSetDependency?: (id: string, dependsOn: string | null) => void
   onStartPomodoro?: (st: TaskSubtask) => void
   onShowHistory?: (st: TaskSubtask) => void
-  bestProgress?: Record<string, number>
 }
 
 const DIFFICULTY_BADGE: Record<string, { icon: string; color: string }> = {
@@ -64,12 +65,22 @@ function sumSubtree(subtasks: TaskSubtask[], parentId: string): { estimated: num
   return { estimated, completed }
 }
 
-export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro, onShowHistory, bestProgress }: Props) {
+export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro, onShowHistory }: Props) {
   const doneCount = subtasks.filter((s) => s.status === 'completed').length
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
   const [overHeader, setOverHeader] = useState(false)
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [links, setLinks] = useState<any[]>([])
+  const user = useUser()
+
+  useEffect(() => {
+    if (!user || subtasks.length === 0) return
+    const ids = subtasks.map((s) => s.id)
+    supabase.from('task_pomodoro_links').select('subtask_id, minutes').eq('user_id', user.id).in('subtask_id', ids).then(({ data }: any) => {
+      if (data) setLinks(data)
+    })
+  }, [user, subtasks])
 
   const tree = buildTree(subtasks)
 
@@ -152,7 +163,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
             const displayEstimated = isChecklist && subtree && (subtree.estimated > 0 || subtree.completed > 0) ? subtree.estimated : st.estimated_minutes
             const displayCompleted = isChecklist && subtree && (subtree.estimated > 0 || subtree.completed > 0) ? subtree.completed : st.completed_minutes
             const displayPct = displayEstimated > 0 ? Math.min(100, Math.round((displayCompleted / displayEstimated) * 100)) : 0
-            const bestPct = bestProgress && bestProgress[st.id] !== undefined ? Math.max(displayPct, bestProgress[st.id]) : displayPct
+            const bestPct = displayEstimated > 0 ? Math.max(displayPct, Math.min(100, Math.ceil((links.filter((l) => l.subtask_id === st.id).reduce((max, l) => Math.max(max, l.minutes || 0), 0) / displayEstimated) * 100))) : displayPct
 
             return (
               <div key={st.id} className="relative">

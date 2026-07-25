@@ -31,7 +31,6 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   const [todayMin, setTodayMin] = useState(0)
   const [editingSubtask, setEditingSubtask] = useState<TaskSubtask | null>(null)
   const [historySubtask, setHistorySubtask] = useState<TaskSubtask | null>(null)
-  const [bestProgress, setBestProgress] = useState<Record<string, number>>({})
 
   const goalIcon = goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'
 
@@ -65,20 +64,6 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           capped += Math.min(raw, s.estimated_minutes)
         }
         setTodayMin(Math.round(capped))
-      }
-    })
-    // Best historical progress (including cancelled)
-    supabase.from('task_pomodoro_links').select('subtask_id, minutes').eq('user_id', user.id).in('subtask_id', subtasks.map((s) => s.id)).then(({ data }: any) => {
-      if (data) {
-        const best: Record<string, number> = {}
-        for (const s of subtasks) {
-          if (s.estimated_minutes <= 0) continue
-          const currentPct = Math.min(100, Math.round((s.completed_minutes / s.estimated_minutes) * 100))
-          const sessionMax = data.filter((l: any) => l.subtask_id === s.id)
-            .reduce((max: number, l: any) => Math.max(max, Math.min(100, Math.ceil(((l.minutes || 0) / s.estimated_minutes) * 100))), 0)
-          best[s.id] = Math.max(currentPct, sessionMax)
-        }
-        setBestProgress(best)
       }
     })
   }, [user, subtasks])
@@ -170,7 +155,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           }} onImport={onImportSubtasks} editSubtask={editingSubtask} onCloseEdit={() => setEditingSubtask(null)} subtaskList={subtasks} />
         </div>
 
-        <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} onReorder={onReorderSubtasks} onSetDependency={onSetDependency} onStartPomodoro={onStartPomodoro} onShowHistory={setHistorySubtask} bestProgress={bestProgress} />
+        <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} onReorder={onReorderSubtasks} onSetDependency={onSetDependency} onStartPomodoro={onStartPomodoro} onShowHistory={setHistorySubtask} />
       </div>
 
       {goal.notes && (
