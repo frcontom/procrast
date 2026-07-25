@@ -344,6 +344,12 @@ export function FullscreenPage() {
           const segLabels = motivationList
           return (
             <div id="fullscreenProgress" className="w-full">
+              <div className="relative mb-1">
+                <div className="absolute -top-1 transition-all duration-500 ease-linear text-lg filter drop-shadow-[0_0_8px_rgba(166,108,255,0.6)]"
+                  style={{ left: `${(1 - remainingSeconds / totalSeconds) * 100}%`, transform: 'translateX(-50%)' }}>
+                  🧠
+                </div>
+              </div>
               <div className="flex gap-1.5">
               {Array.from({ length: segCount }).map((_, i) => {
                 const segStart = i * segSeconds
