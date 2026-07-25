@@ -7,15 +7,17 @@ interface Props {
   editSubtask?: TaskSubtask | null
   onCloseEdit?: () => void
   subtaskList?: TaskSubtask[]
+  onCleanAll?: () => void
 }
 
-export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtaskList }: Props) {
+export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtaskList, onCleanAll }: Props) {
   const [open, setOpen] = useState<'add' | 'import' | null>(null)
   const [name, setName] = useState('')
   const [minutes, setMinutes] = useState(30)
   const [difficulty, setDifficulty] = useState('normal')
   const [dependsOn, setDependsOn] = useState<string>('')
   const [importText, setImportText] = useState('')
+  const [showClean, setShowClean] = useState(false)
 
   useEffect(() => {
     if (editSubtask) {
@@ -87,6 +89,8 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtas
           className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white transition-all">+ Tarea</button>
         <button onClick={() => setOpen('import')}
           className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-secondary hover:bg-white/10 text-text-secondary transition-all">📄 Masivo</button>
+        <button onClick={() => subtaskList && subtaskList.length > 0 && setShowClean(true)}
+          className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium border border-danger/20 text-danger/60 hover:bg-danger/10 hover:border-danger/40 hover:text-danger transition-all">🧹</button>
       </div>
 
       {modalOpen && (
@@ -150,6 +154,26 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtas
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {showClean && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowClean(false)}>
+          <div className="bg-card rounded-xl border border-white/10 p-5 w-full max-w-xs mx-4 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="text-3xl mb-3">🧹</div>
+            <h3 className="text-sm font-semibold text-white mb-1">¿Limpiar todas las tareas?</h3>
+            <p className="text-[11px] text-text-secondary mb-5">Se eliminarán todas las subtareas de esta meta. Esta acción no se puede deshacer.</p>
+            <div className="flex gap-2">
+              <button onClick={() => setShowClean(false)}
+                className="flex-1 px-4 py-2 rounded-lg text-xs font-medium bg-secondary hover:bg-white/10 text-text-secondary hover:text-white transition-all">
+                Cancelar
+              </button>
+              <button onClick={() => { onCleanAll?.(); setShowClean(false) }}
+                className="flex-1 px-4 py-2 rounded-lg text-xs font-medium bg-danger hover:bg-danger/80 text-white transition-all">
+                Limpiar todo
+              </button>
+            </div>
           </div>
         </div>
       )}
