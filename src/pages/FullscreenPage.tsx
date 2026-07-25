@@ -245,7 +245,7 @@ export function FullscreenPage() {
 
   const displaySeconds = isStopwatch ? elapsedSeconds : remainingSeconds
   const totalSeconds = durationMinutes * 60
-  const pct = totalSeconds > 0 ? (elapsedSeconds / totalSeconds) * 100 : 0
+  const pct = totalSeconds > 0 ? (remainingSeconds / totalSeconds) * 100 : 0
 
   const stateColor = state === 'RUNNING' ? '#28C76F' :
     state === 'PAUSED' ? '#FF9F43' :
