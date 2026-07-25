@@ -37,7 +37,7 @@ export function HabitCalendar({ habits, logs, year, month, onDayClick }: Props) 
     }
     else if (isPast && doneCount > 0) {
       const color = pct >= 100 ? '#28C76F' : pct >= 75 ? '#00BCD4' : pct >= 50 ? '#3B82F6' : pct >= 25 ? '#FF9800' : '#EA5455'
-      bgStyle = { backgroundColor: color + '45' }
+      bgStyle = { backgroundColor: color + '80' }
       icon = pct >= 100 ? '✅' : '⚡'
       if (pct < 100) label = `${doneCount}/${habits.length}`
     }
