@@ -1,3 +1,5 @@
+import type { TaskSubtask } from '../../supabase/types'
+
 interface Props {
   subtasks: TaskSubtask[]
   onToggle: (id: string, status: string) => void
