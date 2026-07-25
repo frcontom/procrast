@@ -24,6 +24,8 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   const [links, setLinks] = useState<any[]>([])
   const [todayMin, setTodayMin] = useState(0)
 
+  const goalIcon = goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'
+
   const totalEstimated = goal.estimated_minutes
   const totalCompleted = subtasks.reduce((a, s) => a + s.completed_minutes, 0)
   const pct = Math.min(100, Math.round((totalCompleted / Math.max(1, totalEstimated)) * 100))
@@ -55,7 +57,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
         <div className="flex items-start justify-between mb-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-lg">{goal.icon || '🎯'}</span>
+              <span className="text-lg">{goalIcon}</span>
               <span className="text-lg font-semibold">{goal.name}</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: PRIORITY_COLORS[goal.priority] + '30', color: PRIORITY_COLORS[goal.priority] }}>
                 {PRIORITY_LABELS[goal.priority]}

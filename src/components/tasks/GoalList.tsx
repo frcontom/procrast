@@ -44,7 +44,7 @@ export function GoalList({ goals, selectedId, onSelect, onEdit }: Props) {
               <div className="w-1 shrink-0" style={{ backgroundColor: PRIORITY_COLORS[goal.priority] || '#60A5FA' }} />
               <div className="flex-1 px-3 py-2.5 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm">{goal.icon || '🎯'}</span>
+                  <span className="text-sm">{goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'}</span>
                   <span className="text-xs font-medium truncate">{goal.name}</span>
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">

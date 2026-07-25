@@ -46,7 +46,7 @@ export function TodayView({ goals, onSelectGoal }: Props) {
           <div key={goal.id} onClick={() => onSelectGoal(goal.id)}
             className="bg-card rounded-xl border border-white/10 p-4 cursor-pointer hover:bg-white/5 transition-colors">
             <div className="flex items-center gap-2 mb-2">
-              <span>{goal.icon || '🎯'}</span>
+              <span>{goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'}</span>
               <span className="text-sm font-medium">{goal.name}</span>
             </div>
             <div className="flex items-center gap-3 text-[10px] text-text-secondary mb-2">

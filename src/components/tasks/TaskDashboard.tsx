@@ -133,7 +133,7 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
                   <div className="p-3">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span style={{ color: goal.color || '#A66CFF' }}>{goal.icon || '🎯'}</span>
+                        <span style={{ color: goal.color || '#A66CFF' }}>{goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'}</span>
                         <span className="text-sm font-bold truncate">{goal.name}</span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
