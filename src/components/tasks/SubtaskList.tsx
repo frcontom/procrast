@@ -47,7 +47,7 @@ function buildTree(items: TaskSubtask[]): { node: TaskSubtask; depth: number; ha
   return result
 }
 
-export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onSetDependency, onStartPomodoro }: Props) {
+export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro }: Props) {
   const doneCount = subtasks.filter((s) => s.status === 'completed').length
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
@@ -56,15 +56,22 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onSetDepende
 
   const handleDragStart = (idx: number) => setDragIdx(idx)
   const handleDragOver = (e: React.DragEvent, idx: number) => { e.preventDefault(); setOverIdx(idx) }
-  const handleDrop = (idx: number) => {
+  const handleDrop = (e: React.DragEvent, idx: number) => {
     if (dragIdx === null || dragIdx === idx) return
     const dragged = tree[dragIdx]?.node
     const target = tree[idx]?.node
     if (!dragged || !target) return
 
-    if (onSetDependency) {
-      const newParent = target.id === dragged.depends_on ? null : target.id
-      onSetDependency(dragged.id, newParent)
+    if (e.shiftKey) {
+      if (onSetDependency) {
+        const newParent = target.id === dragged.depends_on ? null : target.id
+        onSetDependency(dragged.id, newParent)
+      }
+    } else if (onReorder) {
+      const flat = tree.map((t) => t.node)
+      const [moved] = flat.splice(dragIdx, 1)
+      flat.splice(idx, 0, moved)
+      onReorder(flat.map((s) => s.id))
     }
 
     setDragIdx(null)
@@ -101,7 +108,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onSetDepende
                   draggable
                   onDragStart={() => handleDragStart(idx)}
                   onDragOver={(e) => handleDragOver(e, idx)}
-                  onDrop={() => handleDrop(idx)}
+                   onDrop={(e) => handleDrop(e, idx)}
                   onDragEnd={handleDragEnd}
                   style={{ marginLeft: depth * 28 }}
                   className={`group rounded-lg border transition-all cursor-grab active:cursor-grabbing ${
