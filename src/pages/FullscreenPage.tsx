@@ -38,6 +38,13 @@ function progressColor(pct: number, state: string): { color: string; label: stri
   return { color: '#22C55E', label: '🏆 Meta' }
 }
 
+function streakEmoji(streak: number): string {
+  if (streak >= 30) return '🔥🔥🔥'
+  if (streak >= 7) return '🔥🔥'
+  if (streak >= 3) return '🔥'
+  return '🔥'
+}
+
 export function FullscreenPage() {
   const navigate = useNavigate()
   const store = useTimerStore()
@@ -49,7 +56,9 @@ export function FullscreenPage() {
   const scoreTimerRef = useRef<number | undefined>(undefined)
   const [streak, setStreak] = useState(0)
   const [xpGained, setXpGained] = useState(0)
+  const [floatXp, setFloatXp] = useState(0)
   const [sessionsToday, setSessionsToday] = useState(0)
+  const [soloMode, setSoloMode] = useState(false)
 
   const pickBg = useCallback(() => {
     setBgIndex((prev) => {
@@ -79,6 +88,20 @@ export function FullscreenPage() {
   }, [])
 
   useEffect(() => {
+    if (state === 'RUNNING' && remainingSeconds <= 10 && remainingSeconds > 0 && !isStopwatch) {
+      const ctx = new AudioContext()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain); gain.connect(ctx.destination)
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(1200, ctx.currentTime)
+      gain.gain.setValueAtTime(0.04, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06)
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.06)
+    }
+  }, [remainingSeconds, state])
+
+  useEffect(() => {
     const handleMove = () => {
       document.body.style.cursor = 'default'
       clearTimeout(cursorTimerRef.current)
@@ -99,6 +122,10 @@ export function FullscreenPage() {
         sessionManager.cancel()
         navigate('/focus')
       }
+      if (e.code === 'KeyH' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault()
+        setSoloMode((v) => !v)
+      }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
@@ -111,6 +138,8 @@ export function FullscreenPage() {
 
   useEffect(() => {
     if (justFinished) {
+      setFloatXp(xpGained)
+      setTimeout(() => setFloatXp(0), 3000)
       scoreTimerRef.current = setTimeout(() => navigate('/focus'), 2500)
     }
     if (justCancelled) {
@@ -163,42 +192,74 @@ export function FullscreenPage() {
         ⛶
       </button>
 
+      <button onClick={() => setSoloMode((v) => !v)}
+        className="fixed top-5 right-16 z-[3] text-white/30 hover:text-white/70 text-xs transition-colors" title="Modo solo círculo (Ctrl+H)">
+        {soloMode ? '🔲' : '◯'}
+      </button>
+
       <div id="fullscreenContent"
-        className="relative z-[2] flex flex-col items-center gap-5 max-w-[650px] w-1/2 pr-10 animate-[fullscreenEnter_500ms_ease]">
+        className={`relative z-[2] flex flex-col items-center gap-5 max-w-[650px] w-1/2 pr-10 animate-[fullscreenEnter_500ms_ease] ${soloMode ? 'opacity-0 pointer-events-none' : ''}`}>
 
         <div id="fullscreenName" className="text-[22px] font-medium text-white/60 text-center min-h-[1.5em] drop-shadow-lg">
           {name}
         </div>
 
-        <div id="fullscreenTimerRingContainer" className="relative w-[360px] h-[360px]">
-          <div id="fullscreenRingTrack"
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: `conic-gradient(${ringColor}18 0deg, ${ringColor}18 360deg)`,
-              WebkitMask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
-              mask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
-            }}
-          />
-          <div id="fullscreenRingFill"
-            className="absolute inset-0 rounded-full transition-all duration-300"
-            style={{
-              background: `conic-gradient(${ringColor} ${Math.max(0.5, pct)}%, rgba(255,255,255,0.04) ${Math.max(0.5, pct)}%)`,
-              WebkitMask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
-              mask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
-              filter: 'drop-shadow(0 0 8px ' + ringColor + '50)',
-            }}
-          />
-          <div id="fullscreenTimer"
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[80px] font-bold drop-shadow-lg transition-opacity duration-300"
-            style={{ color: showScore ? 'rgba(255,255,255,0.2)' : stateColor, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
-            {formatTime(displaySeconds)}
+        {floatXp > 0 && (
+          <div className="text-accent text-xl font-bold animate-[floatUp_2.5s_ease-out] pointer-events-none">
+            +{floatXp} XP
+          </div>
+        )}
+
+        {cycleCount > 0 && (
+          <div className="flex items-center gap-2 text-sm text-white/50">
+            <span>🔄 Ciclo {cycleCount}/{cycleCount}</span>
+            <div className="flex gap-1">
+              {Array.from({ length: cycleCount }, (_, i) => (
+                <div key={i} className={`w-2 h-2 rounded-full ${i < cycleCount ? 'bg-accent' : 'bg-white/10'}`} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {soloMode && <div className="fixed inset-0 bg-black z-[1]" />}
+
+        <div id="fullscreenTimerRingContainer"
+          className="relative"
+          style={soloMode ? { position: 'fixed', inset: 0, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' } : { width: '360px', height: '360px' }}>
+          <div style={soloMode ? { width: 'min(80vw, 80vh)', height: 'min(80vw, 80vh)' } : { width: '100%', height: '100%' }}>
+            <div className="relative w-full h-full">
+              <div id="fullscreenRingTrack"
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: `conic-gradient(${ringColor}18 0deg, ${ringColor}18 360deg)`,
+                  WebkitMask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
+                  mask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
+                }} />
+              <div id="fullscreenRingFill"
+                className="absolute inset-0 rounded-full transition-all duration-300"
+                style={{
+                  background: `conic-gradient(${ringColor} ${Math.max(0.5, pct)}%, rgba(255,255,255,0.04) ${Math.max(0.5, pct)}%)`,
+                  WebkitMask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
+                  mask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
+                  filter: 'drop-shadow(0 0 8px ' + ringColor + '50)',
+                }} />
+              <div id="fullscreenTimer"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[80px] font-bold drop-shadow-lg transition-opacity duration-300"
+                style={{ color: showScore ? 'rgba(255,255,255,0.2)' : stateColor, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
+                {formatTime(displaySeconds)}
+              </div>
+            </div>
           </div>
         </div>
 
         {showBreathing && (
           <div id="fullscreenBreathe" className="flex flex-col items-center gap-5 animate-[breatheFadeIn_0.5s_ease]">
-            <div className="w-20 h-20 rounded-full border-2 border-white/30 animate-[breathe_8s_ease-in-out_infinite]" />
-            <span id="breatheText" className="text-2xl font-light text-white/70 tracking-[4px] uppercase">Inhala · Exhala</span>
+            <div className="w-20 h-20 rounded-full border-2 animate-[breathe_8s_ease-in-out_infinite]"
+              style={{ borderColor: 'rgba(255,255,255,0.3)', boxShadow: '0 0 30px rgba(96,165,250,0.15)' }} />
+            <span id="breatheText" className="text-2xl font-light tracking-[4px] uppercase"
+              style={{ color: 'rgba(255,255,255,0.7)', textShadow: '0 0 20px rgba(96,165,250,0.2)' }}>
+              Inhala · Exhala
+            </span>
           </div>
         )}
 
@@ -227,9 +288,10 @@ export function FullscreenPage() {
 
         {showMiniStats && (
           <div id="fullscreenMiniStats" className="flex items-center gap-0 text-lg text-white/70 animate-[breatheFadeIn_0.3s_ease]">
-            <span className="px-5 border-r border-white/10">🔥 <span id="fsStreak">{streak}</span></span>
+            <span className="px-5 border-r border-white/10">{streakEmoji(streak)} <span id="fsStreak">{streak}</span></span>
             <span className="px-5 border-r border-white/10">⚡ <span id="fsXp">{xpGained}</span> XP</span>
-            <span className="px-5">📊 <span id="fsToday">{sessionsToday}</span> hoy</span>
+            <span className="px-5 border-r border-white/10">📊 <span id="fsToday">{sessionsToday}</span> hoy</span>
+            <span className="px-5">🎯 {sessionsToday}/4 ses</span>
           </div>
         )}
 
@@ -276,6 +338,10 @@ export function FullscreenPage() {
         @keyframes bgFadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
+        }
+        @keyframes floatUp {
+          0% { opacity: 1; transform: translateY(0) scale(1); }
+          100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
         }
       `}</style>
     </div>
