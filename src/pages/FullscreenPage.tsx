@@ -28,14 +28,14 @@ function calculateScore(elapsed: number, total: number, cycleCount: number): num
 }
 
 function progressColor(pct: number, state: string): { color: string; label: string } {
-  if (state === 'PAUSED') return { color: '#FF9F43', label: 'Pausado' }
-  if (state === 'FINISHED') return { color: '#00CFE8', label: 'Completado' }
-  if (state === 'CANCELLED') return { color: '#EA5455', label: 'Cancelado' }
-  if (state === 'IDLE') return { color: '#A8E6CF', label: 'Listo' }
-  if (pct < 25) return { color: '#6B7280', label: 'Inicio' }
-  if (pct < 50) return { color: '#60A5FA', label: 'Mitad' }
-  if (pct < 75) return { color: '#34D399', label: 'Bien' }
-  return { color: '#22C55E', label: '¡Meta!' }
+  if (state === 'PAUSED') return { color: '#FF9F43', label: '⏸' }
+  if (state === 'FINISHED') return { color: '#00CFE8', label: '🎉' }
+  if (state === 'CANCELLED') return { color: '#EA5455', label: '✕' }
+  if (state === 'IDLE') return { color: '#A8E6CF', label: '⚡' }
+  if (pct < 25) return { color: '#6B7280', label: '💪 Empieza' }
+  if (pct < 50) return { color: '#60A5FA', label: '🔥 Vamos' }
+  if (pct < 75) return { color: '#34D399', label: '⚡ Dale' }
+  return { color: '#22C55E', label: '🏆 Meta' }
 }
 
 export function FullscreenPage() {
