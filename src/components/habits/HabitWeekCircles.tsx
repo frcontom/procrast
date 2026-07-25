@@ -42,7 +42,7 @@ export function HabitWeekCircles({ habits, logs }: Props) {
       </div>
       <div className="flex items-start justify-between relative">
         {/* Connecting line */}
-        <div className="absolute top-[18px] left-[8%] right-[8%] h-px bg-white/5" />
+        <div className="absolute top-[21px] left-[8%] right-[8%] h-px bg-white/5" />
         {weekDays.map((d) => {
           let gradient = ''
           let shadow = ''
@@ -87,7 +87,7 @@ export function HabitWeekCircles({ habits, logs }: Props) {
 
           return (
             <div key={d.dateStr} className="flex flex-col items-center gap-1.5 flex-1 relative z-10">
-              <div className={`w-[38px] h-[38px] rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${gradient} ${shadow} ${textColor}`}>
+              <div className={`w-[42px] h-[42px] rounded-full flex items-center justify-center text-base font-bold transition-all duration-300 ${gradient} ${shadow} ${textColor}`}>
                 {d.isToday || d.isPast ? (
                   <span className="drop-shadow-sm">{label}</span>
                 ) : (
