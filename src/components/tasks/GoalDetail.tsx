@@ -77,12 +77,12 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
         </div>
 
         <div id="tk-progress-bar" className="mb-3">
-          <div className="flex items-center justify-between text-xs mb-1">
-            <span className="text-text-secondary">Progreso</span>
-            <span className="text-accent font-medium">{pct}%</span>
-          </div>
-          <div className="w-full bg-secondary rounded-full h-2">
-            <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: `${pct}%` }} />
+          <div className="text-xs text-text-secondary mb-1">Progreso</div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-secondary rounded-full h-2">
+              <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: `${pct}%` }} />
+            </div>
+            <span className="text-xs text-accent font-medium tabular-nums shrink-0">{pct}%</span>
           </div>
         </div>
 
