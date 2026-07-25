@@ -84,8 +84,6 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
             <span className="flex-1">
               <strong>ATRASADO</strong> — Deberías tener <strong>{rhythm.expectedNow}min</strong>, llevas <strong>{totalCompleted}min</strong>. Necesitas <strong>{rhythm.neededDaily}min/día</strong>.
             </span>
-            <button className="shrink-0 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider text-white transition-colors hover:opacity-90"
-              style={{ backgroundColor: '#EA5455' }}>🔒 Activar Lockdown</button>
           </div>
         )}
 
