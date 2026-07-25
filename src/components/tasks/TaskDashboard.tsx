@@ -173,12 +173,12 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
               if (a.status !== b.status) return a.status === 'active' ? -1 : 1
               return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
             }).map((goal) => {
-              const goalPct = goal.estimated_minutes > 0 ? Math.min(100, Math.round((totalFromLinks / goal.estimated_minutes) * 100)) : 0
+              const goalPct = (subtaskMinutes[goal.id] || 0) > 0 ? Math.min(100, Math.round((totalFromLinks / (subtaskMinutes[goal.id] || 1)) * 100)) : 0
               const status = goalPct >= 100 ? 'completed' : goalPct >= 40 ? 'on_track' : 'behind'
               const statusLabel = status === 'completed' ? 'Completado' : status === 'on_track' ? 'Al día' : 'Atrasado'
               const statusColor = status === 'completed' ? '#28C76F' : status === 'on_track' ? '#28C76F' : '#EA5455'
               const daysToDeadline = Math.max(0, Math.round((new Date(goal.deadline).getTime() - Date.now()) / 86400000))
-              const todayGoal = Math.round((subtaskMinutes[goal.id] || goal.estimated_minutes) / Math.max(1, daysToDeadline + 1))
+              const todayGoal = Math.round((subtaskMinutes[goal.id] || 0) / Math.max(1, daysToDeadline + 1))
               return (
                 <div key={goal.id} onClick={() => onSelectGoal(goal.id)}
                   className="bg-card rounded-lg border border-white/10 cursor-pointer hover:border-[var(--accent)] transition-all overflow-hidden"
@@ -198,7 +198,7 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
                       <div className="h-full rounded-full transition-all duration-500" style={{ width: `${goalPct}%`, backgroundColor: statusColor }} />
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-text-secondary">
-                      <span>{subtaskMinutes[goal.id] || goal.estimated_minutes || totalFromLinks}min estimados</span>
+                      <span>{subtaskMinutes[goal.id] || 0}min estimados</span>
                       <span>·</span>
                       <span>{subtaskCounts[goal.id] || 0} tarea(s)</span>
                       <span>·</span>
