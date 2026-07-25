@@ -27,6 +27,17 @@ function calculateScore(elapsed: number, total: number, cycleCount: number): num
   return Math.min(100, base + completion + cycleBonus)
 }
 
+function progressColor(pct: number, state: string): string {
+  if (state === 'PAUSED') return '#FF9F43'
+  if (state === 'FINISHED') return '#00CFE8'
+  if (state === 'CANCELLED') return '#EA5455'
+  if (state === 'IDLE') return '#A8E6CF'
+  if (pct < 33) return '#4CAF50'
+  if (pct < 66) return '#2196F3'
+  if (pct < 90) return '#FF9800'
+  return '#FF6B6B'
+}
+
 export function FullscreenPage() {
   const navigate = useNavigate()
   const store = useTimerStore()
@@ -116,6 +127,8 @@ export function FullscreenPage() {
     state === 'FINISHED' ? '#00CFE8' :
     state === 'CANCELLED' ? '#EA5455' : '#A8E6CF'
 
+  const ringColor = progressColor(pct, state)
+
   const stateLabel = state === 'IDLE' ? 'Listo' :
     state === 'RUNNING' ? 'En curso' :
     state === 'PAUSED' ? 'Pausado' :
@@ -137,7 +150,7 @@ export function FullscreenPage() {
 
   return (
     <div id="fullscreenOverlay" className="fixed inset-0 z-[2000] flex items-center justify-end overflow-hidden bg-black select-none">
-      <div id="fullscreenBg" className="absolute inset-0 bg-cover bg-center transition-all duration-1000 z-0"
+      <div id="fullscreenBg" key={bgIndex} className="absolute inset-0 bg-cover bg-center z-0 animate-[bgFadeIn_1s_ease]"
         style={{ backgroundImage: hasImages ? `url(${images[bgIndex % images.length]})` : GRADIENTS[bgIndex] }} />
 
       <div className="absolute inset-0 bg-black/40 z-[1]" />
@@ -155,26 +168,26 @@ export function FullscreenPage() {
           {name}
         </div>
 
-        <div id="fullscreenTimerRingContainer" className="relative w-[240px] h-[240px]">
+        <div id="fullscreenTimerRingContainer" className="relative w-[360px] h-[360px]">
           <div id="fullscreenRingTrack"
             className="absolute inset-0 rounded-full"
             style={{
-              background: 'conic-gradient(rgba(255,255,255,0.06) 0deg, rgba(255,255,255,0.06) 360deg)',
-              WebkitMask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
-              mask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
+              background: `conic-gradient(${ringColor}18 0deg, ${ringColor}18 360deg)`,
+              WebkitMask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
+              mask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
             }}
           />
           <div id="fullscreenRingFill"
             className="absolute inset-0 rounded-full transition-all duration-300"
             style={{
-              background: `conic-gradient(${stateColor} ${pct}%, transparent ${pct}%)`,
-              WebkitMask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
-              mask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
-              filter: 'drop-shadow(0 0 6px ' + stateColor + '40)',
+              background: `conic-gradient(${ringColor} ${Math.max(0.5, pct)}%, rgba(255,255,255,0.04) ${Math.max(0.5, pct)}%)`,
+              WebkitMask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
+              mask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
+              filter: 'drop-shadow(0 0 8px ' + ringColor + '50)',
             }}
           />
           <div id="fullscreenTimer"
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[52px] font-bold drop-shadow-lg transition-opacity duration-300"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[80px] font-bold drop-shadow-lg transition-opacity duration-300"
             style={{ color: showScore ? 'rgba(255,255,255,0.2)' : stateColor, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
             {formatTime(displaySeconds)}
           </div>
@@ -197,22 +210,24 @@ export function FullscreenPage() {
         )}
 
         <div id="fullscreenProgress" className="w-full h-[3px] bg-white/10 rounded overflow-hidden">
-          <div className="h-full rounded transition-all duration-500 ease" style={{ width: `${Math.min(100, pct)}%`, backgroundColor: stateColor }} />
+          <div className="h-full rounded transition-all duration-500 ease" style={{ width: `${Math.min(100, pct)}%`, backgroundColor: ringColor }} />
         </div>
 
-        <div id="fullscreenInfo" className="flex gap-2 text-sm text-white/50">
+        <div id="fullscreenInfo" className="flex gap-4 text-lg text-white/60">
           <span>{stateLabel}</span>
           <span className="opacity-40">·</span>
           <span>{formatTime(elapsedSeconds)}</span>
           <span className="opacity-40">/</span>
           <span>{formatTime(totalSeconds)}</span>
+          <span className="opacity-40">·</span>
+          <span style={{ color: ringColor }}>{Math.round(pct)}%</span>
         </div>
 
         {showMiniStats && (
-          <div id="fullscreenMiniStats" className="flex gap-4 text-sm text-white/60 animate-[breatheFadeIn_0.3s_ease]">
-            <span>🔥 <span id="fsStreak">{streak}</span></span>
-            <span>⚡ <span id="fsXp">{xpGained}</span> XP</span>
-            <span>📊 <span id="fsToday">{sessionsToday}</span> hoy</span>
+          <div id="fullscreenMiniStats" className="flex items-center gap-0 text-lg text-white/70 animate-[breatheFadeIn_0.3s_ease]">
+            <span className="px-5 border-r border-white/10">🔥 <span id="fsStreak">{streak}</span></span>
+            <span className="px-5 border-r border-white/10">⚡ <span id="fsXp">{xpGained}</span> XP</span>
+            <span className="px-5">📊 <span id="fsToday">{sessionsToday}</span> hoy</span>
           </div>
         )}
 
@@ -225,8 +240,8 @@ export function FullscreenPage() {
               else if (state === 'RUNNING') sessionManager.pause()
               else sessionManager.resume()
             }}
-            className="flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-medium bg-accent hover:bg-[var(--accent-hover)] text-white transition-all active:scale-[0.97] shadow-lg">
-            <span className="text-lg">{state === 'RUNNING' ? '⏸' : '▶'}</span>
+            className="flex items-center gap-2.5 px-10 py-3.5 rounded-xl text-base font-medium bg-[#156390] hover:bg-[#1a7ab5] text-white transition-all active:scale-[0.97] shadow-lg shadow-black/30">
+            <span className="text-xl">{state === 'RUNNING' ? '⏸' : '▶'}</span>
             <span>{primaryLabel}</span>
           </button>
           <button id="fullscreenCancel"
@@ -253,6 +268,10 @@ export function FullscreenPage() {
           50% { transform: scale(1.2); opacity: 1; }
         }
         @keyframes scoreFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes bgFadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }

@@ -130,8 +130,19 @@ export function FocusPage() {
         </div>
       )}
 
-
-
+      {(store.state === 'RUNNING' || store.state === 'PAUSED') && (
+        <>
+          <button onClick={() => navigate('/focus/fullscreen')}
+            className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-card border border-white/10 text-text-secondary hover:text-white hover:border-accent/50 flex items-center justify-center transition-all shadow-lg"
+            title="Pantalla completa (Ctrl+F)">
+            ⛶
+          </button>
+          <button onClick={() => navigate('/focus/fullscreen')}
+            className="w-full bg-card rounded-xl border border-accent/30 text-accent hover:text-white hover:bg-accent/20 p-3 text-sm font-medium transition-colors text-center">
+            ⛶ Pantalla completa
+          </button>
+        </>
+      )}
       <div id="focus-stats-card" className="bg-card rounded-xl border border-white/10 p-4">
         <div id="focus-stats-header" className="flex items-center gap-2 mb-3">
           <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">📊 Stats</span>

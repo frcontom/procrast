@@ -1,6 +1,5 @@
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
-import { Greeting } from './Greeting'
 import { useUIStore } from '../../store/useUIStore'
 
 export function AppLayout() {
@@ -23,7 +22,6 @@ export function AppLayout() {
         </header>
 
         <main className="p-6 w-full">
-          <Greeting />
           <Outlet />
         </main>
       </div>
