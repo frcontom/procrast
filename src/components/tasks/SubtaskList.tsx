@@ -91,9 +91,6 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
 
             return (
               <div key={st.id} className="relative">
-                {depth > 0 && (
-                  <div className="absolute left-[35px] top-0 bottom-0 w-px bg-white/[0.06]" />
-                )}
                 <div
                   draggable
                   onDragStart={() => handleDragStart(idx)}
@@ -109,9 +106,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                 >
                   <div className="px-3 py-2.5">
                     <div className="flex items-start gap-1.5">
-                      {depth > 0 && (
-                        <div className="absolute left-[18px] top-3 w-[18px] h-px bg-white/10" />
-                      )}
+                      {depth > 0 && <div className="w-[18px] shrink-0 self-center border-t border-white/10" />}
                       <span className="mt-1.5 text-text-secondary/20 group-hover:text-text-secondary/40 transition-colors cursor-grab active:cursor-grabbing text-xs select-none shrink-0">⠿</span>
                       <button
                         onClick={() => !isLocked && onToggle(st.id, isDone ? 'pending' : 'completed')}
