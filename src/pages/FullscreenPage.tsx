@@ -296,9 +296,50 @@ export function FullscreenPage() {
           </div>
         )}
 
-        <div id="fullscreenProgress" className="w-full h-[3px] bg-white/10 rounded overflow-hidden">
-          <div className="h-full rounded transition-all duration-500 ease" style={{ width: `${Math.min(100, pct)}%`, backgroundColor: ringColor }} />
-        </div>
+        {/* Segmented progress timeline */}
+        {totalSeconds > 0 && (() => {
+          const idealSegments = Math.max(1, Math.round(totalSeconds / 1500))
+          const segCount = Math.min(12, Math.max(2, idealSegments))
+          const segSeconds = totalSeconds / segCount
+          return (
+            <div id="fullscreenProgress" className="w-full flex gap-1.5 items-end">
+              {Array.from({ length: segCount }).map((_, i) => {
+                const segStart = i * segSeconds
+                const segEnd = (i + 1) * segSeconds
+                const filled = Math.max(0, Math.min(1, (elapsedSeconds - segStart) / segSeconds))
+                const isComplete = elapsedSeconds >= segEnd
+                const isCurrent = elapsedSeconds >= segStart && elapsedSeconds < segEnd
+                const pctInSeg = Math.round(filled * 100)
+                let icon = ''
+                let label = ''
+                if (isComplete) { icon = '✅'; label = 'Listo' }
+                else if (isCurrent) { icon = '⏳'; label = `${pctInSeg}%` }
+                else { icon = '🔮'; label = '' }
+                const eta = Math.max(0, Math.ceil((totalSeconds - elapsedSeconds) / 60))
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                    <div className={`w-full h-[8px] rounded-full transition-all duration-500 relative overflow-hidden ${
+                      isComplete ? 'bg-accent' : isCurrent ? 'bg-white/10' : 'bg-white/[0.04]'
+                    }`}>
+                      {isCurrent && (
+                        <div className="absolute inset-0 rounded-full transition-all duration-300"
+                          style={{ width: `${filled * 100}%`, background: 'linear-gradient(90deg, #A66CFF, #b388ff)' }} />
+                      )}
+                    </div>
+                    {i === 0 && <span className="text-[8px] text-text-secondary/40 mt-0.5">🏁 Salida</span>}
+                    {i === segCount - 1 && <span className="text-[8px] text-text-secondary/40 mt-0.5">🏆 Meta · {icon}</span>}
+                    {isCurrent && i !== 0 && i !== segCount - 1 && (
+                      <span className="text-[8px] text-accent/60 font-medium mt-0.5">{label}</span>
+                    )}
+                    {isComplete && i !== 0 && i !== segCount - 1 && (
+                      <span className="text-[8px] text-success/40 mt-0.5">✅</span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()}
 
         <div id="fullscreenInfo" className="flex gap-4 text-lg text-white/60">
           <span>{stateLabel}</span>
