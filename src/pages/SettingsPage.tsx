@@ -40,9 +40,8 @@ export function SettingsPage() {
 
       <TimerSettings
         workMinutes={timerConfig.workMinutes}
-        shortBreakMinutes={timerConfig.shortBreakMinutes}
-        longBreakMinutes={timerConfig.longBreakMinutes}
-        onChange={setTimerConfig}
+        breakMinutes={timerConfig.breakMinutes}
+        onChange={(c) => setTimerConfig({ workMinutes: c.workMinutes, breakMinutes: c.breakMinutes })}
       />
 
       <ThemeSettings />

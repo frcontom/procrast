@@ -29,7 +29,7 @@ export function initTimerEngine() {
       // Guardar duracion original del trabajo antes del descanso
       st.setWorkDuration(st.durationMinutes)
       const settings = useSettingsStore.getState()
-      const breakMinutes = settings.timerConfig.shortBreakMinutes
+      const breakMinutes = settings.timerConfig.breakMinutes
 
       st.setPhase('short_break')
       st.setDuration(breakMinutes)
