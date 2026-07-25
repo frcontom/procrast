@@ -27,7 +27,6 @@ export function DashboardPage() {
   const totalMinutes = Math.round(sessions.reduce((a, s) => a + (s.elapsed_seconds || 0) / 60, 0))
   const completionRate = sessions.length > 0 ? Math.round((completed / sessions.length) * 100) : 0
 
-  // Mejor día de la semana
   const dayTotals: Record<number, number> = {}
   sessions.forEach((s) => {
     if (!s.started_at) return
@@ -39,7 +38,6 @@ export function DashboardPage() {
   const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
   const bestDayName = bestDay ? dayNames[Number(bestDay[0])] : '—'
 
-  // Racha actual (días consecutivos con al menos 1 sesión completada)
   const streakDays = useMemo(() => {
     const doneDays = new Set(
       sessions.filter((s) => s.state === 'completed' && s.started_at)
@@ -57,72 +55,99 @@ export function DashboardPage() {
     return streak
   }, [sessions])
 
-  // Promedio de minutos por sesión completada
   const avgMinutes = completed > 0 ? Math.round(totalMinutes / completed) : 0
 
   return (
     <div className="space-y-6">
       <Greeting />
 
-      {/* Stats grid */}
+      {/* Stats Grid Futuristico */}
       <div className="grid grid-cols-5 gap-3">
-        <div className="bg-card rounded-xl border border-white/10 p-4 text-center">
-          <div className="text-2xl font-bold text-accent">{sessions.length}</div>
-          <div className="text-[10px] text-text-secondary uppercase tracking-wider mt-1">Sesiones</div>
-        </div>
-        <div className="bg-card rounded-xl border border-white/10 p-4 text-center">
-          <div className="text-2xl font-bold text-[#28C76F]">{completed}</div>
-          <div className="text-[10px] text-text-secondary uppercase tracking-wider mt-1">Completadas</div>
-        </div>
-        <div className="bg-card rounded-xl border border-white/10 p-4 text-center">
-          <div className="text-2xl font-bold text-[#EA5455]">{cancelled}</div>
-          <div className="text-[10px] text-text-secondary uppercase tracking-wider mt-1">Canceladas</div>
-        </div>
-        <div className="bg-card rounded-xl border border-white/10 p-4 text-center">
-          <div className="text-2xl font-bold text-[#00BCD4]">{totalMinutes}</div>
-          <div className="text-[10px] text-text-secondary uppercase tracking-wider mt-1">Minutos</div>
-        </div>
-        <div className="bg-card rounded-xl border border-white/10 p-4 text-center">
-          <div className={`text-2xl font-bold ${completionRate >= 70 ? 'text-[#28C76F]' : completionRate >= 40 ? 'text-[#FF9800]' : 'text-[#EA5455]'}`}>{completionRate}%</div>
-          <div className="text-[10px] text-text-secondary uppercase tracking-wider mt-1">Tasa</div>
-        </div>
+        {[
+          { label: 'Sesiones', value: sessions.length, icon: '⚡', color: '#A66CFF', gradient: 'from-[#A66CFF]/20 to-[#A66CFF]/5' },
+          { label: 'Completadas', value: completed, icon: '✅', color: '#28C76F', gradient: 'from-[#28C76F]/20 to-[#28C76F]/5' },
+          { label: 'Canceladas', value: cancelled, icon: '✕', color: '#EA5455', gradient: 'from-[#EA5455]/20 to-[#EA5455]/5' },
+          { label: 'Minutos', value: totalMinutes, icon: '⏱', color: '#00BCD4', gradient: 'from-[#00BCD4]/20 to-[#00BCD4]/5' },
+          { label: 'Tasa', value: `${completionRate}%`, icon: '🎯', color: completionRate >= 70 ? '#28C76F' : completionRate >= 40 ? '#FF9800' : '#EA5455', gradient: `from-[${completionRate >= 70 ? '#28C76F' : completionRate >= 40 ? '#FF9800' : '#EA5455'}]/20 to-[${completionRate >= 70 ? '#28C76F' : completionRate >= 40 ? '#FF9800' : '#EA5455'}]/5` },
+        ].map((s) => (
+          <div key={s.label} className="relative rounded-2xl border border-white/[0.06] overflow-hidden group hover:border-white/20 transition-all duration-300"
+            style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))', backdropFilter: 'blur(12px)' }}>
+            <div className={`absolute inset-0 bg-gradient-to-b ${s.gradient} opacity-50`} />
+            <div className="relative p-4 text-center">
+              <div className="text-lg mb-1">{s.icon}</div>
+              <div className="text-2xl font-bold tracking-tight" style={{ color: s.color }}>{s.value}</div>
+              <div className="text-[9px] text-text-secondary/60 uppercase tracking-wider mt-1 font-medium">{s.label}</div>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${s.color}40, transparent)` }} />
+          </div>
+        ))}
       </div>
 
-      {/* Second row: highlights */}
+      {/* Highlights Futuristico */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div className="bg-card rounded-xl border border-white/10 p-4 text-center">
-          <div className="text-sm text-text-secondary mb-1">🔥 Racha actual</div>
-          <div className="text-3xl font-bold text-[#FF9800]">{streakDays}</div>
-          <div className="text-[10px] text-text-secondary/60 mt-0.5">días seguidos</div>
-        </div>
-        <div className="bg-card rounded-xl border border-white/10 p-4 text-center">
-          <div className="text-sm text-text-secondary mb-1">⚡ Promedio</div>
-          <div className="text-3xl font-bold text-accent">{avgMinutes}</div>
-          <div className="text-[10px] text-text-secondary/60 mt-0.5">min / sesión</div>
-        </div>
-        <div className="bg-card rounded-xl border border-white/10 p-4 text-center">
-          <div className="text-sm text-text-secondary mb-1">🏆 Mejor día</div>
-          <div className="text-3xl font-bold text-[#00BCD4]">{bestDay ? Math.round(Number(bestDay[1])) : 0}</div>
-          <div className="text-[10px] text-text-secondary/60 mt-0.5">{bestDayName}</div>
-        </div>
+        {[
+          { label: 'Racha actual', value: streakDays, unit: 'días', icon: '🔥', color: '#FF9800', glow: 'rgba(255,152,0,0.3)' },
+          { label: 'Promedio', value: avgMinutes, unit: 'min/sesión', icon: '⚡', color: '#A66CFF', glow: 'rgba(166,108,255,0.3)' },
+          { label: 'Mejor día', value: bestDay ? Math.round(Number(bestDay[1])) : 0, unit: bestDayName, icon: '🏆', color: '#00BCD4', glow: 'rgba(0,188,212,0.3)' },
+        ].map((h) => (
+          <div key={h.label} className="relative rounded-2xl border border-white/[0.06] p-4 overflow-hidden group hover:border-white/20 transition-all duration-300"
+            style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))', backdropFilter: 'blur(12px)' }}>
+            <div className="absolute -top-12 -right-12 w-24 h-24 rounded-full opacity-10 group-hover:opacity-20 transition-opacity" style={{ backgroundColor: h.color, boxShadow: `0 0 60px ${h.glow}` }} />
+            <div className="relative flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{ backgroundColor: h.color + '20' }}>{h.icon}</div>
+              <div>
+                <div className="text-[10px] text-text-secondary/60 uppercase tracking-wider font-medium">{h.label}</div>
+                <div className="text-xl font-bold text-white">{h.value} <span className="text-xs font-normal text-text-secondary/60">{h.unit}</span></div>
+              </div>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${h.color}40, transparent)` }} />
+          </div>
+        ))}
         <ProductivityScore completed={completed} total={sessions.length} totalMinutes={totalMinutes} />
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FocusChart sessions={sessions} />
-        <MonthlyTrend sessions={sessions} />
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="rounded-2xl border border-white/[0.06] p-4"
+          style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))', backdropFilter: 'blur(12px)' }}>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-text-secondary/60 mb-3">📊 Enfoque semanal</div>
+          <FocusChart sessions={sessions} />
+        </div>
+        <div className="rounded-2xl border border-white/[0.06] p-4"
+          style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))', backdropFilter: 'blur(12px)' }}>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-text-secondary/60 mb-3">📈 Tendencia mensual</div>
+          <MonthlyTrend sessions={sessions} />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ActivityBreakdown sessions={sessions} />
-        <WeeklyRanking sessions={sessions} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="rounded-2xl border border-white/[0.06] p-4"
+          style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))', backdropFilter: 'blur(12px)' }}>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-text-secondary/60 mb-3">📅 Actividad por día</div>
+          <ActivityBreakdown sessions={sessions} />
+        </div>
+        <div className="rounded-2xl border border-white/[0.06] p-4"
+          style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))', backdropFilter: 'blur(12px)' }}>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-text-secondary/60 mb-3">🏆 Ranking semanal</div>
+          <WeeklyRanking sessions={sessions} />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <GamificationPanel />
-        <DailyGoals />
-        <RecentActivity sessions={sessions} />
+      {/* Bottom row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="rounded-2xl border border-white/[0.06] p-4"
+          style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))', backdropFilter: 'blur(12px)' }}>
+          <GamificationPanel />
+        </div>
+        <div className="rounded-2xl border border-white/[0.06] p-4"
+          style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))', backdropFilter: 'blur(12px)' }}>
+          <DailyGoals />
+        </div>
+        <div className="rounded-2xl border border-white/[0.06] p-4"
+          style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))', backdropFilter: 'blur(12px)' }}>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-text-secondary/60 mb-3">📋 Actividad reciente</div>
+          <RecentActivity sessions={sessions} />
+        </div>
       </div>
     </div>
   )
