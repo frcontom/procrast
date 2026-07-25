@@ -5,6 +5,7 @@ import { FocusPage } from './pages/FocusPage'
 import { TasksPage } from './pages/TasksPage'
 import { HabitsPage } from './pages/HabitsPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { AnalyticsPage } from './pages/AnalyticsPage'
 import { KnowledgePage } from './pages/KnowledgePage'
 import { IdentityPage } from './pages/IdentityPage'
 import { CoachPage } from './pages/CoachPage'
@@ -29,6 +30,7 @@ const router = createBrowserRouter([
       { path: 'focus', element: <FocusPage /> },
       { path: 'tasks', element: <TasksPage /> },
       { path: 'habits', element: <HabitsPage /> },
+      { path: 'analytics', element: <AnalyticsPage /> },
       { path: 'knowledge', element: <KnowledgePage /> },
       { path: 'identity', element: <IdentityPage /> },
       { path: 'coach', element: <CoachPage /> },
