@@ -47,7 +47,7 @@ function buildTree(items: TaskSubtask[]): { node: TaskSubtask; depth: number; ha
   return result
 }
 
-export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro }: Props) {
+export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onSetDependency, onStartPomodoro }: Props) {
   const doneCount = subtasks.filter((s) => s.status === 'completed').length
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
