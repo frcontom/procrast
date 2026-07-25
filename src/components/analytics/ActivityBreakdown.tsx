@@ -35,8 +35,7 @@ export function ActivityBreakdown({ sessions }: Props) {
   if (types.length === 0) return null
 
   return (
-    <div className="bg-card rounded-xl border border-white/10 p-4">
-      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-4">Por actividad</h3>
+    <div>
       <div className="flex items-center gap-4">
         <div className="w-32 h-32">
           <Doughnut

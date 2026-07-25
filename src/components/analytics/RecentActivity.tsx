@@ -16,8 +16,7 @@ export function RecentActivity({ sessions }: Props) {
   }
 
   return (
-    <div className="bg-card rounded-xl border border-white/10 p-4">
-      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-4">Actividad Reciente</h3>
+    <div>
       <div className="space-y-1 max-h-72 overflow-y-auto">
         {recent.map((s: any, i: number) => (
           <div key={s.id || i}

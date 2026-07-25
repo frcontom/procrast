@@ -17,8 +17,7 @@ export function MonthlyTrend({ sessions }: Props) {
   const data = labels.map((m) => Math.round(months[m]))
 
   return (
-    <div className="bg-card rounded-xl border border-white/10 p-4">
-      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-4">Tendencia Mensual</h3>
+    <div>
       <Line
         data={{
           labels: labels.map((m) => {

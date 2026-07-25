@@ -28,8 +28,7 @@ export function WeeklyRanking({ sessions }: Props) {
   const maxMinutes = Math.max(...ranking.map((r) => r.minutes))
 
   return (
-    <div className="bg-card rounded-xl border border-white/10 p-4">
-      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-4">Ranking Semanal</h3>
+    <div>
       <div className="space-y-2">
         {ranking.map((r, i) => (
           <div key={r.day} className="flex items-center gap-3">
