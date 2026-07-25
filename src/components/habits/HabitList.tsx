@@ -101,9 +101,9 @@ export function HabitList({ habits, logs, daysInMonth, onDelete, onRename }: Pro
               {trend === 'up' ? <span className="text-[#28C76F]">📈</span> : trend === 'down' ? <span className="text-[#EA5455]">📉</span> : <span className="text-text-secondary/60">📊</span>}
             </span>
 
-            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => startEdit(habit)} className="w-6 h-6 flex items-center justify-center rounded text-xs text-text-secondary/40 hover:text-white hover:bg-white/5 transition-all" title="Editar">✏️</button>
-              <button onClick={() => onDelete(habit.id)} className="w-6 h-6 flex items-center justify-center rounded text-xs text-danger/30 hover:text-danger hover:bg-danger/5 transition-all" title="Eliminar">🗑️</button>
+            <div className="flex items-center gap-1 shrink-0">
+              <button onClick={() => startEdit(habit)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Editar">✏️</button>
+              <button onClick={() => onDelete(habit.id)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-danger/50 hover:bg-danger/10 hover:border-danger/30 hover:text-danger transition-all" title="Eliminar">🗑️</button>
             </div>
           </div>
         )
