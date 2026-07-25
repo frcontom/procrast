@@ -7,10 +7,17 @@ export function AppLayout() {
   const toggleSidebar = useUIStore((s) => s.toggleSidebar)
   const sidebarOpen = useUIStore((s) => s.sidebarOpen)
   const [clock, setClock] = useState('')
+  const [dayIcon, setDayIcon] = useState('')
 
   useEffect(() => {
     const update = () => {
-      setClock(new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' }))
+      const now = new Date()
+      setClock(now.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' }))
+      const h = now.getHours()
+      if (h >= 6 && h < 12) setDayIcon('☀️')
+      else if (h >= 12 && h < 18) setDayIcon('🌤️')
+      else if (h >= 18 && h < 22) setDayIcon('🌆')
+      else setDayIcon('🌙')
     }
     update()
     const id = setInterval(update, 1000)
@@ -30,7 +37,7 @@ export function AppLayout() {
             ☰
           </button>
           <span className="text-sm text-text-secondary">Férreo — Focus Mode</span>
-          <span className="ml-auto text-xs text-text-secondary/60 tabular-nums">{clock}</span>
+          <span className="ml-auto text-xs text-text-secondary/60 tabular-nums">{dayIcon} {clock}</span>
         </header>
 
         <main className="p-6 w-full">
