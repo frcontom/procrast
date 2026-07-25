@@ -115,6 +115,16 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
         </div>
       </div>
 
+      <div id="tk-calendar" className="bg-card rounded-xl border border-white/10 p-4">
+        <HexCalendar
+          startDate={goal.start_date || goal.created_at.slice(0, 10)}
+          deadline={goal.deadline}
+          estimatedMinutes={totalEstimated}
+          completedMinutes={totalCompleted}
+          subtaskDays={subtaskDays}
+        />
+      </div>
+
       <div id="tk-subtasks" className="bg-card rounded-xl border border-white/10 p-4">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">Subtareas ({doneCount}/{subtasks.length})</span>
@@ -123,17 +133,6 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
 
         <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} />
         <SubtaskForm onSave={onAddSubtask} onImport={onImportSubtasks} />
-      </div>
-
-      <div id="tk-calendar" className="bg-card rounded-xl border border-white/10 p-4">
-        <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">📅 Calendario</span>
-        <HexCalendar
-          startDate={goal.start_date || goal.created_at.slice(0, 10)}
-          deadline={goal.deadline}
-          estimatedMinutes={totalEstimated}
-          completedMinutes={totalCompleted}
-          subtaskDays={subtaskDays}
-        />
       </div>
 
       {goal.notes && (
