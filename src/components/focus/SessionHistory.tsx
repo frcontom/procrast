@@ -18,6 +18,15 @@ const FAIL_PHRASES = [
   'Mañana es otro día', 'Levántate y sigue',
 ]
 
+function timeAgo(dateStr: string): string {
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
+  if (diff < 60) return 'justo ahora'
+  if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`
+  if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`
+  if (diff < 604800) return `hace ${Math.floor(diff / 86400)} d`
+  return new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+}
+
 function pickPhrase(id: string, list: string[]): string {
   let hash = 0
   for (let i = 0; i < id.length; i++) hash = ((hash << 5) - hash) + id.charCodeAt(i)
@@ -138,11 +147,7 @@ export function SessionHistory() {
                       {s.session_name && <span className="truncate text-text-secondary">· {s.session_name}</span>}
                     </div>
                     <div className="flex items-center gap-1.5 text-[10px] text-text-secondary/60 mt-0.5 flex-wrap">
-                      <span suppressHydrationWarning>
-                        {new Date(s.started_at).toLocaleDateString('es-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                      <span className="text-text-secondary">·</span>
-                      <span className="text-text-secondary">{s.duration_minutes}min</span>
+                      <span>{s.duration_minutes}min</span>
                       {s.elapsed_seconds > 0 && (
                         <>
                           <span className="text-text-secondary">·</span>
@@ -153,11 +158,8 @@ export function SessionHistory() {
                       )}
                     </div>
                   </div>
-                  <div className="w-12 shrink-0">
-                    <div className="w-full bg-secondary rounded-full h-1">
-                      <div className={`h-full rounded-full transition-all ${isCompleted ? 'bg-accent' : 'bg-danger/50'}`}
-                        style={{ width: `${pct}%` }} />
-                    </div>
+                  <div className="text-[10px] text-text-secondary/50 shrink-0 whitespace-nowrap">
+                    {timeAgo(s.started_at)}
                   </div>
                 </div>
               )
