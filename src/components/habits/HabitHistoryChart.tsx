@@ -2,37 +2,55 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase/client'
 import { useUser } from '../../supabase/auth'
 
-interface MonthData {
-  year: number
-  month: number
+interface WindowData {
   label: string
   pct: number
   daysWithLogs: number
-  daysInMonth: number
+  daysInWindow: number
 }
 
 export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
   const user = useUser()
-  const [data, setData] = useState<MonthData[]>([])
+  const [data, setData] = useState<WindowData[]>([])
   const now = new Date()
 
   useEffect(() => {
     if (!user || habitsLength === 0) return
-    const months: MonthData[] = []
+    const windows: WindowData[] = []
+    // 12 ventanas de 30 días, cada una empezando 30 días antes que la anterior
     for (let i = 0; i < 12; i++) {
-      const d = new Date(now.getFullYear(), i, 1)
-      const daysInMonth = new Date(now.getFullYear(), i + 1, 0).getDate()
-      months.push({ year: d.getFullYear(), month: i + 1, label: d.toLocaleDateString('es-ES', { month: 'short' }), pct: 0, daysWithLogs: 0, daysInMonth })
+      windows.push({
+        label: new Date(now.getFullYear(), now.getMonth() - i, 1).toLocaleDateString('es-ES', { month: 'short' }),
+        daysWithLogs: 0,
+        daysInWindow: 30,
+        pct: 0,
+      })
     }
-    const firstStart = months[0]
-    const lastEnd = months[months.length - 1]
-    supabase.from('habit_logs').select('date').eq('user_id', user.id).gte('date', `${firstStart.year}-${String(firstStart.month).padStart(2, '0')}-01`).lte('date', `${lastEnd.year}-${String(lastEnd.month).padStart(2, '0')}-31`).then(({ data: logs }: any) => {
+    supabase.from('habit_logs').select('date').eq('user_id', user.id).gte('date', `${now.getFullYear()}-01-01`).then(({ data: logs }: any) => {
       if (logs) {
-        months.forEach((m) => {
-          m.daysWithLogs = new Set(logs.filter((l: any) => l.date.startsWith(`${m.year}-${String(m.month).padStart(2, '0')}`)).map((l: any) => l.date)).size
-          m.pct = Math.round((m.daysWithLogs / m.daysInMonth) * 100)
+        windows.forEach((w, i) => {
+          if (i === 0) {
+            // Ventana actual: desde hace 30 días hasta hoy
+            const start = new Date(now)
+            start.setDate(now.getDate() - 29)
+            const days = Math.ceil((now.getTime() - start.getTime()) / 86400000) + 1
+            w.daysInWindow = days
+            const endStr = now.toISOString().slice(0, 10)
+            const startStr = start.toISOString().slice(0, 10)
+            w.daysWithLogs = new Set(logs.filter((l: any) => l.date >= startStr && l.date <= endStr).map((l: any) => l.date)).size
+          } else {
+            // Ventanas anteriores: mes completo hacia atrás
+            const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0)
+            const start = new Date(end)
+            start.setDate(end.getDate() - 29)
+            w.daysInWindow = 30
+            const startStr = start.toISOString().slice(0, 10)
+            const endStr = end.toISOString().slice(0, 10)
+            w.daysWithLogs = new Set(logs.filter((l: any) => l.date >= startStr && l.date <= endStr).map((l: any) => l.date)).size
+          }
+          w.pct = Math.round((w.daysWithLogs / w.daysInWindow) * 100)
         })
-        setData([...months])
+        setData([...windows])
       }
     })
   }, [user, habitsLength])
@@ -43,23 +61,20 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
   return (
     <div>
       <div className="flex gap-2 mb-1">
-        {data.map((m) => {
-          const isCurrent = m.year === now.getFullYear() && m.month === now.getMonth() + 1
-          return (
-            <div key={m.label} className="flex-1 text-center">
-              <span className={`text-[10px] font-bold tabular-nums ${isCurrent ? 'text-[#28C76F]' : 'text-text-secondary/50'}`}>
-                {m.daysWithLogs || '0'}/{m.daysInMonth || '0'}
-              </span>
-            </div>
-          )
-        })}
+        {data.map((w) => (
+          <div key={w.label} className="flex-1 text-center">
+            <span className="text-[10px] font-bold tabular-nums text-text-secondary/50">
+              {w.daysWithLogs}/{w.daysInWindow}
+            </span>
+          </div>
+        ))}
       </div>
       <div className="flex items-end gap-2" style={{ height: 100 }}>
-        {data.map((m) => {
-          const isCurrent = m.year === now.getFullYear() && m.month === now.getMonth() + 1
-          const h = Math.max(6, (m.pct / maxPct) * 100)
+        {data.map((w, i) => {
+          const isCurrent = i === 0
+          const h = Math.max(6, (w.pct / maxPct) * 100)
           return (
-            <div key={m.label} className="flex-1 flex flex-col items-center justify-end gap-0.5">
+            <div key={w.label} className="flex-1 flex flex-col items-center justify-end gap-0.5">
               <div
                 className="w-full rounded-t transition-all"
                 style={{
@@ -68,7 +83,7 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
                   boxShadow: isCurrent ? '0 0 8px rgba(40,199,111,0.4)' : 'none',
                 }}
               />
-              <span className={`text-[10px] ${isCurrent ? 'text-white font-bold' : 'text-text-secondary/60'}`}>{m.label}</span>
+              <span className={`text-[10px] ${isCurrent ? 'text-white font-bold' : 'text-text-secondary/60'}`}>{w.label}</span>
             </div>
           )
         })}
