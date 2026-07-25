@@ -16,19 +16,19 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
 
   useEffect(() => {
     if (!user) return
-    supabase.from('sessions').select('*').eq('user_id', user.id).eq('state', 'completed').order('started_at', { ascending: false }).limit(100).then(({ data }: any) => {
+    supabase.from('task_pomodoro_links').select('*').eq('user_id', user.id).order('date', { ascending: false }).limit(200).then(({ data }: any) => {
       if (data) setSessions(data)
     })
   }, [user])
 
   const totalEstimated = goals.reduce((a, g) => a + g.estimated_minutes, 0)
-  const totalCompleted = goals.reduce((a, g) => a + (g as any).completed_minutes || 0, 0)
-  const pct = totalEstimated > 0 ? Math.min(100, Math.round((totalCompleted / totalEstimated) * 100)) : 0
+  const totalFromLinks = sessions.reduce((a: number, l: any) => a + (l.minutes || 0), 0)
+  const pct = totalEstimated > 0 ? Math.min(100, Math.round((totalFromLinks / totalEstimated) * 100)) : 0
   const pctColor = pct >= 80 ? '#28C76F' : pct >= 40 ? '#FF9F43' : '#A66CFF'
 
   const today = new Date().toISOString().slice(0, 10)
-  const todaySessions = sessions.filter((s: any) => s.started_at?.slice(0, 10) === today)
-  const todayMin = Math.round(todaySessions.reduce((a: number, s: any) => a + (s.elapsed_seconds || 0) / 60, 0))
+  const todaySessions = sessions.filter((s: any) => s.date === today)
+  const todayMin = todaySessions.reduce((a: number, s: any) => a + (s.minutes || 0), 0)
   const goalTodayMin = 60
   const todayPct = Math.min(100, Math.round((todayMin / Math.max(1, goalTodayMin)) * 100))
   const todayColor = todayMin >= goalTodayMin ? '#28C76F' : todayPct >= 50 ? '#FF9F43' : '#EA5455'
@@ -41,7 +41,7 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
     const d = new Date(sunday)
     d.setDate(sunday.getDate() + i)
     const ds = d.toISOString().slice(0, 10)
-    return Math.round(sessions.filter((s: any) => s.started_at?.slice(0, 10) === ds).reduce((a: number, s: any) => a + (s.elapsed_seconds || 0) / 60, 0))
+    return sessions.filter((s: any) => s.date === ds).reduce((a: number, s: any) => a + (s.minutes || 0), 0)
   })
   const maxVal = Math.max(...weekData, 1)
   const totalWeek = weekData.reduce((a, v) => a + v, 0)
@@ -74,7 +74,7 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
             <div id="task-progreso-global" className="bg-card rounded-xl border border-white/10 p-5 text-center">
               <div id="task-pg-label" className="text-[10px] uppercase tracking-[1px] text-text-secondary mb-2">PROGRESO GLOBAL</div>
               <div id="task-pg-number" className="text-[44px] font-extrabold leading-none" style={{ color: pctColor }}>{pct}%</div>
-              <div id="task-pg-minutes" className="text-xs text-text-secondary mt-1">{totalCompleted} / {totalEstimated} min</div>
+              <div id="task-pg-minutes" className="text-xs text-text-secondary mt-1">{totalFromLinks} / {totalEstimated} min</div>
               <div id="task-pg-bar" className="w-full bg-secondary rounded-full h-[6px] mt-3 overflow-hidden">
                 <div id="task-pg-bar-fill" className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: pctColor }} />
               </div>
@@ -200,8 +200,8 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
               <div className="space-y-1.5">
                 {sessions.slice(0, 5).map((s: any) => (
                   <div key={s.id} className="flex items-center justify-between text-xs py-1">
-                    <span className="text-text-secondary">◆ {s.activity_type || 'focus'} {s.session_name ? `→ ${s.session_name}` : ''}</span>
-                    <span className="text-text-secondary/60">{Math.round((s.elapsed_seconds || 0) / 60)}min · {new Date(s.started_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>
+                    <span className="text-text-secondary">◆ {s.subtask_name || s.activity_type || 'tarea'} → {s.subtask_name || ''}</span>
+                    <span className="text-text-secondary/60">{s.minutes || 0}min · {s.date ? new Date(s.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : ''}</span>
                   </div>
                 ))}
               </div>
