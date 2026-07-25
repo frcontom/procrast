@@ -381,22 +381,22 @@ export function FullscreenPage() {
           )
         })()}
 
-        <div id="fullscreenInfo" className="flex gap-4 text-lg text-white/60">
+        <div id="fullscreenInfo" className="flex gap-4 text-lg text-white font-medium">
           <span>{stateLabel}</span>
-          <span className="opacity-40">·</span>
+          <span className="text-white/20">·</span>
           <span>{formatTime(elapsedSeconds)}</span>
-          <span className="opacity-40">/</span>
+          <span className="text-white/20">/</span>
           <span>{formatTime(totalSeconds)}</span>
-          <span className="opacity-40">·</span>
-          <span style={{ color: ringColor }}>{Math.round(pct)}% <span className="text-white/40 text-sm">{progressLabel}</span></span>
+          <span className="text-white/20">·</span>
+          <span style={{ color: ringColor }}>{Math.round(pct)}% <span className="text-white/60 text-sm">{progressLabel}</span></span>
         </div>
 
         {showMiniStats && (
-          <div id="fullscreenMiniStats" className="flex items-center gap-0 text-lg text-white/70 animate-[breatheFadeIn_0.3s_ease]">
-            <span className="px-5 border-r border-white/10">{streakEmoji(streak)} <span id="fsStreak">{streak}</span></span>
-            <span className="px-5 border-r border-white/10">⚡ <span id="fsXp">{xpGained}</span> XP</span>
-            <span className="px-5 border-r border-white/10">📊 <span id="fsToday">{sessionsToday}</span> hoy</span>
-            {cycleTotal > 0 && <span className="px-5">🔄 {cycleCount}/{cycleTotal}</span>}
+          <div id="fullscreenMiniStats" className="flex items-center gap-0 text-base text-white mt-2 animate-[breatheFadeIn_0.3s_ease]">
+            <span className="px-4 border-r border-white/10">{streakEmoji(streak)} <span id="fsStreak">{streak}</span></span>
+            <span className="px-4 border-r border-white/10">⚡ <span id="fsXp">{xpGained}</span> XP</span>
+            <span className="px-4 border-r border-white/10">📊 <span id="fsToday">{sessionsToday}</span> hoy</span>
+            {cycleTotal > 0 && <span className="px-4">🔄 {cycleCount}/{cycleTotal}</span>}
           </div>
         )}
 
