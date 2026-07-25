@@ -24,11 +24,11 @@ export function HabitForm({ onSave, onClose }: Props) {
             className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent text-white"
             autoFocus required />
 
-          <div className="flex gap-2">
-            <button type="submit" className="flex-1 bg-accent hover:opacity-90 text-white py-2 rounded-lg text-xs font-medium transition-all">
-              Crear hábito
+          <div className="flex gap-2.5">
+            <button type="submit" className="flex-1 px-4 py-2.5 rounded-xl text-xs font-semibold bg-accent hover:bg-[var(--accent-hover)] text-white transition-all active:scale-[0.97] shadow-lg shadow-accent/20">
+              + Crear
             </button>
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-xs font-medium bg-secondary hover:bg-white/10 text-text-secondary hover:text-white transition-all">
+            <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl text-xs font-medium border border-white/10 text-text-secondary hover:text-white hover:border-white/30 hover:bg-white/5 transition-all active:scale-[0.97]">
               Cancelar
             </button>
           </div>
