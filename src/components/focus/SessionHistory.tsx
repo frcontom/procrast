@@ -147,6 +147,8 @@ export function SessionHistory() {
                       {s.session_name && <span className="truncate text-text-secondary">· {s.session_name}</span>}
                     </div>
                     <div className="flex items-center gap-1.5 text-[10px] text-text-secondary/60 mt-0.5 flex-wrap">
+                      <span>{new Date(s.started_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="text-text-secondary">·</span>
                       <span>{s.duration_minutes}min</span>
                       {s.elapsed_seconds > 0 && (
                         <>
