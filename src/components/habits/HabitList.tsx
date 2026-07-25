@@ -34,13 +34,6 @@ function getTrend(habitId: string, logs: HabitLog[], daysInMonth: number): 'up' 
   return 'stable'
 }
 
-function getHabitColor(name: string): string {
-  const palette = ['#A66CFF', '#FF6B6B', '#4CAF50', '#FF9800', '#00BCD4', '#E91E63', '#8BC34A', '#FF5722', '#3F51B5', '#009688', '#FFEB3B', '#795548', '#607D8B', '#F44336', '#2196F3', '#9C27B0']
-  let hash = 0
-  for (let i = 0; i < name.length; i++) { hash = name.charCodeAt(i) + ((hash << 5) - hash) }
-  return palette[Math.abs(hash) % palette.length]
-}
-
 function daysSince(dateStr: string | null): number {
   if (!dateStr) return 999
   return Math.round((Date.now() - new Date(dateStr).getTime()) / 86400000)
@@ -87,7 +80,7 @@ export function HabitList({ habits, logs, daysInMonth, onDelete, onEdit, onReord
           const pctColor = pct >= 80 ? '#28C76F' : pct >= 40 ? '#FF9800' : '#EA5455'
           const isDragging = dragIdx === idx
           const isOver = overIdx === idx
-          const iconColor = getHabitColor(habit.name)
+          const iconColor = habit.is_starred ? '#FFD700' : habit.is_primary ? '#00BCD4' : habit.color
 
         return (
           <div
