@@ -82,6 +82,19 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
           )
         })}
       </div>
+
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-2 mt-3 text-[9px] text-text-secondary/50">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#28C76F]" /> 100%</span>
+        <span className="text-white/10">|</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#00BCD4]" /> 75-99%</span>
+        <span className="text-white/10">|</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#3B82F6]" /> 50-74%</span>
+        <span className="text-white/10">|</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#FF9800]" /> 25-49%</span>
+        <span className="text-white/10">|</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#EA5455]" /> &lt;25%</span>
+      </div>
     </div>
   )
 }
