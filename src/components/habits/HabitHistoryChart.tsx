@@ -59,6 +59,20 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
         })}
       </div>
 
+      {/* Percentage row */}
+      <div className="flex gap-2 mb-0.5">
+        {data.map((m) => {
+          const effectiveDays = (m.month === now.getMonth()) ? now.getDate() : m.daysInMonth
+          const pct = Math.round((m.daysWithLogs / Math.max(1, effectiveDays)) * 100)
+          const pctColor = pct >= 100 ? '#28C76F' : pct >= 75 ? '#00BCD4' : pct >= 50 ? '#3B82F6' : pct >= 25 ? '#FF9800' : '#EA5455'
+          return (
+            <div key={m.label} className="flex-1 text-center">
+              <span className="text-[8px] font-bold tabular-nums" style={{ color: pctColor }}>{pct}%</span>
+            </div>
+          )
+        })}
+      </div>
+
       {/* Bars */}
       <div className="flex items-end gap-2" style={{ height: 100 }}>
         {data.map((m) => {
