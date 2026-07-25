@@ -112,8 +112,8 @@ export function HexCalendar({ startDate, deadline, estimatedMinutes, completedMi
               key={dateStr}
               title={`${dateStr}${completed ? ' ✅' : failed ? ' ❌' : isToday ? ' 📍' : ''}`}
               style={{
-                width: 52,
-                height: 58,
+                width: 58,
+                height: 64,
                 clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
                 backgroundColor: bg,
                 opacity,
