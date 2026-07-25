@@ -52,6 +52,51 @@ function streakEmoji(streak: number): string {
   return '🔥'
 }
 
+function SparkleBurst({ color }: { color: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  useEffect(() => {
+    const c = canvasRef.current
+    if (!c) return
+    const ctx = c.getContext('2d')
+    if (!ctx) return
+    c.width = window.innerWidth
+    c.height = window.innerHeight
+    const particles: { x: number; y: number; vx: number; vy: number; r: number; alpha: number }[] = []
+    for (let i = 0; i < 24; i++) {
+      const angle = Math.random() * Math.PI * 2
+      const speed = 1.5 + Math.random() * 4
+      particles.push({
+        x: c.width / 2, y: c.height / 2,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        r: 1.5 + Math.random() * 2.5,
+        alpha: 0.9,
+      })
+    }
+    let frame = 0
+    const animate = () => {
+      if (frame > 50) return
+      ctx.clearRect(0, 0, c.width, c.height)
+      particles.forEach((p) => {
+        p.x += p.vx
+        p.y += p.vy
+        p.vy += 0.04
+        p.alpha -= 0.02
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+        ctx.fillStyle = color
+        ctx.globalAlpha = Math.max(0, p.alpha)
+        ctx.fill()
+      })
+      ctx.globalAlpha = 1
+      frame++
+      requestAnimationFrame(animate)
+    }
+    animate()
+  }, [])
+  return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-30" />
+}
+
 export function FullscreenPage() {
   const navigate = useNavigate()
   const store = useTimerStore()
@@ -255,6 +300,7 @@ export function FullscreenPage() {
 
         {showCelebration && (
           <div className="fixed inset-0 z-20 flex flex-col items-center justify-center bg-black gap-6 px-10">
+            <SparkleBurst color={stateColor} />
             <div className="text-5xl mb-2">🎉</div>
             <div className="text-2xl font-semibold text-white tracking-wide">¡Sesión completada!</div>
 
