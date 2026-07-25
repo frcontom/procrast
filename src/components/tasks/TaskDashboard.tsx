@@ -118,27 +118,41 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
           )}
 
           <div className="space-y-2">
-            <span className="text-[10px] text-text-secondary uppercase tracking-wider">🏴 Metas activas</span>
+            <span className="text-[10px] text-text-secondary uppercase tracking-wider">🏴 {goals.length} meta(s) activas</span>
             {goals.map((goal) => {
               const goalPct = goal.estimated_minutes > 0 ? Math.min(100, Math.round((Math.min(goal.estimated_minutes, goal.estimated_minutes) / goal.estimated_minutes) * 100)) : 0
+              const status = goalPct >= 100 ? 'completed' : goalPct >= 40 ? 'on_track' : 'behind'
+              const statusLabel = status === 'completed' ? 'Completado' : status === 'on_track' ? 'Al día' : 'Atrasado'
+              const statusColor = status === 'completed' ? '#28C76F' : status === 'on_track' ? '#28C76F' : '#EA5455'
+              const daysToDeadline = Math.max(0, Math.round((new Date(goal.deadline).getTime() - Date.now()) / 86400000))
+              const todayGoal = Math.round(goal.estimated_minutes / Math.max(1, daysToDeadline + 1))
               return (
                 <div key={goal.id} onClick={() => onSelectGoal(goal.id)}
-                  className="bg-card rounded-xl border border-white/10 p-4 cursor-pointer hover:bg-white/5 transition-colors">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{goal.icon || '🎯'}</span>
-                      <span className="text-sm font-medium">{goal.name}</span>
+                  className="bg-card rounded-lg border border-white/10 cursor-pointer hover:border-[var(--accent)] transition-all overflow-hidden"
+                  style={{ borderLeft: `4px solid ${goal.color || '#A66CFF'}` }}>
+                  <div className="p-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span style={{ color: goal.color || '#A66CFF' }}>{goal.icon || '🎯'}</span>
+                        <span className="text-sm font-bold truncate">{goal.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded text-white font-medium" style={{ backgroundColor: statusColor }}>{statusLabel}</span>
+                        <span className="text-sm font-bold">{goalPct}%</span>
+                      </div>
                     </div>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${goalPct >= 70 ? 'text-success bg-success/10' : goalPct >= 40 ? 'text-warning bg-warning/10' : 'text-danger bg-danger/10'}`}>
-                      {goalPct >= 70 ? '✅ Al día' : goalPct >= 40 ? '⚠️ Regular' : '🔴 Atrasado'}
-                    </span>
-                  </div>
-                  <div className="w-full bg-secondary rounded-full h-1.5 mb-2">
-                    <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${goalPct}%` }} />
-                  </div>
-                  <div className="flex items-center gap-3 text-[10px] text-text-secondary">
-                    <span>📅 {goal.deadline}</span>
-                    <span>⏱ {goal.estimated_minutes}min</span>
+                    <div className="w-full bg-secondary rounded-full h-[5px] overflow-hidden mb-2">
+                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${goalPct}%`, backgroundColor: statusColor }} />
+                    </div>
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-text-secondary">
+                      <span>{goal.estimated_minutes}min</span>
+                      <span>·</span>
+                      <span>{goal.estimated_minutes} tarea(s)</span>
+                      <span>·</span>
+                      <span>⌛ {daysToDeadline}d restantes</span>
+                      <span>·</span>
+                      <span>Hoy: <span className="font-bold" style={{ color: todayMin >= todayGoal ? '#28C76F' : '#EA5455' }}>{todayMin}min</span></span>
+                    </div>
                   </div>
                 </div>
               )
