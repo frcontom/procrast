@@ -21,6 +21,27 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
     })
   }, [user])
 
+  // Cargar conteo de subtareas por meta
+  const [subtaskCounts, setSubtaskCounts] = useState<Record<string, number>>({})
+  const [subtaskMinutes, setSubtaskMinutes] = useState<Record<string, number>>({})
+
+  useEffect(() => {
+    if (!user || goals.length === 0) return
+    const goalIds = goals.map((g) => g.id)
+    supabase.from('task_subtasks').select('goal_id, estimated_minutes').in('goal_id', goalIds).then(({ data }: any) => {
+      if (data) {
+        const counts: Record<string, number> = {}
+        const mins: Record<string, number> = {}
+        data.forEach((st: any) => {
+          counts[st.goal_id] = (counts[st.goal_id] || 0) + 1
+          mins[st.goal_id] = (mins[st.goal_id] || 0) + (st.estimated_minutes || 0)
+        })
+        setSubtaskCounts(counts)
+        setSubtaskMinutes(mins)
+      }
+    })
+  }, [user, goals])
+
   const totalEstimated = goals.reduce((a, g) => a + g.estimated_minutes, 0)
   const totalFromLinks = sessions.reduce((a: number, l: any) => a + (l.minutes || 0), 0)
   const pct = totalEstimated > 0 ? Math.min(100, Math.round((totalFromLinks / totalEstimated) * 100)) : 0
@@ -157,7 +178,7 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
               const statusLabel = status === 'completed' ? 'Completado' : status === 'on_track' ? 'Al día' : 'Atrasado'
               const statusColor = status === 'completed' ? '#28C76F' : status === 'on_track' ? '#28C76F' : '#EA5455'
               const daysToDeadline = Math.max(0, Math.round((new Date(goal.deadline).getTime() - Date.now()) / 86400000))
-              const todayGoal = Math.round(goal.estimated_minutes / Math.max(1, daysToDeadline + 1))
+              const todayGoal = Math.round((subtaskMinutes[goal.id] || goal.estimated_minutes) / Math.max(1, daysToDeadline + 1))
               return (
                 <div key={goal.id} onClick={() => onSelectGoal(goal.id)}
                   className="bg-card rounded-lg border border-white/10 cursor-pointer hover:border-[var(--accent)] transition-all overflow-hidden"
@@ -177,7 +198,9 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
                       <div className="h-full rounded-full transition-all duration-500" style={{ width: `${goalPct}%`, backgroundColor: statusColor }} />
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-text-secondary">
-                      <span>{goal.estimated_minutes || totalFromLinks}min estimados</span>
+                      <span>{subtaskMinutes[goal.id] || goal.estimated_minutes || totalFromLinks}min estimados</span>
+                      <span>·</span>
+                      <span>{subtaskCounts[goal.id] || 0} tarea(s)</span>
                       <span>·</span>
                       <span>⌛ {daysToDeadline}d restantes</span>
                       <span>·</span>
