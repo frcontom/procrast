@@ -8,7 +8,6 @@ const NAV_ITEMS = [
   { path: '/focus', label: 'Focus', icon: '◆' },
   { path: '/tasks', label: 'Metas', icon: '◎' },
   { path: '/habits', label: 'Hábitos', icon: '✓' },
-  { path: '/analytics', label: 'Analytics', icon: '📈' },
   { path: '/knowledge', label: 'Notas', icon: '📝' },
   { path: '/identity', label: 'Identidad', icon: '👤' },
   { path: '/coach', label: 'Coach', icon: '' },
