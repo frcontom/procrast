@@ -8,7 +8,7 @@ interface Props {
   onSelectGoal: (id: string) => void
 }
 
-const DAY_NAMES = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom']
+const DAY_NAMES = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb']
 
 export function TaskDashboard({ goals, onSelectGoal }: Props) {
   const user = useUser()
@@ -33,9 +33,13 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
   const todayPct = Math.min(100, Math.round((todayMin / Math.max(1, goalTodayMin)) * 100))
   const todayColor = todayMin >= goalTodayMin ? '#28C76F' : todayPct >= 50 ? '#FF9F43' : '#EA5455'
 
+  // Semana: domingo (0) a sabado (6)
+  const now = new Date()
+  const sunday = new Date(now)
+  sunday.setDate(now.getDate() - now.getDay()) // domingo mas cercano atras
   const weekData = DAY_NAMES.map((_, i) => {
-    const d = new Date()
-    d.setDate(d.getDate() - (6 - i))
+    const d = new Date(sunday)
+    d.setDate(sunday.getDate() + i)
     const ds = d.toISOString().slice(0, 10)
     return Math.round(sessions.filter((s: any) => s.started_at?.slice(0, 10) === ds).reduce((a: number, s: any) => a + (s.elapsed_seconds || 0) / 60, 0))
   })
@@ -44,7 +48,7 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
   const avgWeek = Math.round(totalWeek / 7)
   const bestIdx = weekData.indexOf(Math.max(...weekData))
   const bestDay = DAY_NAMES[bestIdx]
-  const todayIdx = 6
+  const todayIdx = new Date().getDay() // 0=dom, 6=sab
 
   const totalSubtasks = goals.reduce((a, g) => a + (g as any).subtask_count || 0, 0)
 
