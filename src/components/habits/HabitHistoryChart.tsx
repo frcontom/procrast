@@ -36,13 +36,31 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
     })
   }, [user, habitsLength, refreshKey])
 
-  if (data.length === 0) return null
+  // Test data visual — inyectar datos aleatorios para previsualizar
+  const testData: MonthData[] = []
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), i, 1)
+    const daysInMonth = new Date(now.getFullYear(), i + 1, 0).getDate()
+    const isCurrent = i === now.getMonth()
+    const effectiveDays = isCurrent ? now.getDate() : daysInMonth
+    const daysWithLogs = i === now.getMonth() ? Math.floor(Math.random() * (effectiveDays + 1)) : Math.floor(Math.random() * (daysInMonth + 1))
+    testData.push({
+      label: d.toLocaleDateString('es-ES', { month: 'short' }),
+      month: i,
+      pct: Math.round((daysWithLogs / effectiveDays) * 100),
+      daysWithLogs,
+      daysInMonth,
+    })
+  }
+  const displayData = data.length > 0 ? data : testData
+
+  if (displayData.length === 0) return null
 
   return (
     <div>
       {/* Labels row */}
       <div className="flex gap-2 mb-1">
-        {data.map((m) => {
+        {displayData.map((m) => {
           const effectiveDays = (m.month === now.getMonth()) ? now.getDate() : m.daysInMonth
           return (
             <div key={m.label} className="flex-1 text-center">
@@ -56,7 +74,7 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
 
       {/* Bars */}
       <div className="flex items-end gap-2" style={{ height: 100 }}>
-        {data.map((m) => {
+        {displayData.map((m) => {
           const isCurrent = m.month === now.getMonth()
           const effectiveDays = isCurrent ? now.getDate() : m.daysInMonth
           const pctToShow = Math.round((m.daysWithLogs / Math.max(1, effectiveDays)) * 100)
@@ -77,7 +95,7 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
 
       {/* Month labels */}
       <div className="flex gap-2 mt-1">
-        {data.map((m) => {
+        {displayData.map((m) => {
           const isCurrent = m.month === now.getMonth()
           return (
             <div key={m.label} className="flex-1 text-center">
