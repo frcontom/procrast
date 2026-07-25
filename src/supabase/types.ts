@@ -49,9 +49,9 @@ export interface TaskSubtaskUpdate { name?: string; description?: string; estima
 export interface TaskPomodoroLink { id: string; user_id: string; subtask_id: string; session_id: string | null; minutes: number; elapsed_seconds: number; date: string; subtask_name: string; created_at: string }
 export interface TaskPomodoroLinkInsert { user_id: string; subtask_id: string; session_id?: string | null; minutes?: number; elapsed_seconds?: number; date: string; subtask_name?: string }
 
-export interface Habit { id: string; user_id: string; name: string; icon: string; color: string; month_key: string; is_primary: boolean; created_at: string }
-export interface HabitInsert { user_id: string; name: string; icon?: string; color?: string; month_key: string; is_primary?: boolean }
-export interface HabitUpdate { name?: string; icon?: string; color?: string; month_key?: string; is_primary?: boolean }
+export interface Habit { id: string; user_id: string; name: string; icon: string; color: string; month_key: string; is_primary: boolean; sort_order: number; created_at: string }
+export interface HabitInsert { user_id: string; name: string; icon?: string; color?: string; month_key: string; is_primary?: boolean; sort_order?: number }
+export interface HabitUpdate { name?: string; icon?: string; color?: string; month_key?: string; is_primary?: boolean; sort_order?: number }
 
 export interface HabitLog { id: string; user_id: string; habit_id: string; date: string; count: number; note: string; created_at: string }
 export interface HabitLogInsert { user_id: string; habit_id: string; date: string; count?: number; note?: string }

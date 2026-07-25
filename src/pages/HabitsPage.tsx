@@ -28,7 +28,7 @@ export function HabitsPage() {
 
   const loadData = useCallback(() => {
     if (!user) return
-    supabase.from('habits').select('*').eq('user_id', user.id).eq('month_key', monthKey).then(({ data }: any) => {
+    supabase.from('habits').select('*').eq('user_id', user.id).eq('month_key', monthKey).order('sort_order').then(({ data }: any) => {
       if (data) setHabits(data)
     })
     supabase.from('habit_logs').select('*').eq('user_id', user.id).gte('date', `${monthKey}-01`).lte('date', `${monthKey}-${String(daysInMonth).padStart(2, '0')}`).then(({ data }: any) => {
@@ -55,7 +55,7 @@ export function HabitsPage() {
       await supabase.from('habits').update({ name: data.name }).eq('id', editHabit.id)
       setEditHabit(null)
     } else {
-      await supabase.from('habits').insert({ user_id: user.id, month_key: monthKey, name: data.name, icon: '◉', color: '#A66CFF', is_primary: false })
+      await supabase.from('habits').insert({ user_id: user.id, month_key: monthKey, name: data.name, icon: '◉', color: '#A66CFF', is_primary: false, sort_order: habits.length })
     }
     setShowForm(false)
     loadData()
@@ -66,6 +66,12 @@ export function HabitsPage() {
     loadData()
   }
 
+  const reorderHabits = async (ids: string[]) => {
+    if (!user) return
+    const updates = ids.map((id, i) => supabase.from('habits').update({ sort_order: i }).eq('id', id))
+    await Promise.all(updates)
+    loadData()
+  }
 
   const toggleDay = async (habitId: string, date: string) => {
     if (!user) return
@@ -137,7 +143,7 @@ export function HabitsPage() {
       {/* Habit List */}
       <div id="hm-list-card" className="bg-card rounded-xl border border-white/10 p-4">
         <div id="hm-list-title" className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-3">📌 Hábitos de {monthLabel}</div>
-        <div id="hm-list"><HabitList habits={habits} logs={logs} daysInMonth={daysInMonth} onDelete={deleteHabit} onEdit={(h) => { setEditHabit(h); setShowForm(true) }} /></div>
+        <div id="hm-list"><HabitList habits={habits} logs={logs} daysInMonth={daysInMonth} onDelete={deleteHabit} onEdit={(h) => { setEditHabit(h); setShowForm(true) }} onReorder={reorderHabits} /></div>
       </div>
 
       {/* Weekly Circles */}
