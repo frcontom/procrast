@@ -75,7 +75,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           if (s.estimated_minutes <= 0) continue
           const currentPct = Math.min(100, Math.round((s.completed_minutes / s.estimated_minutes) * 100))
           const sessionMax = data.filter((l: any) => l.subtask_id === s.id)
-            .reduce((max: number, l: any) => Math.max(max, Math.min(100, Math.round(((l.minutes || 0) / s.estimated_minutes) * 100))), 0)
+            .reduce((max: number, l: any) => Math.max(max, Math.min(100, Math.ceil(((l.minutes || 0) / s.estimated_minutes) * 100))), 0)
           best[s.id] = Math.max(currentPct, sessionMax)
         }
         setBestProgress(best)
