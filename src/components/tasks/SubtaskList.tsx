@@ -74,14 +74,14 @@ export function SubtaskList({ subtasks, onToggle, onDelete }: Props) {
                         <span className={`tabular-nums font-medium ${pct >= 100 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-text-secondary'}`}>
                           {pct}%
                         </span>
-                        {!isDone && (
-                          <div className="flex-1 bg-[var(--bg-primary)] rounded-full h-1 overflow-hidden max-w-[80px]">
-                            <div
-                              className="h-full rounded-full transition-all duration-500"
-                              style={{ width: `${pct}%`, backgroundColor: pct >= 100 ? '#28C76F' : pct >= 50 ? '#FF9800' : 'var(--accent)' }}
-                            />
-                          </div>
-                        )}
+                        <span className="text-white/20">|</span>
+                        <span className="tabular-nums text-text-secondary/60">⌛ {st.completed_minutes + st.estimated_minutes}</span>
+                        <div className="flex-1 bg-[var(--bg-primary)] rounded-full h-[3px] overflow-hidden max-w-[80px]">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%`, backgroundColor: pct >= 100 ? '#28C76F' : pct >= 50 ? '#FF9800' : 'var(--accent)' }}
+                          />
+                        </div>
                       </div>
                     </div>
 
