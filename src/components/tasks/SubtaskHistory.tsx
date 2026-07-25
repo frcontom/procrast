@@ -29,8 +29,9 @@ export function SubtaskHistory({ subtask, onClose }: Props) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [onClose])
 
-  const totalMin = logs.reduce((a, l) => a + (l.minutes || 0), 0)
-  const sessions = logs.length
+  const completedLogs = logs.filter((l) => !l.subtask_name?.includes('(cancelado)'))
+  const cancelledLogs = logs.filter((l) => l.subtask_name?.includes('(cancelado)'))
+  const totalMin = completedLogs.reduce((a, l) => a + (l.minutes || 0), 0)
   const progress = subtask.estimated_minutes > 0 ? Math.min(100, Math.round((totalMin / subtask.estimated_minutes) * 100)) : 0
 
   return (
@@ -44,8 +45,8 @@ export function SubtaskHistory({ subtask, onClose }: Props) {
         <div className="grid grid-cols-4 gap-2 mb-4">
           {[
             { label: 'Total', value: `${totalMin}min` },
-            { label: 'Sesiones', value: sessions.toString() },
-            { label: 'Estimado', value: `${subtask.estimated_minutes}min` },
+            { label: 'Completadas', value: completedLogs.length.toString() },
+            { label: 'Fallidas', value: cancelledLogs.length.toString() },
             { label: 'Progreso', value: `${progress}%` },
           ].map((s) => (
             <div key={s.label} className="bg-secondary rounded-lg p-2.5 text-center">
@@ -61,12 +62,18 @@ export function SubtaskHistory({ subtask, onClose }: Props) {
           ) : logs.length === 0 ? (
             <div className="text-center text-text-secondary text-xs py-8">Sin registros</div>
           ) : (
-            logs.map((log) => (
-              <div key={log.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-secondary/50 text-xs">
-                <span className="text-text-secondary">◆ {log.date}</span>
-                <span className="tabular-nums font-medium text-white">{log.minutes}min</span>
-              </div>
-            ))
+            logs.map((log) => {
+              const isCancelled = log.subtask_name?.includes('(cancelado)')
+              return (
+                <div key={log.id} className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs ${isCancelled ? 'bg-danger/5' : 'bg-secondary/50'}`}>
+                  <div className="flex items-center gap-2">
+                    <span className={isCancelled ? 'text-danger/60' : 'text-text-secondary'}>{isCancelled ? '✕' : '◆'} {log.date}</span>
+                    {isCancelled && <span className="text-[9px] text-danger/40 italic">intentado</span>}
+                  </div>
+                  <span className={`tabular-nums font-medium ${isCancelled ? 'text-danger/50 line-through' : 'text-white'}`}>{log.minutes}min</span>
+                </div>
+              )
+            })
           )}
         </div>
 

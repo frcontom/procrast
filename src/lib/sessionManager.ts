@@ -84,7 +84,7 @@ export class SessionManager {
     store.setElapsed(s.elapsedSeconds)
 
     if (this.currentUserId) {
-      await supabase.from('sessions').insert({
+      const { data: session } = await supabase.from('sessions').insert({
         user_id: this.currentUserId,
         activity_type: store.activityType,
         session_name: store.sessionName,
@@ -93,7 +93,20 @@ export class SessionManager {
         state: 'cancelled',
         finished_at: new Date().toISOString(),
         interruption_reason: reason || null,
-      })
+      }).select().single()
+
+      if (this.currentSubtaskId && session) {
+        const elapsedMin = Math.round((s.elapsedSeconds || 0) / 60)
+        await supabase.from('task_pomodoro_links').insert({
+          user_id: this.currentUserId,
+          subtask_id: this.currentSubtaskId,
+          session_id: session.id,
+          minutes: elapsedMin,
+          date: new Date().toISOString().slice(0, 10),
+          subtask_name: store.sessionName + ' (cancelado)',
+        })
+      }
+
       await this.addXp(XP.SESSION_CANCELLED)
     }
   }
