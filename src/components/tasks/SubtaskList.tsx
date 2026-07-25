@@ -11,6 +11,7 @@ interface Props {
   onSetDependency?: (id: string, dependsOn: string | null) => void
   onStartPomodoro?: (st: TaskSubtask) => void
   onShowHistory?: (st: TaskSubtask) => void
+  bestProgress?: Record<string, number>
 }
 
 const DIFFICULTY_BADGE: Record<string, { icon: string; color: string }> = {
@@ -63,7 +64,7 @@ function sumSubtree(subtasks: TaskSubtask[], parentId: string): { estimated: num
   return { estimated, completed }
 }
 
-export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro, onShowHistory }: Props) {
+export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro, onShowHistory, bestProgress }: Props) {
   const doneCount = subtasks.filter((s) => s.status === 'completed').length
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
@@ -200,6 +201,11 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                               <div className="w-[60%] bg-white/5 rounded-full h-2 overflow-hidden ring-1 ring-white/5 relative">
                                 <div className="h-full rounded-full transition-all duration-700"
                                   style={{ width: `${displayPct}%`, background: displayPct >= 100 ? 'linear-gradient(90deg, #28C76F, #81E6A0)' : displayPct >= 50 ? 'linear-gradient(90deg, #FF9800, #FFB74D)' : 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
+                                {bestProgress && bestProgress[st.id] !== undefined && bestProgress[st.id] > displayPct && (
+                                  <div className="absolute top-[-2px] bottom-[-2px] w-[2px] bg-white/40 rounded-full"
+                                    style={{ left: `${bestProgress[st.id]}%`, transform: 'translateX(-50%)' }}
+                                    title={`Mejor: ${bestProgress[st.id]}%`} />
+                                )}
                                 <span className={`absolute inset-0 flex items-center justify-center text-[9px] font-bold ${displayPct >= 50 ? 'text-white' : 'text-text-secondary'}`}>{displayPct}%</span>
                               </div>
                             </>
