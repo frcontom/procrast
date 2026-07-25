@@ -29,14 +29,10 @@ export function SubtaskList({ subtasks, onToggle, onDelete }: Props) {
         </div>
       ) : (
         <div className="space-y-1.5">
-          {sorted.map((st, idx) => {
+          {sorted.map((st) => {
             const isDone = st.status === 'completed'
             const pct = st.estimated_minutes > 0 ? Math.min(100, Math.round((st.completed_minutes / st.estimated_minutes) * 100)) : 0
             const diff = DIFFICULTY_BADGE[st.difficulty] || DIFFICULTY_BADGE.normal
-
-            let statusIcon = '◯'
-            if (isDone) statusIcon = '✅'
-            else if (st.completed_minutes > 0) statusIcon = '◐'
 
             return (
               <div
@@ -99,14 +95,14 @@ export function SubtaskList({ subtasks, onToggle, onDelete }: Props) {
                     <div className={`flex items-center gap-0.5 shrink-0 ${isDone ? 'opacity-0 group-hover:opacity-100' : ''}`}>
                       {!isDone && (
                         <>
-                          <button className="w-6 h-6 flex items-center justify-center rounded text-xs text-text-secondary/40 hover:text-white hover:bg-white/5 transition-all" title="Iniciar Pomodoro">▶</button>
-                          <button className="w-6 h-6 flex items-center justify-center rounded text-xs text-text-secondary/20 hover:text-text-secondary/60 transition-all" title="Subir">▲</button>
-                          <button className="w-6 h-6 flex items-center justify-center rounded text-xs text-text-secondary/20 hover:text-text-secondary/60 transition-all" title="Bajar">▼</button>
-                          <button className="w-6 h-6 flex items-center justify-center rounded text-xs text-text-secondary/40 hover:text-white hover:bg-white/5 transition-all" title="Editar">✏️</button>
-                          <button className="w-6 h-6 flex items-center justify-center rounded text-xs text-text-secondary/40 hover:text-white hover:bg-white/5 transition-all" title="Historial">🕐</button>
+                          <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Iniciar Pomodoro">▶</button>
+                          <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary/40 hover:bg-white/10 hover:border-white/20 transition-all" title="Subir">▲</button>
+                          <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary/40 hover:bg-white/10 hover:border-white/20 transition-all" title="Bajar">▼</button>
+                          <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Editar">✏️</button>
+                          <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Historial">🕐</button>
                         </>
                       )}
-                      <button onClick={() => onDelete(st.id)} className="w-6 h-6 flex items-center justify-center rounded text-xs text-danger/30 hover:text-danger hover:bg-danger/5 transition-all" title="Eliminar">🗑️</button>
+                      <button onClick={() => onDelete(st.id)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-danger/50 hover:bg-danger/10 hover:border-danger/30 hover:text-danger transition-all" title="Eliminar">🗑️</button>
                     </div>
                   </div>
 
