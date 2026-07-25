@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase/client'
 import { useUser } from '../../supabase/auth'
 import type { TaskSubtask, TaskPomodoroLink } from '../../supabase/types'
-import { formatMinutes } from '../../lib/formatters'
+import { formatMinutes, formatElapsed } from '../../lib/formatters'
 
 interface Props {
   subtask: TaskSubtask
@@ -120,7 +120,7 @@ export function SubtaskHistory({ subtask, onClose }: Props) {
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] font-medium text-white/80">{log.date}</span>
                           <span className={`text-[11px] tabular-nums font-bold ${isCancelled ? 'text-danger/50 line-through' : 'text-white'}`}>
-                            {formatMinutes(log.minutes)}
+                            {formatElapsed(log.elapsed_seconds || log.minutes * 60)}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">

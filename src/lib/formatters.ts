@@ -7,6 +7,17 @@ export function formatMinutes(minutes: number): string {
   return `${h}h ${m}min`
 }
 
+export function formatElapsed(seconds: number): string {
+  if (seconds < 0) seconds = 0
+  if (seconds < 60) return `${seconds}s`
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  if (m < 60) return s > 0 ? `${m}:${s.toString().padStart(2, '0')} min` : `${m} min`
+  const h = Math.floor(m / 60)
+  const rm = m % 60
+  return s > 0 ? `${h}:${rm.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}` : `${h}:${rm.toString().padStart(2, '0')}:00`
+}
+
 export function formatTime(seconds: number): string {
   if (seconds < 0) seconds = 0
   const h = Math.floor(seconds / 3600)

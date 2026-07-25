@@ -46,8 +46,8 @@ export interface TaskSubtask { id: string; user_id: string; goal_id: string; nam
 export interface TaskSubtaskInsert { user_id: string; goal_id: string; name: string; description?: string; estimated_minutes?: number; completed_minutes?: number; status?: 'pending' | 'in_progress' | 'completed'; difficulty?: 'easy' | 'normal' | 'hard'; depends_on?: string | null; sort_order?: number }
 export interface TaskSubtaskUpdate { name?: string; description?: string; estimated_minutes?: number; completed_minutes?: number; status?: 'pending' | 'in_progress' | 'completed'; difficulty?: 'easy' | 'normal' | 'hard'; depends_on?: string | null; sort_order?: number }
 
-export interface TaskPomodoroLink { id: string; user_id: string; subtask_id: string; session_id: string | null; minutes: number; date: string; subtask_name: string; created_at: string }
-export interface TaskPomodoroLinkInsert { user_id: string; subtask_id: string; session_id?: string | null; minutes?: number; date: string; subtask_name?: string }
+export interface TaskPomodoroLink { id: string; user_id: string; subtask_id: string; session_id: string | null; minutes: number; elapsed_seconds: number; date: string; subtask_name: string; created_at: string }
+export interface TaskPomodoroLinkInsert { user_id: string; subtask_id: string; session_id?: string | null; minutes?: number; elapsed_seconds?: number; date: string; subtask_name?: string }
 
 export interface Habit { id: string; user_id: string; name: string; icon: string; color: string; month_key: string; is_primary: boolean; created_at: string }
 export interface HabitInsert { user_id: string; name: string; icon?: string; color?: string; month_key: string; is_primary?: boolean }
