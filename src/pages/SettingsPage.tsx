@@ -38,7 +38,7 @@ export function SettingsPage() {
     <div className="max-w-2xl space-y-6">
       <ProfileSettings name={name} activityType={activityType} onNameChange={setName} onActivityChange={setActivityType} />
 
-      <TimerSettings
+      <TimerSettings key={JSON.stringify(timerConfig)}
         workMinutes={timerConfig.workMinutes}
         breakMinutes={timerConfig.breakMinutes}
         maxPauseMinutes={timerConfig.maxPauseMinutes}
