@@ -146,6 +146,22 @@ export function FocusPage() {
               onResume={() => sessionManager.resume()}
               onCancel={handleCancel}
             />
+            {store.phase !== 'work' && (store.state === 'RUNNING' || store.state === 'PAUSED' || store.state === 'FINISHED') && (
+              <div className="flex justify-center mt-3">
+                <button onClick={() => {
+                  const engine = sessionManager.getEngine()
+                  engine.reset()
+                  const workMin = store.workDuration > 0 ? store.workDuration : store.durationMinutes
+                  store.setPhase('work')
+                  store.setDuration(workMin)
+                  sessionManager.startSession(workMin, store.activityType, store.sessionName, store.strictMode, false)
+                  playStartSound()
+                }}
+                  className="text-xs text-accent hover:text-white transition-colors underline underline-offset-4 decoration-accent/30 hover:decoration-white/50">
+                  ⏭ Saltar descanso
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
