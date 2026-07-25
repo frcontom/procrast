@@ -322,11 +322,22 @@ export function FullscreenPage() {
 
       <div className="absolute inset-0 bg-black/40 z-[1]" />
 
-      <button onClick={() => navigate('/focus')}
-        id="fullscreenExit"
-        className="fixed top-5 right-5 z-[3] w-10 h-10 rounded-full bg-transparent border border-white/20 text-white/50 hover:text-white/90 hover:bg-white/10 flex items-center justify-center transition-all text-base">
-        ⛶
-      </button>
+      <div className="fixed top-5 right-5 z-[3] flex items-center gap-2">
+        <button onClick={() => navigate('/focus')}
+          id="fullscreenExit"
+          className="w-10 h-10 rounded-full bg-transparent border border-white/20 text-white/50 hover:text-white/90 hover:bg-white/10 flex items-center justify-center transition-all text-base"
+          title="Volver a Focus">
+          ←
+        </button>
+        <button onClick={() => {
+          if (document.fullscreenElement) document.exitFullscreen()
+          else document.documentElement.requestFullscreen()
+        }}
+          className="w-10 h-10 rounded-full bg-transparent border border-white/20 text-white/50 hover:text-white/90 hover:bg-white/10 flex items-center justify-center transition-all text-base"
+          title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}>
+          ⛶
+        </button>
+      </div>
 
       <div id="fullscreenContent"
         className="relative z-[2] flex flex-col items-center gap-5 max-w-[650px] w-1/2 pr-10 animate-[fullscreenEnter_500ms_ease]">
@@ -458,14 +469,6 @@ export function FullscreenPage() {
               className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium border transition-all active:scale-[0.97] ${cancelDisabled ? 'border-white/5 text-white/20 cursor-not-allowed' : 'border-white/20 text-white/60 hover:text-white/90 hover:border-white/40 cursor-pointer'}`}>
               <span>✕</span>
               <span>Cancelar</span>
-            </button>
-            <button onClick={() => {
-              if (document.fullscreenElement) document.exitFullscreen()
-              else document.documentElement.requestFullscreen()
-            }}
-              className="flex items-center justify-center w-10 h-10 rounded-xl text-sm font-medium border border-white/10 text-white/40 hover:text-white/70 hover:border-white/30 transition-all active:scale-[0.97]"
-              title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}>
-              <span>{isFullscreen ? '⛶' : '⛶'}</span>
             </button>
           </div>
         )}
