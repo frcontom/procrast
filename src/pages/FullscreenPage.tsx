@@ -313,7 +313,7 @@ export function FullscreenPage() {
           <div id="fullscreenRingFill"
             className="absolute inset-0 rounded-full transition-all duration-300"
             style={{
-              background: `conic-gradient(${ringColor} ${Math.max(0.5, pct)}%, rgba(255,255,255,0.04) ${Math.max(0.5, pct)}%)`,
+              background: `conic-gradient(from 0deg, ${ringColor} ${Math.max(0.5, pct)}%, rgba(255,255,255,0.04) ${Math.max(0.5, pct)}%)`,
               WebkitMask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
               mask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
               filter: 'drop-shadow(0 0 8px ' + ringColor + '50)',
