@@ -66,30 +66,23 @@ export function SubtaskList({ subtasks, onToggle, onDelete }: Props) {
                         <span className="text-xs shrink-0" title={diff.icon}>{diff.icon}</span>
                       </div>
 
-                      <div className="flex items-center gap-2.5 mt-1 text-xs">
-                        <span className="font-medium tabular-nums" style={{ color: isDone ? '#28C76F' : '#a0a0b0' }}>
+                      <div className="flex items-center gap-1.5 mt-1 text-xs">
+                        <span className="tabular-nums font-medium" style={{ color: isDone ? '#28C76F' : '#a0a0b0' }}>
                           {st.completed_minutes}/{st.estimated_minutes}min
                         </span>
-                        <span className="text-text-secondary/50">·</span>
-                        <span className={`font-medium tabular-nums ${pct >= 100 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-text-secondary'}`}>
+                        <span className="text-white/20">|</span>
+                        <span className={`tabular-nums font-medium ${pct >= 100 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-text-secondary'}`}>
                           {pct}%
                         </span>
-                        {st.completed_minutes > 0 && (
-                          <>
-                            <span className="text-text-secondary/50">·</span>
-                            <span className="text-text-secondary/60">⌛ {st.completed_minutes + st.estimated_minutes}min real</span>
-                          </>
+                        {!isDone && (
+                          <div className="flex-1 bg-[var(--bg-primary)] rounded-full h-1 overflow-hidden max-w-[80px]">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{ width: `${pct}%`, backgroundColor: pct >= 100 ? '#28C76F' : pct >= 50 ? '#FF9800' : 'var(--accent)' }}
+                            />
+                          </div>
                         )}
                       </div>
-
-                      {!isDone && (
-                        <div className="mt-2 w-full bg-[var(--bg-primary)] rounded-full h-1 overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{ width: `${pct}%`, backgroundColor: pct >= 100 ? '#28C76F' : pct >= 50 ? '#FF9800' : 'var(--accent)' }}
-                          />
-                        </div>
-                      )}
                     </div>
 
                     <div className={`flex items-center gap-0.5 shrink-0 ${isDone ? 'opacity-0 group-hover:opacity-100' : ''}`}>
