@@ -99,7 +99,7 @@ export function SubtaskHistory({ subtask, onClose }: Props) {
               {/* Timeline line */}
               <div className="absolute left-[11px] top-2 bottom-2 w-px bg-white/5" />
               <div className="space-y-0">
-                {logs.map((log, i) => {
+                {logs.map((log) => {
                   const isCancelled = log.subtask_name?.includes('(cancelado)')
                   return (
                     <div key={log.id} className="relative flex items-start gap-3 py-2.5 group">
