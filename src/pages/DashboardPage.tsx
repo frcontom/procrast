@@ -78,22 +78,22 @@ export function DashboardPage() {
 
       {/* Highlights */}
       <div id="db-highlights" className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div id="db-racha" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all">
+        <div id="db-racha" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all flex flex-col justify-center">
           <div className="text-sm text-text-secondary mb-1">🔥 Racha</div>
           <div className="text-3xl font-bold text-[#FF9800]">{streakDays}</div>
           <div className="text-[10px] text-text-secondary/60 mt-0.5">días seguidos</div>
         </div>
-        <div id="db-promedio" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all">
+        <div id="db-promedio" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all flex flex-col justify-center">
           <div className="text-sm text-text-secondary mb-1">⚡ Promedio</div>
           <div className="text-3xl font-bold text-[#A66CFF]">{avgMinutes}</div>
           <div className="text-[10px] text-text-secondary/60 mt-0.5">min / sesión</div>
         </div>
-        <div id="db-mejordia" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all">
+        <div id="db-mejordia" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all flex flex-col justify-center">
           <div className="text-sm text-text-secondary mb-1">🏆 Mejor día</div>
           <div className="text-3xl font-bold text-[#00BCD4]">{bestDay ? Math.round(Number(bestDay[1])) : 0}</div>
           <div className="text-[10px] text-text-secondary/60 mt-0.5">{bestDayName}</div>
         </div>
-        <div id="db-score"><ProductivityScore completed={completed} total={sessions.length} totalMinutes={totalMinutes} /></div>
+        <div id="db-score" className="flex"><ProductivityScore completed={completed} total={sessions.length} totalMinutes={totalMinutes} /></div>
       </div>
 
       {/* Charts */}
