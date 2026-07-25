@@ -55,7 +55,7 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
           const isCurrent = m.month === now.getMonth()
           const effectiveDays = isCurrent ? now.getDate() : m.daysInMonth
           const pctToShow = Math.round((m.daysWithLogs / Math.max(1, effectiveDays)) * 100)
-          const barColor = pctToShow >= 75 ? '#28C76F' : pctToShow >= 50 ? '#3B82F6' : pctToShow >= 25 ? '#FF9800' : '#EA5455'
+          const barColor = pctToShow >= 100 ? '#28C76F' : pctToShow >= 75 ? '#00BCD4' : pctToShow >= 50 ? '#3B82F6' : pctToShow >= 25 ? '#FF9800' : '#EA5455'
           return (
             <div key={m.label} className="flex-1 flex flex-col items-center justify-end">
               <div
