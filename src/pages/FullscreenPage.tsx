@@ -324,8 +324,8 @@ export function FullscreenPage() {
                           style={{ width: `${filled * 100}%`, background: 'linear-gradient(90deg, #A66CFF, #b388ff)' }} />
                       )}
                     </div>
-                    <span className={`text-[8px] text-center leading-tight transition-all duration-500 ${
-                      isComplete ? 'text-accent/70 font-medium' : isCurrent ? 'text-white/60 font-medium' : 'text-white/20'
+                    <span className={`text-[11px] text-center leading-tight font-medium tracking-wide transition-all duration-500 ${
+                      isComplete ? 'text-accent' : isCurrent ? 'text-white' : 'text-white/20'
                     }`}>
                       {labels[i] || ''}
                     </span>
