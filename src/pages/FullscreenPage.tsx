@@ -176,7 +176,7 @@ export function FullscreenPage() {
 
   return (
     <div id="fullscreenOverlay" className="fixed inset-0 z-[2000] flex items-center justify-end overflow-hidden bg-black select-none">
-      <div id="fullscreenBg" key={bgIndex} className="absolute inset-0 bg-cover bg-center z-0 animate-[bgFadeIn_1s_ease]"
+      <div id="fullscreenBg" key={bgIndex} className="absolute inset-0 bg-contain bg-center bg-no-repeat z-0 animate-[bgFadeIn_1s_ease]"
         style={{ backgroundImage: hasImages ? `url(${images[bgIndex % images.length]})` : GRADIENTS[bgIndex] }} />
 
       <div className="absolute inset-0 bg-black/40 z-[1]" />
