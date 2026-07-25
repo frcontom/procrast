@@ -238,7 +238,8 @@ export function FullscreenPage() {
       setTimeout(() => setFloatXp(0), 3000)
     }
     if (justCancelled) {
-      if (returnGoalId) navigate(`/tasks?goal=${returnGoalId}`)
+      const goalId = useTimerStore.getState().returnGoalId
+      if (goalId) navigate(`/tasks?goal=${goalId}`)
       else navigate('/focus')
     }
   }, [state])
