@@ -96,15 +96,17 @@ export class SessionManager {
       }).select().single()
 
       if (this.currentSubtaskId && session) {
-        const elapsedMin = Math.max(1, Math.round((s.elapsedSeconds || 0) / 60))
-        await supabase.from('task_pomodoro_links').insert({
-          user_id: this.currentUserId,
-          subtask_id: this.currentSubtaskId,
-          session_id: session.id,
-          minutes: elapsedMin,
-          date: new Date().toISOString().slice(0, 10),
-          subtask_name: store.sessionName + ' (cancelado)',
-        })
+        const elapsedMin = Math.round((s.elapsedSeconds || 0) / 60)
+        if (elapsedMin >= 1) {
+          await supabase.from('task_pomodoro_links').insert({
+            user_id: this.currentUserId,
+            subtask_id: this.currentSubtaskId,
+            session_id: session.id,
+            minutes: elapsedMin,
+            date: new Date().toISOString().slice(0, 10),
+            subtask_name: store.sessionName + ' (cancelado)',
+          })
+        }
       }
 
       await this.addXp(XP.SESSION_CANCELLED)
