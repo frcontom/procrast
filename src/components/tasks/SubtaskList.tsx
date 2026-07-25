@@ -18,17 +18,18 @@ export function SubtaskList({ subtasks, onToggle, onDelete }: Props) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] text-text-secondary">Tareas ✅ {doneCount}/{sorted.length}</span>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[11px] font-medium text-text-secondary">Tareas <span className="text-white">{doneCount}</span><span className="text-text-secondary/40">/{sorted.length}</span></span>
       </div>
 
       {sorted.length === 0 ? (
-        <div className="text-center text-text-secondary text-[10px] py-4">
-          📝 Añade tareas específicas para trabajar en esta meta
+        <div className="text-center text-text-secondary text-xs py-8 bg-secondary/30 rounded-lg border border-dashed border-white/5">
+          <div className="text-lg mb-1">📝</div>
+          <p>Añade tareas específicas para trabajar en esta meta</p>
         </div>
       ) : (
-        <div className="space-y-1">
-          {sorted.map((st) => {
+        <div className="space-y-1.5">
+          {sorted.map((st, idx) => {
             const isDone = st.status === 'completed'
             const pct = st.estimated_minutes > 0 ? Math.min(100, Math.round((st.completed_minutes / st.estimated_minutes) * 100)) : 0
             const diff = DIFFICULTY_BADGE[st.difficulty] || DIFFICULTY_BADGE.normal
@@ -38,40 +39,83 @@ export function SubtaskList({ subtasks, onToggle, onDelete }: Props) {
             else if (st.completed_minutes > 0) statusIcon = '◐'
 
             return (
-              <div key={st.id} className={`bg-secondary rounded-lg p-2.5 transition-colors ${isDone ? 'opacity-60' : 'hover:bg-white/5'}`}>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => onToggle(st.id, isDone ? 'pending' : 'completed')} className="text-sm shrink-0">
-                    {statusIcon}
-                  </button>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`text-xs font-medium truncate ${isDone ? 'line-through text-text-secondary' : ''}`}>{st.name}</span>
-                      <span className="text-[10px]" title={diff.icon}>{diff.icon}</span>
+              <div
+                key={st.id}
+                className={`group rounded-lg border transition-all ${
+                  isDone
+                    ? 'bg-white/[0.02] border-white/5 opacity-55'
+                    : 'bg-secondary/70 border-white/[0.06] hover:bg-secondary hover:border-white/10'
+                }`}
+              >
+                <div className="px-3 py-2.5">
+                  <div className="flex items-start gap-2.5">
+                    <button
+                      onClick={() => onToggle(st.id, isDone ? 'pending' : 'completed')}
+                      className={`mt-0.5 w-4 h-4 rounded-sm flex items-center justify-center text-xs shrink-0 transition-all ${
+                        isDone
+                          ? 'bg-success/20 text-success'
+                          : st.completed_minutes > 0
+                            ? 'bg-warning/20 text-warning'
+                            : 'border border-white/20 hover:border-accent'
+                      }`}
+                    >
+                      {isDone ? '✓' : st.completed_minutes > 0 ? '◐' : ''}
+                    </button>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-medium truncate ${isDone ? 'line-through text-text-secondary/60' : 'text-white'}`}>
+                          {st.name}
+                        </span>
+                        <span className="text-xs shrink-0" title={diff.icon}>{diff.icon}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2.5 mt-1 text-xs">
+                        <span className="font-medium tabular-nums" style={{ color: isDone ? '#28C76F' : '#a0a0b0' }}>
+                          {st.completed_minutes}/{st.estimated_minutes}min
+                        </span>
+                        <span className="text-text-secondary/50">·</span>
+                        <span className={`font-medium tabular-nums ${pct >= 100 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-text-secondary'}`}>
+                          {pct}%
+                        </span>
+                        {st.completed_minutes > 0 && (
+                          <>
+                            <span className="text-text-secondary/50">·</span>
+                            <span className="text-text-secondary/60">⌛ {st.completed_minutes + st.estimated_minutes}min real</span>
+                          </>
+                        )}
+                      </div>
+
+                      {!isDone && (
+                        <div className="mt-2 w-full bg-[var(--bg-primary)] rounded-full h-1 overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%`, backgroundColor: pct >= 100 ? '#28C76F' : pct >= 50 ? '#FF9800' : 'var(--accent)' }}
+                          />
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] text-text-secondary mt-0.5 flex-wrap">
-                      <span>{st.completed_minutes}/{st.estimated_minutes}min</span>
-                      <span>{pct}%</span>
-                      {st.completed_minutes > 0 && st.estimated_minutes > 0 && <span>⌛ {st.completed_minutes + st.estimated_minutes}min real</span>}
+
+                    <div className={`flex items-center gap-0.5 shrink-0 ${isDone ? 'opacity-0 group-hover:opacity-100' : ''}`}>
+                      {!isDone && (
+                        <>
+                          <button className="w-6 h-6 flex items-center justify-center rounded text-xs text-text-secondary/40 hover:text-white hover:bg-white/5 transition-all" title="Iniciar Pomodoro">▶</button>
+                          <button className="w-6 h-6 flex items-center justify-center rounded text-xs text-text-secondary/20 hover:text-text-secondary/60 transition-all" title="Subir">▲</button>
+                          <button className="w-6 h-6 flex items-center justify-center rounded text-xs text-text-secondary/20 hover:text-text-secondary/60 transition-all" title="Bajar">▼</button>
+                          <button className="w-6 h-6 flex items-center justify-center rounded text-xs text-text-secondary/40 hover:text-white hover:bg-white/5 transition-all" title="Editar">✏️</button>
+                          <button className="w-6 h-6 flex items-center justify-center rounded text-xs text-text-secondary/40 hover:text-white hover:bg-white/5 transition-all" title="Historial">🕐</button>
+                        </>
+                      )}
+                      <button onClick={() => onDelete(st.id)} className="w-6 h-6 flex items-center justify-center rounded text-xs text-danger/30 hover:text-danger hover:bg-danger/5 transition-all" title="Eliminar">🗑️</button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    {!isDone && (
-                      <>
-                        <button className="text-[10px] text-text-secondary/60 hover:text-white transition-colors px-1" title="Iniciar Pomodoro">▶</button>
-                        <button className="text-[10px] text-text-secondary/30 hover:text-text-secondary transition-colors" title="Subir">▲</button>
-                        <button className="text-[10px] text-text-secondary/30 hover:text-text-secondary transition-colors" title="Bajar">▼</button>
-                        <button className="text-[10px] text-text-secondary/60 hover:text-white transition-colors" title="Editar">✏️</button>
-                        <button className="text-[10px] text-text-secondary/60 hover:text-white transition-colors" title="Historial">🕐</button>
-                      </>
-                    )}
-                    <button onClick={() => onDelete(st.id)} className="text-[10px] text-danger/50 hover:text-danger transition-colors" title="Eliminar">🗑️</button>
-                  </div>
+
+                  {isDone && (
+                    <div className="mt-1.5 ml-7">
+                      <span className="text-[10px] text-success/60 italic">Completada</span>
+                    </div>
+                  )}
                 </div>
-                {!isDone && (
-                  <div className="mt-1.5 w-full bg-[var(--bg-primary)] rounded-full h-1">
-                    <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${pct}%` }} />
-                  </div>
-                )}
               </div>
             )
           })}
