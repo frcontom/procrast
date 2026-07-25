@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase/client'
 import { useUser } from '../../supabase/auth'
 import type { TaskSubtask, TaskPomodoroLink } from '../../supabase/types'
+import { formatMinutes } from '../../lib/formatters'
 
 interface Props {
   subtask: TaskSubtask
@@ -56,7 +57,7 @@ export function SubtaskHistory({ subtask, onClose }: Props) {
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-2 mb-5">
           <div className="bg-secondary rounded-xl p-3 text-center">
-            <div className="text-lg font-bold text-white">{totalMin}<span className="text-xs font-normal text-text-secondary ml-0.5">/{subtask.estimated_minutes}min</span></div>
+            <div className="text-lg font-bold text-white">{formatMinutes(totalMin)}<span className="text-xs font-normal text-text-secondary ml-0.5">/{formatMinutes(subtask.estimated_minutes)}</span></div>
             <div className="text-[9px] text-text-secondary uppercase tracking-wider mt-1">Completado</div>
             <div className="mt-2 w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
               <div className="h-full rounded-full bg-gradient-to-r from-accent to-[#b388ff] transition-all duration-700" style={{ width: `${progress}%` }} />
@@ -80,7 +81,7 @@ export function SubtaskHistory({ subtask, onClose }: Props) {
         <div className="flex-1 overflow-y-auto min-h-0">
           <div className="flex items-center justify-between mb-3">
             <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wider">Registro de sesiones</span>
-            {wastedMin > 0 && <span className="text-[9px] text-danger/40">{wastedMin}min en intentos fallidos</span>}
+            {wastedMin > 0 && <span className="text-[9px] text-danger/40">{formatMinutes(wastedMin)} en intentos fallidos</span>}
           </div>
 
           {loading ? (
@@ -119,7 +120,7 @@ export function SubtaskHistory({ subtask, onClose }: Props) {
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] font-medium text-white/80">{log.date}</span>
                           <span className={`text-[11px] tabular-nums font-bold ${isCancelled ? 'text-danger/50 line-through' : 'text-white'}`}>
-                            {log.minutes}min
+                            {formatMinutes(log.minutes)}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
@@ -140,7 +141,7 @@ export function SubtaskHistory({ subtask, onClose }: Props) {
 
         {/* Footer */}
         <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
-          <span className="text-[9px] text-text-secondary/40">{totalTimeAll}min de esfuerzo total ({wastedMin}min perdidos)</span>
+          <span className="text-[9px] text-text-secondary/40">{formatMinutes(totalTimeAll)} de esfuerzo total ({formatMinutes(wastedMin)} perdidos)</span>
           <button onClick={onClose} className="px-4 py-1.5 rounded-lg text-[10px] font-medium bg-secondary hover:bg-white/10 text-text-secondary hover:text-white transition-all">
             Cerrar
           </button>

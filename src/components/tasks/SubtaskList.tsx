@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { TaskSubtask } from '../../supabase/types'
+import { formatMinutes } from '../../lib/formatters'
 
 interface Props {
   subtasks: TaskSubtask[]
@@ -191,10 +192,10 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                           ) : (
                             <>
                               <span className="tabular-nums font-medium shrink-0" style={{ color: isDone ? '#28C76F' : '#a0a0b0' }}>
-                                {displayCompleted}/{displayEstimated}min
+                                {formatMinutes(displayCompleted)}/{formatMinutes(displayEstimated)}
                               </span>
                               <span className="text-white/20 shrink-0">|</span>
-                              <span className="tabular-nums text-text-secondary/60 shrink-0">⌛ {displayCompleted + displayEstimated}</span>
+                              <span className="tabular-nums text-text-secondary/60 shrink-0">⌛ {formatMinutes(displayCompleted + displayEstimated)}</span>
                               <div className="w-[60%] bg-white/5 rounded-full h-2 overflow-hidden ring-1 ring-white/5 relative">
                                 <div className="h-full rounded-full transition-all duration-700"
                                   style={{ width: `${displayPct}%`, background: displayPct >= 100 ? 'linear-gradient(90deg, #28C76F, #81E6A0)' : displayPct >= 50 ? 'linear-gradient(90deg, #FF9800, #FFB74D)' : 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
@@ -207,7 +208,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
 
                       <div className="flex items-center gap-0.5 shrink-0">
                         {!isChecklist && (
-                          <button onClick={() => onStartPomodoro?.(st)} className="w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Iniciar Pomodoro">▶ {Math.max(1, Math.min(st.estimated_minutes - st.completed_minutes, 60))}min</button>
+                          <button onClick={() => onStartPomodoro?.(st)} className="w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Iniciar Pomodoro">▶ {formatMinutes(Math.max(1, Math.min(st.estimated_minutes - st.completed_minutes, 60)))}</button>
                         )}
                         <div className={`flex items-center gap-0.5 ${isDone ? 'opacity-0 group-hover:opacity-100' : ''}`}>
                           {!isDone && (

@@ -3,6 +3,7 @@ import { supabase } from '../../supabase/client'
 import { useUser } from '../../supabase/auth'
 import type { TaskGoal, TaskSubtask } from '../../supabase/types'
 import { calculateRhythm } from '../../lib/rhythmCalculator'
+import { formatMinutes } from '../../lib/formatters'
 import { SubtaskList } from './SubtaskList'
 import { SubtaskForm } from './SubtaskForm'
 import { SubtaskHistory } from './SubtaskHistory'
@@ -97,7 +98,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
 
         <div id="tk-progress-bar" className="mb-3">
           <div className="flex items-center gap-2 text-xs">
-            <span className="tabular-nums text-text-secondary">{totalCompleted}/{totalEstimated}min</span>
+            <span className="tabular-nums text-text-secondary">{formatMinutes(totalCompleted)}/{formatMinutes(totalEstimated)}</span>
             <span className="text-white/20">|</span>
             <span className={`tabular-nums font-medium ${pct >= 100 ? 'text-success' : 'text-accent'}`}>{pct}%</span>
             <span className="text-white/20">|</span>
@@ -109,11 +110,11 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
 
         <div id="tk-metrics" className="grid grid-cols-[repeat(auto-fit,minmax(90px,1fr))] gap-2 mb-3">
           {[
-            { label: 'Completado', value: `${totalCompleted}min` },
-            { label: 'Meta total', value: `${totalEstimated}min` },
-            { label: 'Meta/día', value: `${rhythm.rhythmDaily}min` },
+            { label: 'Completado', value: formatMinutes(totalCompleted) },
+            { label: 'Meta total', value: formatMinutes(totalEstimated) },
+            { label: 'Meta/día', value: formatMinutes(rhythm.rhythmDaily) },
             { label: 'Faltan', value: `${rhythm.daysRemaining}d` },
-            { label: 'Hecho hoy', value: `${todayMin}min` },
+            { label: 'Hecho hoy', value: formatMinutes(todayMin) },
           ].map((s) => (
             <div key={s.label} className="bg-secondary rounded-lg p-2.5 text-center">
               <div className="text-base font-bold text-white">{s.value}</div>
@@ -128,7 +129,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
             style={{ backgroundColor: 'rgba(234,84,85,0.1)', border: '1px solid rgba(234,84,85,0.3)' }}>
             <span className="text-base shrink-0">⚠️</span>
             <span className="flex-1">
-              <strong>ATRASADO</strong> — Deberías tener <strong>{rhythm.expectedNow}min</strong>, llevas <strong>{totalCompleted}min</strong>. Necesitas <strong>{rhythm.neededDaily}min/día</strong>.
+              <strong>ATRASADO</strong> — Deberías tener <strong>{formatMinutes(rhythm.expectedNow)}</strong>, llevas <strong>{formatMinutes(totalCompleted)}</strong>. Necesitas <strong>{formatMinutes(rhythm.neededDaily)}/día</strong>.
             </span>
           </div>
         )}
