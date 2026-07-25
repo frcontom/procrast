@@ -66,6 +66,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
   const doneCount = subtasks.filter((s) => s.status === 'completed').length
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
+  const [overHeader, setOverHeader] = useState(false)
 
   const tree = buildTree(subtasks)
 
@@ -100,12 +101,34 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
     setDragIdx(null)
     setOverIdx(null)
   }
-  const handleDragEnd = () => { setDragIdx(null); setOverIdx(null) }
+  const handleDragEnd = () => { setDragIdx(null); setOverIdx(null); setOverHeader(false) }
+
+  const handleHeaderDragOver = (e: React.DragEvent) => {
+    if (!e.shiftKey) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setOverHeader(true)
+  }
+
+  const handleHeaderDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setOverHeader(false)
+    if (dragIdx === null || !e.shiftKey || !onSetDependency) return
+    const dragged = tree[dragIdx]?.node
+    if (!dragged || !dragged.depends_on) { setDragIdx(null); return }
+    onSetDependency(dragged.id, null)
+    setDragIdx(null)
+  }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
+      <div className={`flex items-center justify-between mb-3 px-2 -mx-2 rounded-lg transition-colors ${overHeader ? 'bg-accent/10 ring-1 ring-accent/30' : ''}`}
+        onDragOver={handleHeaderDragOver}
+        onDragLeave={() => setOverHeader(false)}
+        onDrop={handleHeaderDrop}
+      >
         <span className="text-[11px] font-medium text-text-secondary">Tareas <span className="text-white">{doneCount}</span><span className="text-text-secondary/40">/{subtasks.length}</span></span>
+        {overHeader && <span className="text-[10px] text-accent">Suelta para convertir en tarea principal</span>}
       </div>
 
       {subtasks.length === 0 ? (
