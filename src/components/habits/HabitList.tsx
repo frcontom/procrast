@@ -34,6 +34,13 @@ function getTrend(habitId: string, logs: HabitLog[], daysInMonth: number): 'up' 
   return 'stable'
 }
 
+function getHabitColor(name: string): string {
+  const palette = ['#A66CFF', '#FF6B6B', '#4CAF50', '#FF9800', '#00BCD4', '#E91E63', '#8BC34A', '#FF5722', '#3F51B5', '#009688', '#FFEB3B', '#795548', '#607D8B', '#F44336', '#2196F3', '#9C27B0']
+  let hash = 0
+  for (let i = 0; i < name.length; i++) { hash = name.charCodeAt(i) + ((hash << 5) - hash) }
+  return palette[Math.abs(hash) % palette.length]
+}
+
 function daysSince(dateStr: string | null): number {
   if (!dateStr) return 999
   return Math.round((Date.now() - new Date(dateStr).getTime()) / 86400000)
@@ -77,9 +84,10 @@ export function HabitList({ habits, logs, daysInMonth, onDelete, onEdit, onReord
         const streak = getStreak(habit.id, logs)
         const trend = getTrend(habit.id, logs, daysInMonth)
         const since = daysSince(streak.lastDate)
-        const pctColor = pct >= 80 ? '#28C76F' : pct >= 40 ? '#FF9800' : '#EA5455'
-        const isDragging = dragIdx === idx
-        const isOver = overIdx === idx
+          const pctColor = pct >= 80 ? '#28C76F' : pct >= 40 ? '#FF9800' : '#EA5455'
+          const isDragging = dragIdx === idx
+          const isOver = overIdx === idx
+          const iconColor = getHabitColor(habit.name)
 
         return (
           <div
@@ -95,7 +103,7 @@ export function HabitList({ habits, logs, daysInMonth, onDelete, onEdit, onReord
           >
             <div className="flex items-center gap-3">
               <span className="text-text-secondary/20 group-hover:text-text-secondary/40 transition-colors cursor-grab active:cursor-grabbing text-xs select-none shrink-0">⠿</span>
-              <span className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0" style={{ backgroundColor: habit.color + '20', color: habit.color }}>
+              <span className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0" style={{ backgroundColor: iconColor + '20', color: iconColor }}>
                 {habit.icon && !habit.icon.startsWith('bi-') ? habit.icon : '◉'}
               </span>
               <span className="text-[13px] font-medium text-white truncate flex-1">{habit.name}</span>
