@@ -93,6 +93,7 @@ export function HabitWeekCircles({ habits, logs }: Props) {
                 )}
               </div>
               <span className={`text-[8px] ${d.isToday ? 'text-accent font-semibold' : 'text-text-secondary/40'} tracking-wide truncate max-w-[48px]`}>{d.dayName}</span>
+              <span className={`text-[7px] ${d.isToday ? 'text-accent/60' : 'text-text-secondary/25'}`}>{d.dayNum}</span>
             </div>
           )
         })}
