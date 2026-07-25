@@ -465,19 +465,22 @@ export function FullscreenPage() {
           </div>
 
           <div className="flex gap-3 mt-4">
-            <button onClick={() => { sessionManager.startSession(isStopwatch ? 480 : durationMinutes, activityType, sessionName, strictMode, false); playStartSound() }}
-              className="px-8 py-3 rounded-xl text-sm font-medium bg-[#156390] hover:bg-[#1a7ab5] text-white transition-all active:scale-[0.97]">
-              ▶ Siguiente
-            </button>
-            <button onClick={() => navigate('/focus')}
-              className="px-8 py-3 rounded-xl text-sm font-medium border border-white/20 text-white/60 hover:text-white/90 hover:border-white/40 transition-all active:scale-[0.97]">
-              Ir a Focus
-            </button>
-            {returnGoalId && (
+            {returnGoalId ? (
               <button onClick={() => navigate(`/tasks?goal=${returnGoalId}`)}
-                className="px-8 py-3 rounded-xl text-sm font-medium border border-accent/40 text-accent hover:text-accent/80 hover:border-accent/60 transition-all active:scale-[0.97]">
-                📋 {returnGoalName || 'Ir a la tarea'}
+                className="px-10 py-3.5 rounded-xl text-base font-semibold bg-accent hover:opacity-90 text-white transition-all active:scale-[0.97] shadow-lg shadow-accent/30">
+                📋 Volver a {returnGoalName || 'la tarea'}
               </button>
+            ) : (
+            <>
+              <button onClick={() => { sessionManager.startSession(isStopwatch ? 480 : durationMinutes, activityType, sessionName, strictMode, false); playStartSound() }}
+                className="px-8 py-3 rounded-xl text-sm font-medium bg-[#156390] hover:bg-[#1a7ab5] text-white transition-all active:scale-[0.97]">
+                ▶ Siguiente
+              </button>
+              <button onClick={() => navigate('/focus')}
+                className="px-8 py-3 rounded-xl text-sm font-medium border border-white/20 text-white/60 hover:text-white/90 hover:border-white/40 transition-all active:scale-[0.97]">
+                Ir a Focus
+              </button>
+            </>
             )}
           </div>
         </div>
