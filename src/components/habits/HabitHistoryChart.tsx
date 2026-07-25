@@ -17,12 +17,13 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
     if (!user || habitsLength === 0) return
     const months: MonthData[] = []
     const now = new Date()
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      months.push({ year: d.getFullYear(), month: d.getMonth() + 1, label: d.toLocaleDateString('es-ES', { month: 'short' }), pct: 0 })
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), i, 1)
+      months.push({ year: d.getFullYear(), month: i + 1, label: d.toLocaleDateString('es-ES', { month: 'short' }), pct: 0 })
     }
     const firstStart = months[0]
-    supabase.from('habit_logs').select('date').eq('user_id', user.id).gte('date', `${firstStart.year}-${String(firstStart.month).padStart(2, '0')}-01`).then(({ data: logs }: any) => {
+    const lastEnd = months[months.length - 1]
+    supabase.from('habit_logs').select('date').eq('user_id', user.id).gte('date', `${firstStart.year}-${String(firstStart.month).padStart(2, '0')}-01`).lte('date', `${lastEnd.year}-${String(lastEnd.month).padStart(2, '0')}-31`).then(({ data: logs }: any) => {
       if (logs) {
         months.forEach((m) => {
           const daysInMonth = new Date(m.year, m.month, 0).getDate()
@@ -41,7 +42,7 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
     <div>
       <div className="flex items-end gap-2" style={{ height: 110 }}>
         {data.map((m, i) => {
-          const isCurrent = i === data.length - 1
+          const isCurrent = m.year === now.getFullYear() && m.month === now.getMonth() + 1
           const h = Math.max(6, (m.pct / maxPct) * 100)
           return (
             <div key={m.label} className="flex-1 flex flex-col items-center gap-1">
