@@ -30,11 +30,12 @@ export function SettingsPage() {
   const save = async () => {
     if (!user) return
     store.setTimerConfig(localConfig)
-    await supabase.from('profiles').update({
+    const { error } = await supabase.from('profiles').update({
       name: store.name,
       activity_type: store.activityType,
       config: { timer: localConfig, ui: { theme: 'dark', language: 'es' }, notifications: { enabled: true, soundEnabled: true } },
     }).eq('user_id', user.id)
+    if (error) { console.error('Save error:', error); return }
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }

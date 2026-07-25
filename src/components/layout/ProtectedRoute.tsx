@@ -14,15 +14,22 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!session?.user?.id) return
-    supabase.from('profiles').select('*').eq('user_id', session.user.id).single().then(({ data }: any) => {
+    supabase.from('profiles').select('*').eq('user_id', session.user.id).maybeSingle().then(({ data }: any) => {
       if (data) {
         setName(data.name)
         setActivityType(data.activity_type)
         if (data.config?.timer) {
           setTimerConfig({ workMinutes: 25, breakMinutes: 5, maxPauseMinutes: 5, ...data.config.timer })
         }
-        setLoaded(true)
+      } else {
+        supabase.from('profiles').insert({
+          user_id: session.user.id,
+          name: 'Focus',
+          activity_type: 'focus',
+          config: { timer: { workMinutes: 25, breakMinutes: 5, maxPauseMinutes: 5 }, ui: { theme: 'dark', language: 'es' }, notifications: { enabled: true, soundEnabled: true } },
+        }).then()
       }
+      setLoaded(true)
     })
   }, [session?.user?.id])
 
