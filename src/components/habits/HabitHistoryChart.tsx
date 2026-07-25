@@ -40,7 +40,7 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
   return (
     <div className="flex gap-3">
       {/* Y-axis */}
-      <div className="flex flex-col justify-between items-end pr-2 text-[9px] text-text-secondary/40 tabular-nums shrink-0" style={{ height: 100, paddingTop: 0, paddingBottom: 16 }}>
+      <div className="flex flex-col justify-between items-end pr-2 text-[9px] text-text-secondary/40 tabular-nums shrink-0" style={{ height: 100 }}>
         <span>100</span>
         <span>75</span>
         <span>50</span>
@@ -49,7 +49,7 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
       </div>
 
       {/* Chart area */}
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         {/* Labels row */}
         <div className="flex gap-2 mb-1">
           {data.map((m, i) => {
@@ -68,11 +68,7 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
         <div className="relative" style={{ height: 100 }}>
           {/* Grid lines */}
           <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
-            <div className="border-t border-white/5" />
-            <div className="border-t border-white/5" />
-            <div className="border-t border-white/5" />
-            <div className="border-t border-white/5" />
-            <div className="border-t border-white/5" />
+            {[0,1,2,3,4].map((i) => <div key={i} className="border-t border-white/5" />)}
           </div>
           {/* Bars */}
           <div className="flex items-end gap-2 absolute inset-0">
@@ -80,7 +76,7 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
               const isCurrent = i === now.getMonth()
               const effectiveDays = isCurrent ? now.getDate() : m.daysInMonth
               const pctToShow = Math.round((m.daysWithLogs / Math.max(1, effectiveDays)) * 100)
-              const h = Math.max(4, (pctToShow / 100) * 100)
+              const h = Math.max(4, pctToShow)
               return (
                 <div key={m.label} className="flex-1 flex flex-col items-center justify-end">
                   <div
