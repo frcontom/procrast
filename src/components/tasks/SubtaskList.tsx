@@ -47,6 +47,20 @@ function buildTree(items: TaskSubtask[]): { node: TaskSubtask; depth: number; ha
   return result
 }
 
+function sumSubtree(subtasks: TaskSubtask[], parentId: string): { estimated: number; completed: number } {
+  const children = subtasks.filter((s) => s.depends_on === parentId)
+  let estimated = 0
+  let completed = 0
+  for (const c of children) {
+    estimated += c.estimated_minutes
+    completed += c.completed_minutes
+    const sub = sumSubtree(subtasks, c.id)
+    estimated += sub.estimated
+    completed += sub.completed
+  }
+  return { estimated, completed }
+}
+
 export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro }: Props) {
   const doneCount = subtasks.filter((s) => s.status === 'completed').length
   const [dragIdx, setDragIdx] = useState<number | null>(null)
@@ -97,10 +111,13 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
             const isOver = overIdx === idx
             const isDone = st.status === 'completed'
             const isChecklist = st.estimated_minutes === 0
-            const pct = st.estimated_minutes > 0 ? Math.min(100, Math.round((st.completed_minutes / st.estimated_minutes) * 100)) : 0
             const diff = DIFFICULTY_BADGE[st.difficulty] || DIFFICULTY_BADGE.normal
             const depSubtask = st.depends_on ? subtasks.find((s) => s.id === st.depends_on) : null
             const isLocked = !!depSubtask && depSubtask.status !== 'completed'
+            const subtree = isChecklist ? sumSubtree(subtasks, st.id) : null
+            const displayEstimated = isChecklist && subtree && (subtree.estimated > 0 || subtree.completed > 0) ? subtree.estimated : st.estimated_minutes
+            const displayCompleted = isChecklist && subtree && (subtree.estimated > 0 || subtree.completed > 0) ? subtree.completed : st.completed_minutes
+            const displayPct = displayEstimated > 0 ? Math.min(100, Math.round((displayCompleted / displayEstimated) * 100)) : 0
 
             return (
               <div key={st.id} className="relative">
@@ -138,19 +155,19 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                         </div>
 
                         <div className="flex items-center gap-1.5 mt-1 text-xs w-full">
-                          {isChecklist ? (
+                          {(displayEstimated === 0 && displayCompleted === 0) ? (
                             <span className="text-text-secondary/40">—</span>
                           ) : (
                             <>
                               <span className="tabular-nums font-medium shrink-0" style={{ color: isDone ? '#28C76F' : '#a0a0b0' }}>
-                                {st.completed_minutes}/{st.estimated_minutes}min
+                                {displayCompleted}/{displayEstimated}min
                               </span>
                               <span className="text-white/20 shrink-0">|</span>
-                              <span className="tabular-nums text-text-secondary/60 shrink-0">⌛ {st.completed_minutes + st.estimated_minutes}</span>
+                              <span className="tabular-nums text-text-secondary/60 shrink-0">⌛ {displayCompleted + displayEstimated}</span>
                               <div className="w-[60%] bg-white/5 rounded-full h-2 overflow-hidden ring-1 ring-white/5 relative">
                                 <div className="h-full rounded-full transition-all duration-700"
-                                  style={{ width: `${pct}%`, background: pct >= 100 ? 'linear-gradient(90deg, #28C76F, #81E6A0)' : pct >= 50 ? 'linear-gradient(90deg, #FF9800, #FFB74D)' : 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
-                                <span className={`absolute inset-0 flex items-center justify-center text-[9px] font-bold ${pct >= 50 ? 'text-white' : 'text-text-secondary'}`}>{pct}%</span>
+                                  style={{ width: `${displayPct}%`, background: displayPct >= 100 ? 'linear-gradient(90deg, #28C76F, #81E6A0)' : displayPct >= 50 ? 'linear-gradient(90deg, #FF9800, #FFB74D)' : 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
+                                <span className={`absolute inset-0 flex items-center justify-center text-[9px] font-bold ${displayPct >= 50 ? 'text-white' : 'text-text-secondary'}`}>{displayPct}%</span>
                               </div>
                             </>
                           )}
