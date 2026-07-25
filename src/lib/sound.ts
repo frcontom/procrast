@@ -8,6 +8,8 @@ function getCtx() {
   return audioCtx
 }
 
+export function getAudioCtx() { return getCtx() }
+
 export function playStartSound() {
   const ctx = getCtx()
   const osc = ctx.createOscillator()

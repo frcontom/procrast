@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTimerStore } from '../store/useTimerStore'
 import { sessionManager } from '../lib/sessionManager'
 import { playStartSound } from '../lib/sound'
+import { getAudioCtx } from '../lib/sound'
 import { formatTime } from '../lib/formatters'
 
 // @ts-ignore - Vite glob import
@@ -202,9 +203,17 @@ export function FullscreenPage() {
       setTimeout(() => setFloatXp(0), 3000)
       if (!playedRef.current && songUrls.length > 0) {
         playedRef.current = true
-        const audio = new Audio(songUrls[Math.floor(Math.random() * songUrls.length)])
-        audio.volume = 0.3
-        audio.play()
+        const url = songUrls[Math.floor(Math.random() * songUrls.length)]
+        const ctx = getAudioCtx()
+        fetch(url).then(r => r.arrayBuffer()).then(buf => ctx.decodeAudioData(buf)).then((buf) => {
+          const src = ctx.createBufferSource()
+          const gain = ctx.createGain()
+          src.buffer = buf
+          gain.gain.setValueAtTime(0.3, ctx.currentTime)
+          src.connect(gain)
+          gain.connect(ctx.destination)
+          src.start()
+        }).catch(() => {})
       }
     }
     if (justCancelled) {
