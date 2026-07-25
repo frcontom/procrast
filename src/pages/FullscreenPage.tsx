@@ -223,6 +223,7 @@ export function FullscreenPage() {
   }, [strictMode])
 
   const handleCancel = async () => {
+    setShowCancelConfirm(false)
     await sessionManager.cancel()
   }
 
