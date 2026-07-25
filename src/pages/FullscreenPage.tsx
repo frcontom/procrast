@@ -20,57 +20,6 @@ const GRADIENTS = [
   'linear-gradient(135deg,#0c0c1e,#1a1a3e,#282850)',
 ]
 
-const QUOTES = [
-  "Tu cuerpo puede con casi todo, es tu mente a la que hay que convencer.",
-  "Rendirse no es una opción.",
-  "Deja de desear y comienza a hacer.",
-  "La disciplina no es hacerlo perfecto, es hacerlo.",
-  "Tu zona de confort es tu mayor prisión.",
-  "A tus metas no les importa cómo te sientes hoy.",
-  "Sin riesgo, sin gloria. Sin fracaso, sin historia.",
-  "Pequeños pasos. Grandes resultados.",
-  "La constancia es el verdadero crecimiento.",
-  "Si te rindes hoy, ¿de qué sirve el esfuerzo de ayer?",
-  "No desees que suceda. Trabaja para que suceda.",
-  "El límite está solo en tu mente.",
-  "Termina lo que iniciaste.",
-  "Hazlo con miedo, pero hazlo.",
-  "Encuentra la forma, no la excusa.",
-  "Hasta que se logre, no digas nada.",
-  "El esfuerzo construye identidad.",
-  "Solo hazlo de una vez.",
-  "Eso que tanto anhelas se consigue con disciplina, no con excusas.",
-  "Tu sueño merece disciplina.",
-  "Controla tu mente, para cambiar tu vida.",
-  "El éxito se construye con disciplina, no con motivación.",
-  "Nunca estarás listo. Empieza ahora.",
-  "El tiempo no pregunta quién está listo.",
-  "Si fuera fácil, todos lo harían.",
-  "No te detengas hasta que estés orgulloso.",
-  "Dentro de un año desearás haber comenzado hoy.",
-  "Tú eres la única persona que puede cambiar tu vida.",
-  "La constancia no hace ruido, pero cambia todo.",
-]
-
-function formatQuote(text: string): string {
-  const words = text.split(' ')
-  const groupSize = words.length > 15 ? 4 : words.length > 10 ? 3 : 2
-  const lines: string[] = []
-  for (let i = 0; i < words.length; i += groupSize) {
-    lines.push(words.slice(i, i + groupSize).join(' '))
-  }
-  return lines.join('<br>')
-}
-
-function quoteFontSize(text: string): number {
-  const len = text.length
-  if (len > 100) return 40
-  if (len > 80) return 46
-  if (len > 65) return 54
-  if (len > 50) return 62
-  return 76
-}
-
 function calculateScore(elapsed: number, total: number, cycleCount: number): number {
   const base = 50
   const completion = Math.round((elapsed / Math.max(total, 1)) * 30)
@@ -83,8 +32,6 @@ export function FullscreenPage() {
   const store = useTimerStore()
   const { state, remainingSeconds, elapsedSeconds, durationMinutes, activityType, sessionName, cycleCount, isStopwatch, strictMode } = store
   const [bgIndex, setBgIndex] = useState(0)
-  const [quote, setQuote] = useState('')
-  const [quoteIdx, setQuoteIdx] = useState(-1)
   const prevStateRef = useRef(state)
   const cursorTimerRef = useRef<number | undefined>(undefined)
   const slideshowRef = useRef<number | undefined>(undefined)
@@ -92,14 +39,6 @@ export function FullscreenPage() {
   const [streak, setStreak] = useState(0)
   const [xpGained, setXpGained] = useState(0)
   const [sessionsToday, setSessionsToday] = useState(0)
-
-  const pickQuote = useCallback(() => {
-    let idx: number
-    do { idx = Math.floor(Math.random() * QUOTES.length) }
-    while (idx === quoteIdx && QUOTES.length > 1)
-    setQuoteIdx(idx)
-    setQuote(QUOTES[idx])
-  }, [quoteIdx])
 
   const pickBg = useCallback(() => {
     setBgIndex((prev) => {
@@ -127,7 +66,6 @@ export function FullscreenPage() {
 
   useEffect(() => {
     if (state === 'IDLE') { navigate('/focus'); return }
-    pickQuote()
     pickBg()
     slideshowRef.current = setInterval(pickBg, 18000)
     document.documentElement.requestFullscreen?.().catch(() => {})
@@ -284,12 +222,7 @@ export function FullscreenPage() {
           </div>
         )}
 
-        {quote && (
-          <div id="fullscreenQuote"
-            className="text-center text-white/70 font-light leading-tight drop-shadow-lg transition-all max-w-full"
-            style={{ fontSize: `${quoteFontSize(quote)}px` }}
-            dangerouslySetInnerHTML={{ __html: formatQuote(quote) }} />
-        )}
+
 
         <div id="fullscreenActions" className="flex gap-3 w-full justify-center">
           <button id="fullscreenPrimary"
