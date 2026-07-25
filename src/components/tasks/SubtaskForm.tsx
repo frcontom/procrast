@@ -6,10 +6,10 @@ interface Props {
 }
 
 export function SubtaskForm({ onSave, onImport }: Props) {
+  const [open, setOpen] = useState<'add' | 'import' | null>(null)
   const [name, setName] = useState('')
   const [minutes, setMinutes] = useState(30)
   const [difficulty, setDifficulty] = useState('normal')
-  const [showImport, setShowImport] = useState(false)
   const [importText, setImportText] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -18,6 +18,7 @@ export function SubtaskForm({ onSave, onImport }: Props) {
     onSave({ name: name.trim(), estimated_minutes: minutes, difficulty })
     setName('')
     setMinutes(30)
+    setOpen(null)
   }
 
   const handleImport = () => {
@@ -28,44 +29,69 @@ export function SubtaskForm({ onSave, onImport }: Props) {
     })
     if (tasks.length > 0 && onImport) onImport(tasks)
     setImportText('')
-    setShowImport(false)
+    setOpen(null)
   }
 
   return (
-    <div className="mt-2 space-y-2">
-      <form onSubmit={handleSubmit} className="flex items-center gap-2">
-        <input type="text" value={name} onChange={(e) => setName(e.target.value.slice(0, 80))}
-          placeholder="Nueva tarea..."
-          className="flex-1 bg-secondary border border-white/10 rounded-lg px-2.5 py-1.5 text-[11px] focus:outline-none focus:border-accent" />
-        <input type="number" value={minutes} onChange={(e) => setMinutes(Number(e.target.value))}
-          className="w-14 bg-secondary border border-white/10 rounded-lg px-2 py-1.5 text-[11px] text-center focus:outline-none focus:border-accent" min={1} />
-        <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}
-          className="bg-secondary border border-white/10 rounded-lg px-1.5 py-1.5 text-[11px] focus:outline-none focus:border-accent text-text-secondary">
-          <option value="easy">🟢</option>
-          <option value="normal">🟡</option>
-          <option value="hard">🔴</option>
-        </select>
-        <button type="submit" className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white px-2.5 py-1.5 rounded-lg text-[11px] transition-all">+</button>
-        <button type="button" onClick={() => setShowImport(!showImport)} className="text-text-secondary hover:text-white text-[11px] transition-colors" title="Importar tareas">📄</button>
-      </form>
+    <>
+      <div className="flex items-center gap-2">
+        <button onClick={() => setOpen('add')}
+          className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white transition-all">+ Tarea</button>
+        <button onClick={() => setOpen('import')}
+          className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-secondary hover:bg-white/10 text-text-secondary transition-all">📄 Masivo</button>
+      </div>
 
-      {showImport && (
-        <div className="bg-secondary/50 rounded-lg p-3 border border-white/10">
-          <div className="text-[10px] text-text-secondary mb-2">📄 Importar tareas — Cada línea: Nombre|Minutos</div>
-          <textarea value={importText} onChange={(e) => setImportText(e.target.value)}
-            placeholder="Verbos TO BE|20&#10;Vocabulario básico|30&#10;Listening A1|40"
-            className="w-full bg-[var(--bg-primary)] border border-white/10 rounded-lg px-2.5 py-2 text-[11px] focus:outline-none focus:border-accent resize-none" rows={4} />
-          <div className="flex gap-2 mt-2">
-            <button onClick={handleImport}
-              className="bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white px-3 py-1.5 rounded-lg text-[10px] transition-all">
-              ✅ Importar {importText.trim().split('\n').filter(Boolean).length} tarea(s)
-            </button>
-            <button onClick={() => setShowImport(false)} className="text-text-secondary hover:text-white text-[10px] px-3 py-1.5 transition-colors">
-              Cancelar
-            </button>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setOpen(null)}>
+          <div className="bg-card rounded-xl border border-white/10 p-5 w-full max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-semibold text-white">{open === 'add' ? 'Nueva tarea' : 'Importar tareas'}</span>
+              <button onClick={() => setOpen(null)} className="text-text-secondary hover:text-white text-lg leading-none">&times;</button>
+            </div>
+
+            {open === 'add' ? (
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <div>
+                  <label className="text-[10px] text-text-secondary uppercase tracking-wider mb-1 block">Nombre</label>
+                  <input type="text" value={name} onChange={(e) => setName(e.target.value.slice(0, 80))}
+                    placeholder="Ej: Verbos TO BE"
+                    className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent" autoFocus />
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="text-[10px] text-text-secondary uppercase tracking-wider mb-1 block">Minutos</label>
+                    <input type="number" value={minutes} onChange={(e) => setMinutes(Number(e.target.value))}
+                      className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent" min={1} />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-[10px] text-text-secondary uppercase tracking-wider mb-1 block">Dificultad</label>
+                    <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}
+                      className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent text-text-secondary">
+                      <option value="easy">🟢 Fácil</option>
+                      <option value="normal">🟡 Normal</option>
+                      <option value="hard">🔴 Difícil</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-2 rounded-lg text-sm font-medium transition-all">Crear tarea</button>
+              </form>
+            ) : (
+              <div className="space-y-3">
+                <div className="text-[11px] text-text-secondary">Cada línea: <code className="text-accent">Nombre|Minutos</code></div>
+                <textarea value={importText} onChange={(e) => setImportText(e.target.value)}
+                  placeholder="Verbos TO BE|20&#10;Vocabulario básico|30&#10;Listening A1|40"
+                  className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent resize-none" rows={5} autoFocus />
+                <div className="flex gap-2">
+                  <button onClick={handleImport}
+                    className="flex-1 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-2 rounded-lg text-sm font-medium transition-all">
+                    ✅ Importar {importText.trim().split('\n').filter(Boolean).length} tarea(s)
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }

@@ -128,11 +128,10 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
       <div id="tk-subtasks" className="bg-card rounded-xl border border-white/10 p-4">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">Subtareas ({doneCount}/{subtasks.length})</span>
-          <button onClick={onEditGoal} className="text-[10px] text-text-secondary hover:text-white transition-colors">✏️ Editar meta</button>
+          <SubtaskForm onSave={onAddSubtask} onImport={onImportSubtasks} />
         </div>
 
         <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} />
-        <SubtaskForm onSave={onAddSubtask} onImport={onImportSubtasks} />
       </div>
 
       {goal.notes && (
