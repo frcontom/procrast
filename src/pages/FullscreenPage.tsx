@@ -348,14 +348,14 @@ export function FullscreenPage() {
                 return (
                   <div key={i} className="flex-1 flex flex-col items-center gap-1">
                     <div className="w-full h-[8px] rounded-full transition-all duration-500 relative overflow-hidden bg-white/[0.04]">
-                      <div className={`absolute inset-0 rounded-full transition-all duration-500 ${isComplete ? 'bg-accent' : ''}`} />
+                      <div className={`absolute inset-0 rounded-full transition-all duration-500 ${isComplete ? 'bg-success' : ''}`} />
                       {isCurrent && (
                         <div className="absolute inset-0 rounded-full transition-all duration-300"
                           style={{ width: `${filled * 100}%`, background: 'linear-gradient(90deg, #A66CFF, #b388ff)' }} />
                       )}
                     </div>
                     <span className={`text-[11px] text-center leading-tight font-medium tracking-wide transition-all duration-500 ${
-                      isComplete ? 'text-accent' : isCurrent ? 'text-white' : 'text-white/20'
+                      isComplete ? 'text-success' : isCurrent ? 'text-white' : 'text-white/20'
                     }`}>
                       {segLabels[i % segLabels.length] || ''}
                     </span>
