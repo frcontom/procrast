@@ -225,6 +225,9 @@ export function FullscreenPage() {
   const handleCancel = async () => {
     setShowCancelConfirm(false)
     await sessionManager.cancel()
+    const goalId = useTimerStore.getState().returnGoalId
+    if (goalId) navigate(`/tasks?goal=${goalId}`)
+    else navigate('/focus')
   }
 
   const prevState = prevStateRef.current
@@ -237,10 +240,8 @@ export function FullscreenPage() {
       setFloatXp(xpGained)
       setTimeout(() => setFloatXp(0), 3000)
     }
-    if (justCancelled) {
-      const goalId = useTimerStore.getState().returnGoalId
-      if (goalId) navigate(`/tasks?goal=${goalId}`)
-      else navigate('/focus')
+    if (justCancelled && !useTimerStore.getState().returnGoalId) {
+      navigate('/focus')
     }
   }, [state])
 
