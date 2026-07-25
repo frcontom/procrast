@@ -11,6 +11,7 @@ import { GoalHistory } from '../components/tasks/GoalHistory'
 import { TodayView } from '../components/tasks/TodayView'
 import { sessionManager } from '../lib/sessionManager'
 import { useTimerStore } from '../store/useTimerStore'
+import { useSettingsStore } from '../store/useSettingsStore'
 
 type TabView = 'metas' | 'hoy' | 'history'
 
@@ -103,17 +104,17 @@ export function TasksPage() {
 
   const startPomodoroFromSubtask = async (st: TaskSubtask) => {
     if (!user) return
-    const remaining = Math.max(1, st.estimated_minutes - st.completed_minutes)
-    const effectiveMinutes = Math.min(remaining, 60) // max 60 min por sesion
+    const settings = useSettingsStore.getState()
+    const sessionMinutes = settings.timerConfig.workMinutes || 25
     const store = useTimerStore.getState()
-    store.setDuration(effectiveMinutes)
+    store.setDuration(sessionMinutes)
     store.setActivityType('focus')
     store.setSessionName(st.name)
     store.setReturnGoal(selectedId, selectedGoal?.name || null)
     sessionManager.setUser(user.id)
     sessionManager.setCurrentSubtask(st.id)
     sessionStorage.setItem('_refreshSubtasks', '1')
-    await sessionManager.startSession(effectiveMinutes, 'focus', st.name, false, false)
+    await sessionManager.startSession(sessionMinutes, 'focus', st.name, false, false)
     navigate('/focus/fullscreen')
   }
 

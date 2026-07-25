@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { TaskSubtask } from '../../supabase/types'
 import { formatMinutes } from '../../lib/formatters'
+import { useSettingsStore } from '../../store/useSettingsStore'
 
 interface Props {
   subtasks: TaskSubtask[]
@@ -68,6 +69,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
   const [overHeader, setOverHeader] = useState(false)
+  const sessionMinutes = useSettingsStore((s) => s.timerConfig.workMinutes) || 25
 
   const tree = buildTree(subtasks)
 
@@ -209,8 +211,8 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                       <div className="flex items-center gap-0.5 shrink-0">
                         {!isChecklist && (
                           <button onClick={() => onStartPomodoro?.(st)}
-                            title={`Faltan ${formatMinutes(Math.max(0, st.estimated_minutes - st.completed_minutes))} — Siguiente sesión ${formatMinutes(Math.max(1, Math.min(st.estimated_minutes - st.completed_minutes, 60)))}`}
-                            className="w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all">▶ {formatMinutes(Math.max(1, Math.min(st.estimated_minutes - st.completed_minutes, 60)))}</button>
+                            title={`Iniciar sesión de ${formatMinutes(sessionMinutes)}`}
+                            className="w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all">▶ {formatMinutes(sessionMinutes)}</button>
                         )}
                         <div className={`flex items-center gap-0.5 ${isDone ? 'opacity-0 group-hover:opacity-100' : ''}`}>
                           {!isDone && (
