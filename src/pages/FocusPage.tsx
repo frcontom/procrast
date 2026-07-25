@@ -12,6 +12,7 @@ import { StatsOverview } from '../components/focus/StatsOverview'
 import { FocusChart } from '../components/focus/FocusChart'
 import { ActivityBreakdown } from '../components/focus/ActivityBreakdown'
 import { SessionHistory } from '../components/focus/SessionHistory'
+import { CycleIndicator } from '../components/focus/CycleIndicator'
 import { supabase } from '../supabase/client'
 
 export function FocusPage() {
@@ -64,6 +65,9 @@ export function FocusPage() {
   }, [])
 
   const handleStart = async () => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
     playStartSound()
     await sessionManager.startSession(store.isStopwatch ? 480 : store.durationMinutes, store.activityType, store.sessionName, store.strictMode, false)
     navigate('/focus/fullscreen')
@@ -111,6 +115,12 @@ export function FocusPage() {
           <div id="focus-session-name" className="flex justify-center pt-2">
             <SessionNameInput value={store.sessionName} onChange={store.setSessionName} disabled={!canConfigure} />
           </div>
+
+          {store.cycleTotal > 0 && (
+            <div className="flex justify-center pt-1">
+              <CycleIndicator current={store.cycleCount} total={store.cycleTotal} />
+            </div>
+          )}
 
           <div id="focus-timer-controls" className="pt-2">
             <TimerControls
