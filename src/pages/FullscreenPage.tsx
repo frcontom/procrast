@@ -301,11 +301,10 @@ export function FullscreenPage() {
           const idealSegments = Math.max(1, Math.round(totalSeconds / 1500))
           const segCount = Math.min(12, Math.max(2, idealSegments))
           const segSeconds = totalSeconds / segCount
-          const messages = [
-            '¡Arrancamos! 💪', 'Primer paso dado 🚀', 'Ya llevamos ritmo ⚡',
-            'Sigue así 🔥', 'La mitad del camino 🌄', 'Más de la mitad ✅',
-            'Cada minuto cuenta ⏱', 'Ya casi lo tienes 🎯', 'Recta final 🏃',
-            'Último esfuerzo 💥', 'Rematando 👊', '¡A cerrar! 🏆',
+          const labels = [
+            '¡Dale!', 'Enfoque', 'Ritmo', 'Persiste',
+            'Mitad', 'Avanza', 'Constancia', 'Cerca',
+            'Empuja', 'Remata', 'Cierra', 'Meta',
           ]
           return (
             <div id="fullscreenProgress" className="w-full">
@@ -317,25 +316,22 @@ export function FullscreenPage() {
                 const isComplete = elapsedSeconds >= segEnd
                 const isCurrent = elapsedSeconds >= segStart && elapsedSeconds < segEnd
                 return (
-                  <div key={i} className="flex-1 h-[8px] rounded-full transition-all duration-500 relative overflow-hidden bg-white/[0.04]">
-                    <div className={`absolute inset-0 rounded-full transition-all duration-500 ${isComplete ? 'bg-accent' : ''}`} />
-                    {isCurrent && (
-                      <div className="absolute inset-0 rounded-full transition-all duration-300"
-                        style={{ width: `${filled * 100}%`, background: 'linear-gradient(90deg, #A66CFF, #b388ff)' }} />
-                    )}
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                    <div className="w-full h-[8px] rounded-full transition-all duration-500 relative overflow-hidden bg-white/[0.04]">
+                      <div className={`absolute inset-0 rounded-full transition-all duration-500 ${isComplete ? 'bg-accent' : ''}`} />
+                      {isCurrent && (
+                        <div className="absolute inset-0 rounded-full transition-all duration-300"
+                          style={{ width: `${filled * 100}%`, background: 'linear-gradient(90deg, #A66CFF, #b388ff)' }} />
+                      )}
+                    </div>
+                    <span className={`text-[8px] text-center leading-tight transition-all duration-500 ${
+                      isComplete ? 'text-accent/70 font-medium' : isCurrent ? 'text-white/60 font-medium' : 'text-white/20'
+                    }`}>
+                      {labels[i] || ''}
+                    </span>
                   </div>
                 )
               })}
-              </div>
-              <div className="flex items-center justify-between text-[11px] mt-2 px-0.5">
-                <span className="text-white/30">🏁</span>
-                <span className="text-accent/80 font-medium">
-                  {(() => {
-                    const segIdx = Math.min(segCount - 1, Math.floor((elapsedSeconds / totalSeconds) * segCount))
-                    return messages[segIdx] || messages[messages.length - 1]
-                  })()}
-                </span>
-                <span className="text-white/30">🏆</span>
               </div>
             </div>
           )
