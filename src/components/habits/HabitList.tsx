@@ -8,6 +8,7 @@ interface Props {
   onDelete: (id: string) => void
   onEdit: (habit: Habit) => void
   onReorder?: (ids: string[]) => void
+  onTogglePrimary?: (id: string, isPrimary: boolean) => void
 }
 
 function getStreak(habitId: string, logs: HabitLog[]): { current: number; lastDate: string | null } {
@@ -37,8 +38,11 @@ function daysSince(dateStr: string | null): number {
   return Math.round((Date.now() - new Date(dateStr).getTime()) / 86400000)
 }
 
-export function HabitList({ habits, logs, daysInMonth, onDelete, onEdit, onReorder }: Props) {
-  const sorted = [...habits].sort((a, b) => a.sort_order - b.sort_order)
+export function HabitList({ habits, logs, daysInMonth, onDelete, onEdit, onReorder, onTogglePrimary }: Props) {
+  const sorted = [...habits].sort((a, b) => {
+    if (a.is_primary !== b.is_primary) return a.is_primary ? -1 : 1
+    return a.sort_order - b.sort_order
+  })
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
 
@@ -111,6 +115,7 @@ export function HabitList({ habits, logs, daysInMonth, onDelete, onEdit, onReord
                 {trend === 'up' ? <span className="text-[#28C76F] text-xs">📈</span> : trend === 'down' ? <span className="text-[#EA5455] text-xs">📉</span> : <span className="text-white/40 text-xs">📊</span>}
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                <button onClick={() => onTogglePrimary?.(habit.id, !habit.is_primary)} className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs border transition-all ${habit.is_primary ? 'bg-[#FFD700]/15 border-[#FFD700]/30 text-[#FFD700]' : 'bg-white/5 border-white/[0.06] text-white/20 hover:text-[#FFD700] hover:border-[#FFD700]/30'}`} title={habit.is_primary ? 'Quitar importancia' : 'Marcar como importante'}>📌</button>
                 <button onClick={() => onEdit(habit)} className="w-7 h-7 flex items-center justify-center rounded-lg text-xs bg-white/5 border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Editar">✏️</button>
                 <button onClick={() => onDelete(habit.id)} className="w-7 h-7 flex items-center justify-center rounded-lg text-xs bg-white/5 border border-white/[0.06] text-danger/50 hover:bg-danger/10 hover:border-danger/30 hover:text-danger transition-all" title="Eliminar">🗑️</button>
               </div>
