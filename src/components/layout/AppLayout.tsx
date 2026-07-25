@@ -37,7 +37,7 @@ export function AppLayout() {
             ☰
           </button>
           <span className="text-sm text-text-secondary">Férreo — Focus Mode</span>
-          <span className="ml-auto text-xs text-text-secondary/60 tabular-nums">{dayIcon} {clock}</span>
+          <span className="ml-auto text-xs text-text-secondary/60 tabular-nums">{clock} {dayIcon}</span>
         </header>
 
         <main className="p-6 w-full">
