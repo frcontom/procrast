@@ -348,7 +348,7 @@ export function FullscreenPage() {
             <div id="fullscreenProgress" className="w-full mt-6">
               <div className="relative mb-1">
                 <div className="absolute -top-7 transition-all duration-500 ease-linear text-2xl filter drop-shadow-[0_0_12px_rgba(166,108,255,0.8)]"
-                  style={{ left: `${(1 - remainingSeconds / totalSeconds) * 100}%`, transform: 'translateX(-50%)' }}>
+                  style={{ left: `calc(${(1 - remainingSeconds / totalSeconds) * 100}% - 8px)`, transform: 'translateX(-50%)' }}>
                   🧠
                 </div>
               </div>
