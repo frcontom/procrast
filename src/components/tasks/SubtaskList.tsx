@@ -92,15 +92,10 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
         onSetDependency(dragged.id, newParent)
       }
     } else if (onReorder) {
-      // Si el destino tiene distinto padre, cambiar dependencia en vez de reordenar
-      if (dragged.depends_on !== target.id && onSetDependency) {
-        onSetDependency(dragged.id, target.id)
-      } else {
-        const flat = tree.map((t) => t.node)
-        const [moved] = flat.splice(dragIdx, 1)
-        flat.splice(idx, 0, moved)
-        onReorder(flat.map((s) => s.id))
-      }
+      const flat = tree.map((t) => t.node)
+      const [moved] = flat.splice(dragIdx, 1)
+      flat.splice(idx, 0, moved)
+      onReorder(flat.map((s) => s.id))
     }
 
     setDragIdx(null)
@@ -212,7 +207,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
 
                       <div className="flex items-center gap-0.5 shrink-0">
                         {!isChecklist && (
-                          <button onClick={() => onStartPomodoro?.(st)} className="w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Iniciar Pomodoro">▶ {st.estimated_minutes}min</button>
+                          <button onClick={() => onStartPomodoro?.(st)} className="w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Iniciar Pomodoro">▶ {Math.max(1, Math.min(st.estimated_minutes - st.completed_minutes, 60))}min</button>
                         )}
                         <div className={`flex items-center gap-0.5 ${isDone ? 'opacity-0 group-hover:opacity-100' : ''}`}>
                           {!isDone && (

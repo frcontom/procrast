@@ -103,15 +103,17 @@ export function TasksPage() {
 
   const startPomodoroFromSubtask = async (st: TaskSubtask) => {
     if (!user) return
+    const remaining = Math.max(1, st.estimated_minutes - st.completed_minutes)
+    const effectiveMinutes = Math.min(remaining, 60) // max 60 min por sesion
     const store = useTimerStore.getState()
-    store.setDuration(st.estimated_minutes)
+    store.setDuration(effectiveMinutes)
     store.setActivityType('focus')
     store.setSessionName(st.name)
     store.setReturnGoal(selectedId, selectedGoal?.name || null)
     sessionManager.setUser(user.id)
     sessionManager.setCurrentSubtask(st.id)
     sessionStorage.setItem('_refreshSubtasks', '1')
-    await sessionManager.startSession(st.estimated_minutes, 'focus', st.name, false, false)
+    await sessionManager.startSession(effectiveMinutes, 'focus', st.name, false, false)
     navigate('/focus/fullscreen')
   }
 
