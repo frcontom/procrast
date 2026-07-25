@@ -349,6 +349,7 @@ export function FullscreenPage() {
               const engine = sessionManager.getEngine()
               engine.reset()
               const wd = store.workDuration > 0 ? store.workDuration : durationMinutes
+              store.setCycleCount(store.cycleCount + 1)
               store.setPhase('work')
               store.setDuration(wd)
               sessionManager.startSession(wd, activityType, sessionName, strictMode, false)

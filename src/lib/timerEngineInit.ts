@@ -1,5 +1,6 @@
 import { sessionManager } from './sessionManager'
 import { useTimerStore } from '../store/useTimerStore'
+import { useSettingsStore } from '../store/useSettingsStore'
 import { playFinishSound, playWarningSound, playStartSound } from './sound'
 
 let initialized = false
@@ -27,8 +28,9 @@ export function initTimerEngine() {
     if (st.phase === 'work' && st.cycleTotal > 0 && st.cycleCount < st.cycleTotal) {
       // Guardar duracion original del trabajo antes del descanso
       st.setWorkDuration(st.durationMinutes)
-      const isLongBreak = (st.cycleCount + 1) % st.cycleTotal === 0
-      const breakMinutes = isLongBreak ? 15 : 5
+      const settings = useSettingsStore.getState()
+      const isLongBreak = st.cycleCount % st.cycleTotal === 0
+      const breakMinutes = isLongBreak ? settings.timerConfig.longBreakMinutes : settings.timerConfig.shortBreakMinutes
 
       st.setPhase(isLongBreak ? 'long_break' : 'short_break')
       st.setDuration(breakMinutes)

@@ -152,6 +152,7 @@ export function FocusPage() {
                   const engine = sessionManager.getEngine()
                   engine.reset()
                   const workMin = store.workDuration > 0 ? store.workDuration : store.durationMinutes
+                  store.setCycleCount(store.cycleCount + 1)
                   store.setPhase('work')
                   store.setDuration(workMin)
                   sessionManager.startSession(workMin, store.activityType, store.sessionName, store.strictMode, false)
