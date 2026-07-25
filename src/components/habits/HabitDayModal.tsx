@@ -27,10 +27,10 @@ export function HabitDayModal({ dateStr, habits, logs, isToday, onClose, onToggl
           {habits.map((habit) => {
             const done = isDone(habit.id)
             return (
-              <div key={habit.id} className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-secondary/50">
+              <div key={habit.id} className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-all ${done ? 'bg-[#28C76F]/8' : 'bg-secondary/50'}`}>
                 <div className="flex items-center gap-2.5">
-                  <span style={{ color: habit.color }}>{habit.icon}</span>
-                  <span className="text-sm text-white">{habit.name}</span>
+                  <span className="text-base shrink-0" style={{ color: done ? '#28C76F' : habit.color }}>{habit.icon && !habit.icon.startsWith('bi-') ? habit.icon : '◉'}</span>
+                  <span className={`text-sm transition-all ${done ? 'text-white/50 line-through' : 'text-white'}`}>{habit.name}</span>
                 </div>
                 {isToday ? (
                   <button
