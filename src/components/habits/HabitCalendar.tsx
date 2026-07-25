@@ -23,7 +23,6 @@ export function HabitCalendar({ habits, logs, year, month, onDayClick }: Props) 
     const dayLogs = logs.filter((l) => l.date === dateStr)
     const doneCount = dayLogs.length
     const allDone = habits.length > 0 && doneCount >= habits.length
-    const someDone = doneCount > 0 && !allDone
 
     const pct = habits.length > 0 ? Math.round((doneCount / habits.length) * 100) : 0
 
@@ -41,7 +40,7 @@ export function HabitCalendar({ habits, logs, year, month, onDayClick }: Props) 
     }
     else if (isPast && doneCount === 0 && habits.length > 0) { bg = 'bg-[#EA5455]/8'; icon = '❌' }
 
-    return { day, dateStr, isToday, isPast, bg, bgStyle, icon, label, doneCount }
+    return { day, dateStr, isToday, isPast, bg, bgStyle, icon, label, allDone }
   })
 
   return (
