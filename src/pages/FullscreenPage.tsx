@@ -481,13 +481,13 @@ export function FullscreenPage() {
             <div className="text-5xl mb-4">😤</div>
             <h3 className="text-lg font-bold text-white mb-1">¿Rendirte?</h3>
             <p className="text-sm text-text-secondary mb-6">Si cancelas ahora perderás el progreso de esta sesión.</p>
-            <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
               <button onClick={() => setShowCancelConfirm(false)}
-                className="w-full px-5 py-3 rounded-xl text-sm font-semibold bg-accent hover:bg-accent-hover text-white transition-all active:scale-[0.97] shadow-lg shadow-accent/20">
-                💪 Seguir enfocado
+                className="flex-1 px-4 py-3 rounded-xl text-sm font-semibold bg-accent hover:bg-accent-hover text-white transition-all active:scale-[0.97] shadow-lg shadow-accent/20">
+                💪 Seguir
               </button>
               <button onClick={handleCancel}
-                className="w-full px-5 py-3 rounded-xl text-sm font-medium border-2 border-danger/40 text-danger hover:bg-danger/10 hover:border-danger transition-all active:scale-[0.97]">
+                className="flex-1 px-4 py-3 rounded-xl text-sm font-medium border-2 border-danger/40 text-danger hover:bg-danger/10 hover:border-danger transition-all active:scale-[0.97]">
                 Rendirme 😤
               </button>
             </div>
