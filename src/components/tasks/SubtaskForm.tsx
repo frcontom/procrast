@@ -1,16 +1,27 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import type { TaskSubtask } from '../../supabase/types'
 
 interface Props {
   onSave: (data: { name: string; estimated_minutes: number; difficulty: string }) => void
   onImport?: (tasks: { name: string; estimated_minutes: number; difficulty: string }[]) => void
+  editSubtask?: TaskSubtask | null
+  onCloseEdit?: () => void
 }
 
-export function SubtaskForm({ onSave, onImport }: Props) {
+export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit }: Props) {
   const [open, setOpen] = useState<'add' | 'import' | null>(null)
   const [name, setName] = useState('')
   const [minutes, setMinutes] = useState(30)
   const [difficulty, setDifficulty] = useState('normal')
   const [importText, setImportText] = useState('')
+
+  useEffect(() => {
+    if (editSubtask) {
+      setName(editSubtask.name)
+      setMinutes(editSubtask.estimated_minutes)
+      setDifficulty(editSubtask.difficulty)
+    }
+  }, [editSubtask])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,6 +29,7 @@ export function SubtaskForm({ onSave, onImport }: Props) {
     onSave({ name: name.trim(), estimated_minutes: minutes, difficulty })
     setName('')
     setMinutes(30)
+    if (editSubtask) { onCloseEdit?.(); return }
     setOpen(null)
   }
 
@@ -32,6 +44,15 @@ export function SubtaskForm({ onSave, onImport }: Props) {
     setOpen(null)
   }
 
+  const modalOpen = open || editSubtask
+  const modalTitle = editSubtask ? 'Editar tarea' : open === 'add' ? 'Nueva tarea' : 'Importar tareas'
+  const isEdit = !!editSubtask
+
+  const close = () => {
+    if (editSubtask) { onCloseEdit?.(); return }
+    setOpen(null)
+  }
+
   return (
     <>
       <div className="flex items-center gap-2">
@@ -41,15 +62,15 @@ export function SubtaskForm({ onSave, onImport }: Props) {
           className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-secondary hover:bg-white/10 text-text-secondary transition-all">📄 Masivo</button>
       </div>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setOpen(null)}>
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={close}>
           <div className="bg-card rounded-xl border border-white/10 p-5 w-full max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-semibold text-white">{open === 'add' ? 'Nueva tarea' : 'Importar tareas'}</span>
-              <button onClick={() => setOpen(null)} className="text-text-secondary hover:text-white text-lg leading-none">&times;</button>
+              <span className="text-sm font-semibold text-white">{modalTitle}</span>
+              <button onClick={close} className="text-text-secondary hover:text-white text-lg leading-none">&times;</button>
             </div>
 
-            {open === 'add' ? (
+            {isEdit || open === 'add' ? (
               <form onSubmit={handleSubmit} className="space-y-3">
                 <div>
                   <label className="text-[10px] text-text-secondary uppercase tracking-wider mb-1 block">Nombre</label>
@@ -73,7 +94,7 @@ export function SubtaskForm({ onSave, onImport }: Props) {
                     </select>
                   </div>
                 </div>
-                <button type="submit" className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-2 rounded-lg text-sm font-medium transition-all">Crear tarea</button>
+                <button type="submit" className="w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white py-2 rounded-lg text-sm font-medium transition-all">{isEdit ? 'Guardar cambios' : 'Crear tarea'}</button>
               </form>
             ) : (
               <div className="space-y-3">

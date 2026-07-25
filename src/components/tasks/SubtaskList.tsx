@@ -1,9 +1,8 @@
-import type { TaskSubtask } from '../../supabase/types'
-
 interface Props {
   subtasks: TaskSubtask[]
   onToggle: (id: string, status: string) => void
   onDelete: (id: string) => void
+  onEdit?: (st: TaskSubtask) => void
 }
 
 const DIFFICULTY_BADGE: Record<string, { icon: string; color: string }> = {
@@ -12,7 +11,7 @@ const DIFFICULTY_BADGE: Record<string, { icon: string; color: string }> = {
   hard: { icon: '🔴', color: '#FF6B6B' },
 }
 
-export function SubtaskList({ subtasks, onToggle, onDelete }: Props) {
+export function SubtaskList({ subtasks, onToggle, onDelete, onEdit }: Props) {
   const sorted = [...subtasks].sort((a, b) => a.sort_order - b.sort_order)
   const doneCount = sorted.filter((s) => s.status === 'completed').length
 
@@ -66,21 +65,20 @@ export function SubtaskList({ subtasks, onToggle, onDelete }: Props) {
                         <span className="text-xs shrink-0" title={diff.icon}>{diff.icon}</span>
                       </div>
 
-                      <div className="flex items-center gap-1.5 mt-1 text-xs">
-                        <span className="tabular-nums font-medium" style={{ color: isDone ? '#28C76F' : '#a0a0b0' }}>
+                      <div className="flex items-center gap-1.5 mt-1 text-xs w-full">
+                        <span className="tabular-nums font-medium shrink-0" style={{ color: isDone ? '#28C76F' : '#a0a0b0' }}>
                           {st.completed_minutes}/{st.estimated_minutes}min
                         </span>
-                        <span className="text-white/20">|</span>
-                        <span className={`tabular-nums font-medium ${pct >= 100 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-text-secondary'}`}>
-                          {pct}%
-                        </span>
-                        <span className="text-white/20">|</span>
-                        <span className="tabular-nums text-text-secondary/60">⌛ {st.completed_minutes + st.estimated_minutes}</span>
-                        <div className="flex-1 bg-white/5 rounded-full h-2 overflow-hidden max-w-[100px] ring-1 ring-white/5">
+                        <span className="text-white/20 shrink-0">|</span>
+                        <span className="tabular-nums text-text-secondary/60 shrink-0">⌛ {st.completed_minutes + st.estimated_minutes}</span>
+                        <div className="w-[60%] bg-white/5 rounded-full h-2 overflow-hidden ring-1 ring-white/5 relative">
                           <div
                             className="h-full rounded-full transition-all duration-700"
                             style={{ width: `${pct}%`, background: pct >= 100 ? 'linear-gradient(90deg, #28C76F, #81E6A0)' : pct >= 50 ? 'linear-gradient(90deg, #FF9800, #FFB74D)' : 'linear-gradient(90deg, var(--accent), #b388ff)' }}
                           />
+                          <span className={`absolute inset-0 flex items-center justify-center text-[9px] font-bold ${pct >= 50 ? 'text-white' : 'text-text-secondary'}`}>
+                            {pct}%
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -91,7 +89,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete }: Props) {
                           <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Iniciar Pomodoro">▶</button>
                           <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary/40 hover:bg-white/10 hover:border-white/20 transition-all" title="Subir">▲</button>
                           <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary/40 hover:bg-white/10 hover:border-white/20 transition-all" title="Bajar">▼</button>
-                          <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Editar">✏️</button>
+                          <button onClick={() => onEdit?.(st)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Editar">✏️</button>
                           <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Historial">🕐</button>
                         </>
                       )}

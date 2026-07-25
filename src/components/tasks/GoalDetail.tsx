@@ -13,16 +13,18 @@ interface Props {
   onSubtaskToggle: (id: string, status: string) => void
   onSubtaskDelete: (id: string) => void
   onAddSubtask: (data: any) => void
+  onEditSubtask?: (id: string, data: any) => void
   onImportSubtasks?: (tasks: any[]) => void
 }
 
 const PRIORITY_LABELS: Record<string, string> = { critical: 'Crítica', high: 'Alta', normal: 'Normal', low: 'Baja' }
 const PRIORITY_COLORS: Record<string, string> = { critical: '#FF6B6B', high: '#FF9800', normal: '#60A5FA', low: '#4CAF50' }
 
-export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onImportSubtasks }: Props) {
+export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onEditSubtask, onImportSubtasks }: Props) {
   const user = useUser()
   const [links, setLinks] = useState<any[]>([])
   const [todayMin, setTodayMin] = useState(0)
+  const [editingSubtask, setEditingSubtask] = useState<TaskSubtask | null>(null)
 
   const goalIcon = goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'
 
@@ -129,10 +131,13 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
       <div id="tk-subtasks" className="bg-card rounded-xl border border-white/10 p-4">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">Subtareas ({doneCount}/{subtasks.length})</span>
-          <SubtaskForm onSave={onAddSubtask} onImport={onImportSubtasks} />
+          <SubtaskForm onSave={(data) => {
+            if (editingSubtask) onEditSubtask?.(editingSubtask.id, data)
+            else onAddSubtask(data)
+          }} onImport={onImportSubtasks} editSubtask={editingSubtask} onCloseEdit={() => setEditingSubtask(null)} />
         </div>
 
-        <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} />
+        <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} />
       </div>
 
       {goal.notes && (
