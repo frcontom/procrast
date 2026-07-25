@@ -8,7 +8,7 @@ export function CycleIndicator({ current, total }: Props) {
 
   return (
     <div className="flex items-center gap-2 text-xs text-text-secondary">
-      <span>Ciclos:</span>
+      <span>🔄 {current}/{total}</span>
       <div className="flex gap-1">
         {Array.from({ length: total }, (_, i) => (
           <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i < current ? 'bg-accent' : 'bg-secondary'}`} />

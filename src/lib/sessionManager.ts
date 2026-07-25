@@ -38,6 +38,10 @@ export class SessionManager {
     store.setStrictMode(strictMode)
     store.setLockdownMode(lockdownMode)
     store.setIsStopwatch(isStopwatch)
+
+    if (store.phase === 'work' && store.cycleTotal > 0 && store.cycleCount === 0) {
+      store.setCycleCount(1)
+    }
   }
 
   pause() {

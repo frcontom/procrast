@@ -27,11 +27,9 @@ export function initTimerEngine() {
     if (st.phase === 'work' && st.cycleTotal > 0 && st.cycleCount < st.cycleTotal) {
       // Guardar duracion original del trabajo antes del descanso
       st.setWorkDuration(st.durationMinutes)
-      const newCount = st.cycleCount + 1
-      const isLongBreak = newCount % st.cycleTotal === 0
+      const isLongBreak = (st.cycleCount + 1) % st.cycleTotal === 0
       const breakMinutes = isLongBreak ? 15 : 5
 
-      st.setCycleCount(newCount)
       st.setPhase(isLongBreak ? 'long_break' : 'short_break')
       st.setDuration(breakMinutes)
       playFinishSound()
@@ -42,7 +40,9 @@ export function initTimerEngine() {
     }
 
     if (st.phase !== 'work' && st.cycleTotal > 0) {
-      // Restaurar duracion del trabajo guardada antes del descanso
+      // Incrementar ciclo y restaurar duracion del trabajo
+      const nextCount = st.cycleCount + 1
+      st.setCycleCount(nextCount)
       const workMin = st.workDuration > 0 ? st.workDuration : st.durationMinutes
       st.setPhase('work')
       st.setDuration(workMin)

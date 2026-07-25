@@ -260,17 +260,6 @@ export function FullscreenPage() {
           </div>
         )}
 
-        {cycleCount > 0 && (
-          <div className="flex items-center gap-2 text-sm text-white/50">
-            <span>🔄 Ciclo {cycleCount}/{cycleTotal}</span>
-            <div className="flex gap-1">
-              {Array.from({ length: cycleTotal }, (_, i) => (
-                <div key={i} className={`w-2 h-2 rounded-full ${i < cycleCount ? 'bg-accent' : 'bg-white/10'}`} />
-              ))}
-            </div>
-          </div>
-        )}
-
         <div id="fullscreenTimerRingContainer" className="relative w-[360px] h-[360px]">
           <div id="fullscreenRingTrack"
             className="absolute inset-0 rounded-full"
@@ -325,7 +314,8 @@ export function FullscreenPage() {
           <div id="fullscreenMiniStats" className="flex items-center gap-0 text-lg text-white/70 animate-[breatheFadeIn_0.3s_ease]">
             <span className="px-5 border-r border-white/10">{streakEmoji(streak)} <span id="fsStreak">{streak}</span></span>
             <span className="px-5 border-r border-white/10">⚡ <span id="fsXp">{xpGained}</span> XP</span>
-            <span className="px-5">📊 <span id="fsToday">{sessionsToday}</span> hoy</span>
+            <span className="px-5 border-r border-white/10">📊 <span id="fsToday">{sessionsToday}</span> hoy</span>
+            {cycleTotal > 0 && <span className="px-5">🔄 {cycleCount}/{cycleTotal}</span>}
           </div>
         )}
 
