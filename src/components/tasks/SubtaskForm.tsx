@@ -89,8 +89,10 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtas
           className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white transition-all">+ Tarea</button>
         <button onClick={() => setOpen('import')}
           className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-secondary hover:bg-white/10 text-text-secondary transition-all">📄 Masivo</button>
-        <button onClick={() => subtaskList && subtaskList.length > 0 && setShowClean(true)}
-          className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium border border-danger/20 text-danger/60 hover:bg-danger/10 hover:border-danger/40 hover:text-danger transition-all">🧹</button>
+        {subtaskList && subtaskList.length > 0 && (
+          <button onClick={() => setShowClean(true)}
+            className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium border border-danger/20 text-danger/60 hover:bg-danger/10 hover:border-danger/40 hover:text-danger transition-all">🧹</button>
+        )}
       </div>
 
       {modalOpen && (
