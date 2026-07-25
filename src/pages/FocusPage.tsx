@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useUser } from '../supabase/auth'
 import { useTimerStore } from '../store/useTimerStore'
 import { sessionManager } from '../lib/sessionManager'
-import { playStartSound, playFinishSound, playWarningSound } from '../lib/sound'
+import { playStartSound } from '../lib/sound'
 import { TimerConfigBar } from '../components/focus/TimerConfigBar'
 import { TimerDisplay } from '../components/focus/TimerDisplay'
 import { TimerControls } from '../components/focus/TimerControls'
@@ -30,30 +30,16 @@ export function FocusPage() {
   }, [user])
 
   useEffect(() => {
-    const engine = sessionManager.getEngine()
-    const unsubs = [
-      engine.on('TICK', () => {
-        const s = engine.getSnapshot()
-        store.setRemaining(s.remainingSeconds)
-        store.setElapsed(s.elapsedSeconds)
-        store.setProgress(s.progressPercent)
-        if (!store.isStopwatch && s.remainingSeconds <= 10 && s.remainingSeconds > 0) playWarningSound()
-      }),
-      engine.on('FINISH', async () => {
-        await sessionManager.finish()
-        playFinishSound()
-        store.setFinishedAt(new Date().toISOString())
-        store.setRemaining(0)
-        store.setProgress(100)
-        setLastXp(50 + Math.round(store.durationMinutes * 1))
-        setTimeout(() => setLastXp(0), 4000)
-        supabase.from('sessions').select('*').eq('user_id', user!.id).order('started_at', { ascending: false }).limit(500).then(({ data }: any) => {
+    if (store.state === 'FINISHED') {
+      setLastXp(50 + Math.round(store.durationMinutes * 1))
+      setTimeout(() => setLastXp(0), 4000)
+      if (user) {
+        supabase.from('sessions').select('*').eq('user_id', user.id).order('started_at', { ascending: false }).limit(500).then(({ data }: any) => {
           if (data) setSessions(data)
         })
-      }),
-    ]
-    return () => unsubs.forEach((u) => u())
-  }, [])
+      }
+    }
+  }, [store.state])
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
