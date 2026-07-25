@@ -152,7 +152,7 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
               if (a.status !== b.status) return a.status === 'active' ? -1 : 1
               return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
             }).map((goal) => {
-              const goalPct = goal.estimated_minutes > 0 ? Math.min(100, Math.round((Math.min(goal.estimated_minutes, goal.estimated_minutes) / goal.estimated_minutes) * 100)) : 0
+              const goalPct = goal.estimated_minutes > 0 ? Math.min(100, Math.round((totalFromLinks / goal.estimated_minutes) * 100)) : 0
               const status = goalPct >= 100 ? 'completed' : goalPct >= 40 ? 'on_track' : 'behind'
               const statusLabel = status === 'completed' ? 'Completado' : status === 'on_track' ? 'Al día' : 'Atrasado'
               const statusColor = status === 'completed' ? '#28C76F' : status === 'on_track' ? '#28C76F' : '#EA5455'
@@ -177,9 +177,7 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
                       <div className="h-full rounded-full transition-all duration-500" style={{ width: `${goalPct}%`, backgroundColor: statusColor }} />
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-text-secondary">
-                      <span>{goal.estimated_minutes}min</span>
-                      <span>·</span>
-                      <span>{goal.estimated_minutes} tarea(s)</span>
+                      <span>{goal.estimated_minutes || totalFromLinks}min estimados</span>
                       <span>·</span>
                       <span>⌛ {daysToDeadline}d restantes</span>
                       <span>·</span>
