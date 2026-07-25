@@ -16,10 +16,12 @@ export function HabitWeekCircles({ habits, logs }: Props) {
     const d = new Date(weekStart)
     d.setDate(weekStart.getDate() + i)
     const dateStr = d.toISOString().slice(0, 10)
+    const dayMonth = `${d.getDate()}/${d.getMonth() + 1}`
     const doneCount = habits.filter((h) => logs.some((l) => l.habit_id === h.id && l.date === dateStr)).length
     return {
       dateStr,
       dayName: DAYS[d.getDay()],
+      dayMonth,
       dayNum: d.getDate(),
       allDone: doneCount >= habits.length && habits.length > 0,
       someDone: doneCount > 0 && !(doneCount >= habits.length && habits.length > 0),
@@ -93,7 +95,7 @@ export function HabitWeekCircles({ habits, logs }: Props) {
                 )}
               </div>
               <span className={`text-[8px] ${d.isToday ? 'text-accent font-semibold' : 'text-text-secondary/40'} tracking-wide truncate max-w-[48px]`}>{d.dayName}</span>
-              <span className={`text-[7px] ${d.isToday ? 'text-accent/60' : 'text-text-secondary/25'}`}>{d.dayNum}</span>
+              <span className={`text-[7px] ${d.isToday ? 'text-accent/60' : 'text-text-secondary/25'}`}>{d.dayMonth}</span>
             </div>
           )
         })}
