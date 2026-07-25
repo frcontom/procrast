@@ -76,10 +76,10 @@ export function SubtaskList({ subtasks, onToggle, onDelete }: Props) {
                         </span>
                         <span className="text-white/20">|</span>
                         <span className="tabular-nums text-text-secondary/60">⌛ {st.completed_minutes + st.estimated_minutes}</span>
-                        <div className="flex-1 bg-[var(--bg-primary)] rounded-full h-[3px] overflow-hidden max-w-[80px]">
+                        <div className="flex-1 bg-white/5 rounded-full h-2 overflow-hidden max-w-[100px] ring-1 ring-white/5">
                           <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{ width: `${pct}%`, backgroundColor: pct >= 100 ? '#28C76F' : pct >= 50 ? '#FF9800' : 'var(--accent)' }}
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{ width: `${pct}%`, background: pct >= 100 ? 'linear-gradient(90deg, #28C76F, #81E6A0)' : pct >= 50 ? 'linear-gradient(90deg, #FF9800, #FFB74D)' : 'linear-gradient(90deg, var(--accent), #b388ff)' }}
                           />
                         </div>
                       </div>
