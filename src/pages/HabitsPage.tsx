@@ -124,9 +124,12 @@ export function HabitsPage() {
         <h2 className="text-lg font-bold text-white flex items-center gap-2">
           <span className="text-accent">📋</span> HÁBITOS
         </h2>
-        <div id="hm-nav" className="flex items-center gap-1">
+        <div id="hm-nav" className="flex items-center gap-1.5">
+          <button id="hm-add-btn" onClick={() => setShowForm(true)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-accent hover:opacity-90 text-white transition-all">+ Nuevo</button>
+          <button id="hm-import-btn" onClick={() => setShowImport(true)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-secondary hover:bg-white/10 text-text-secondary hover:text-white transition-all">📄 Masivo</button>
+          <div className="w-px h-5 bg-white/10 mx-1" />
           <button onClick={prevMonth} className="px-2 py-1 rounded text-xs text-text-secondary hover:text-white hover:bg-white/5 transition-all">←</button>
-          <span id="hm-month-label" className="text-sm font-bold min-w-[120px] text-center text-white capitalize">{monthLabel}</span>
+          <span id="hm-month-label" className="text-sm font-bold w-[120px] text-center text-white capitalize">{monthLabel}</span>
           <button onClick={nextMonth} className="px-2 py-1 rounded text-xs text-text-secondary hover:text-white hover:bg-white/5 transition-all">→</button>
         </div>
       </div>
@@ -135,21 +138,6 @@ export function HabitsPage() {
       <div id="hm-list-card" className="bg-card rounded-xl border border-white/10 p-4">
         <div id="hm-list-title" className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-3">📌 Hábitos de {monthLabel}</div>
         <div id="hm-list"><HabitList habits={habits} logs={logs} daysInMonth={daysInMonth} onDelete={deleteHabit} onEdit={(h) => { setEditHabit(h); setShowForm(true) }} /></div>
-        <div id="hm-add-row" className="flex items-center gap-2 mt-3">
-          <input id="hm-new-input"
-            type="text"
-            placeholder="Nuevo hábito..."
-            className="flex-1 bg-secondary border border-white/10 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-accent text-white"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
-                saveHabit({ name: (e.target as HTMLInputElement).value.trim() })
-                ;(e.target as HTMLInputElement).value = ''
-              }
-            }}
-          />
-          <button id="hm-add-btn" onClick={() => setShowForm(true)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-accent hover:opacity-90 text-white transition-all shrink-0">+ Añadir</button>
-          <button id="hm-import-btn" onClick={() => setShowImport(true)} className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-secondary hover:bg-white/10 text-text-secondary transition-all shrink-0">📄</button>
-        </div>
       </div>
 
       {/* Weekly Circles */}
