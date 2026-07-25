@@ -39,7 +39,7 @@ export function ActivityBreakdown({ sessions }: Props) {
       <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-4">Por actividad</h3>
       <div className="flex items-center gap-4">
         <div className="w-32 h-32">
-          <Doughnut
+          <Doughnut key="activity-doughnut"
             data={{
               labels,
               datasets: [{ data, backgroundColor: colors, borderWidth: 0 }],
