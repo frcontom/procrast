@@ -7,6 +7,8 @@ interface MonthData {
   month: number
   label: string
   pct: number
+  daysWithLogs: number
+  daysInMonth: number
 }
 
 export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
@@ -19,16 +21,16 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
     const months: MonthData[] = []
     for (let i = 0; i < 12; i++) {
       const d = new Date(now.getFullYear(), i, 1)
-      months.push({ year: d.getFullYear(), month: i + 1, label: d.toLocaleDateString('es-ES', { month: 'short' }), pct: 0 })
+      months.push({ year: d.getFullYear(), month: i + 1, label: d.toLocaleDateString('es-ES', { month: 'short' }), pct: 0, daysWithLogs: 0, daysInMonth: 0 })
     }
     const firstStart = months[0]
     const lastEnd = months[months.length - 1]
     supabase.from('habit_logs').select('date').eq('user_id', user.id).gte('date', `${firstStart.year}-${String(firstStart.month).padStart(2, '0')}-01`).lte('date', `${lastEnd.year}-${String(lastEnd.month).padStart(2, '0')}-31`).then(({ data: logs }: any) => {
       if (logs) {
         months.forEach((m) => {
-          const daysInMonth = new Date(m.year, m.month, 0).getDate()
-          const daysWithLogs = new Set(logs.filter((l: any) => l.date.startsWith(`${m.year}-${String(m.month).padStart(2, '0')}`)).map((l: any) => l.date)).size
-          m.pct = Math.round((daysWithLogs / daysInMonth) * 100)
+          m.daysInMonth = new Date(m.year, m.month, 0).getDate()
+          m.daysWithLogs = new Set(logs.filter((l: any) => l.date.startsWith(`${m.year}-${String(m.month).padStart(2, '0')}`)).map((l: any) => l.date)).size
+          m.pct = Math.round((m.daysWithLogs / m.daysInMonth) * 100)
         })
         setData([...months])
       }
@@ -40,12 +42,15 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
 
   return (
     <div>
-      <div className="flex items-end gap-2" style={{ height: 110 }}>
+      <div className="flex items-end gap-2" style={{ height: 120 }}>
         {data.map((m) => {
           const isCurrent = m.year === now.getFullYear() && m.month === now.getMonth() + 1
           const h = Math.max(6, (m.pct / maxPct) * 100)
           return (
-            <div key={m.label} className="flex-1 flex flex-col items-center gap-1">
+            <div key={m.label} className="flex-1 flex flex-col items-center gap-0.5">
+              {m.daysWithLogs > 0 && (
+                <span className={`text-[7px] font-bold ${isCurrent ? 'text-[#28C76F]' : 'text-text-secondary/40'}`}>{m.daysWithLogs}/{m.daysInMonth}</span>
+              )}
               <div
                 className="w-full rounded-t transition-all"
                 style={{
