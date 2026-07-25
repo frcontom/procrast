@@ -3,6 +3,7 @@ import { useTimerStore } from '../store/useTimerStore'
 import { playFinishSound, playWarningSound, playStartSound } from './sound'
 
 let initialized = false
+let workDurationMinutes = 25 // guarda la duracion original del trabajo
 
 export function initTimerEngine() {
   if (initialized) return
@@ -25,7 +26,8 @@ export function initTimerEngine() {
     const st = useTimerStore.getState()
 
     if (st.phase === 'work' && st.cycleTotal > 0 && st.cycleCount < st.cycleTotal) {
-      // Ciclo completado -> iniciar descanso
+      // Ciclo completado -> guardar duracion original e iniciar descanso
+      workDurationMinutes = st.durationMinutes
       const newCount = st.cycleCount + 1
       const isLongBreak = newCount % st.cycleTotal === 0
       const breakMinutes = isLongBreak ? 15 : 5
@@ -35,18 +37,18 @@ export function initTimerEngine() {
       st.setDuration(breakMinutes)
       playFinishSound()
 
-      sessionManager.startSession(breakMinutes * 60, st.activityType, 'Descanso', false, false)
+      sessionManager.startSession(breakMinutes, st.activityType, 'Descanso', false, false)
       playStartSound()
       return
     }
 
     if (st.phase !== 'work' && st.cycleTotal > 0) {
-      // Descanso terminado -> iniciar siguiente sesion de trabajo
+      // Descanso terminado -> restaurar duracion original e iniciar trabajo
       st.setPhase('work')
-      st.setDuration(st.durationMinutes)
+      st.setDuration(workDurationMinutes)
       playFinishSound()
 
-      sessionManager.startSession(st.durationMinutes * 60, st.activityType, st.sessionName, st.strictMode, false)
+      sessionManager.startSession(workDurationMinutes, st.activityType, st.sessionName, st.strictMode, false)
       playStartSound()
 
       if (st.cycleCount >= st.cycleTotal) {
@@ -56,7 +58,7 @@ export function initTimerEngine() {
       return
     }
 
-    // Sesion normal o ciclo completado -> guardar y finalizar
+    // Sesion normal o todos los ciclos completados -> guardar y finalizar
     await sessionManager.finish()
     playFinishSound()
     st.setFinishedAt(new Date().toISOString())
@@ -64,7 +66,6 @@ export function initTimerEngine() {
     st.setProgress(100)
     st.setCycleCount(0)
 
-    // Notificacion del navegador
     if (!document.hasFocus() && 'Notification' in window && Notification.permission === 'granted') {
       new Notification('Férreo — Focus Mode', {
         body: `¡Sesión de ${st.durationMinutes} min completada!`,
