@@ -132,20 +132,23 @@ export function SessionHistory() {
                     <div className="flex items-center gap-1.5 text-xs flex-wrap">
                       <span className="font-medium truncate">{s.activity_type || 'focus'}</span>
                       <span className="text-text-secondary">·</span>
-                      <span className={`${isCompleted ? 'text-success' : 'text-danger'}`}>
-                        {isCompleted ? pickPhrase(s.id, DONE_PHRASES) : pickPhrase(s.id, FAIL_PHRASES)}
-                      </span>
-                      <span className="text-text-secondary">·</span>
                       <span className="text-text-secondary">{s.duration_minutes}min</span>
+                      {s.elapsed_seconds > 0 && (
+                        <>
+                          <span className="text-text-secondary">·</span>
+                          <span className={pct >= 90 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-danger'}>
+                            {Math.round((s.elapsed_seconds || 0) / 60)}/{s.duration_minutes}
+                          </span>
+                        </>
+                      )}
                     </div>
                     <div className="flex items-center gap-1.5 text-[10px] text-text-secondary/60 mt-0.5 flex-wrap">
                       <span>{new Date(s.started_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>
+                      <span className="text-text-secondary">·</span>
+                      <span className={`${isCompleted ? 'text-success/70' : 'text-danger/70'}`}>
+                        {isCompleted ? pickPhrase(s.id, DONE_PHRASES) : pickPhrase(s.id, FAIL_PHRASES)}
+                      </span>
                       {s.session_name && <span className="truncate italic">· {s.session_name}</span>}
-                      {s.elapsed_seconds > 0 && (
-                        <span className={pct >= 90 ? 'text-success/60' : pct >= 50 ? 'text-warning/60' : 'text-danger/60'}>
-                          · {Math.round((s.elapsed_seconds || 0) / 60)}/{s.duration_minutes}
-                        </span>
-                      )}
                     </div>
                   </div>
                   <div className="w-12 shrink-0">
