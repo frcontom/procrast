@@ -185,15 +185,39 @@ export function HabitsPage() {
       {consistencyData.length > 0 && (
         <div id="hm-analysis-card" className="bg-card rounded-xl border border-white/10 p-4">
           <div id="hm-analysis-title" className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-3">📊 Análisis de consistencia</div>
-          <div id="hm-analysis-content">
-          {bestHabit && <div className="text-[11px] mb-1">🏆 Mejor: <span className="text-[#28C76F]">{bestHabit.name}</span> ({bestHabit.pct}%)</div>}
-          {worstHabit && <div className="text-[11px] mb-1">⚠️ Peor: <span className="text-[#EA5455]">{worstHabit.name}</span> ({worstHabit.pct}%)</div>}
-          {worstHabit && worstHabit.pct < 25 && (
-            <div className="text-[11px] text-[#EA5455]/80 mb-1">⚠️ "{worstHabit.name}" solo tiene {worstHabit.pct}% de cumplimiento. Considera reducirlo o eliminarlo.</div>
-          )}
-          {abandonedHabits.map((h) => (
-            <div key={h.id} className="text-[11px] text-warning/80 mb-1">⏳ "{h.name}" sin registrar desde hace {h.daysSinceLast} días.</div>
-          ))}
+          <div id="hm-analysis-content" className="space-y-2">
+            <div className="flex gap-2">
+              {bestHabit && (
+                <div className="flex-1 bg-[#28C76F]/8 rounded-lg p-3 border border-[#28C76F]/15">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">🏆</span>
+                    <span className="text-[10px] text-[#28C76F]/70 uppercase tracking-wider font-medium">Mejor</span>
+                  </div>
+                  <div className="text-[13px] font-semibold text-white">{bestHabit.name}</div>
+                  <div className="text-[11px] text-[#28C76F] font-bold mt-0.5">{bestHabit.pct}% cumplimiento</div>
+                </div>
+              )}
+              {worstHabit && (
+                <div className="flex-1 bg-[#EA5455]/8 rounded-lg p-3 border border-[#EA5455]/15">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">⚠️</span>
+                    <span className="text-[10px] text-[#EA5455]/70 uppercase tracking-wider font-medium">Peor</span>
+                  </div>
+                  <div className="text-[13px] font-semibold text-white">{worstHabit.name}</div>
+                  <div className="text-[11px] text-[#EA5455] font-bold mt-0.5">{worstHabit.pct}% cumplimiento</div>
+                </div>
+              )}
+            </div>
+            {worstHabit && worstHabit.pct < 25 && (
+              <div className="bg-[#EA5455]/5 rounded-lg px-3 py-2 border border-[#EA5455]/10">
+                <span className="text-[11px] text-[#EA5455]/80">⚠️ "{worstHabit.name}" solo tiene {worstHabit.pct}% de cumplimiento. Considera reducirlo o eliminarlo.</span>
+              </div>
+            )}
+            {abandonedHabits.length > 0 && (
+              <div className="bg-[#FF9800]/5 rounded-lg px-3 py-2 border border-[#FF9800]/10">
+                <span className="text-[11px] text-[#FF9800]/80">⏳ {abandonedHabits.length} hábito(s) sin registrar desde hace {Math.min(...abandonedHabits.map((h) => h.daysSinceLast))} días.</span>
+              </div>
+            )}
           </div>
         </div>
       )}
