@@ -64,7 +64,7 @@ export function HabitList({ habits, logs, daysInMonth, onDelete, onRename }: Pro
 
         return (
           <div key={habit.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-secondary/50 hover:bg-secondary/80 transition-colors group">
-            <span className="text-base shrink-0" style={{ color: habit.color }}>{habit.icon}</span>
+            <span className="text-base shrink-0" style={{ color: habit.color }}>{habit.icon && !habit.icon.startsWith('bi-') ? habit.icon : '◉'}</span>
 
             {editingId === habit.id ? (
               <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" onClick={() => setEditingId(null)}>
