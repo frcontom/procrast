@@ -130,7 +130,7 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
                         {hasActivity ? (
                           <div style={{ width: '70%', height: `${barHeight}%`, minHeight: '4px', borderRadius: '3px 3px 0 0', transition: 'height 0.3s', backgroundColor: isToday ? '#A66CFF' : '#156390', boxShadow: isToday ? '0 0 8px rgba(166,108,255,0.4)' : 'none' }} />
                         ) : (
-                          <div style={{ width: '70%', height: '2px', backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: '1px' }} />
+                          <div style={{ width: '70%', height: '4px', backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: '2px' }} />
                         )}
                       </div>
                       <span style={{ fontSize: '9px', marginTop: '3px', color: isToday ? '#A66CFF' : 'rgba(255,255,255,0.5)', fontWeight: isToday ? 700 : 400 }}>{DAY_NAMES[i]}</span>
