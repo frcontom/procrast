@@ -20,6 +20,40 @@ const GRADIENTS = [
   'linear-gradient(135deg,#0c0c1e,#1a1a3e,#282850)',
 ]
 
+const MOTIVATION_LISTS = [
+  ['Decide','Enfoca','Ejecuta','Resiste','Termina'],
+  ['Inicia','Enfoca','Fluye','Persiste','Conquista'],
+  ['Acción','Enfoque','Impulso','Disciplina','Victoria'],
+  ['Inicia','Enfoca','Fluye','Persiste','Logra'],
+  ['Empieza','Concentra','Avanza','Persiste','Finaliza'],
+  ['Ahora','Enfoca','Progresa','Resiste','Logrado'],
+  ['Rompe','Entra','Fluye','Resiste','Conquista'],
+  ['Acción','Control','Ritmo','Constancia','Éxito'],
+  ['Despierta','Enfoca','Produce','Persiste','Vence'],
+  ['Atrévete','Avanza','Impulsa','Resiste','Triunfa'],
+  ['Comienza','Enfoca','Construye','Persevera','Domina'],
+  ['Respira','Entra','Fluye','Mantente','Cumple'],
+  ['Orden','Acción','Progreso','Disciplina','Victoria'],
+  ['Decide','Compromiso','Acción','Persistencia','Meta'],
+  ['Inicia','Concentra','Produce','Mantén','Termina'],
+  ['Activa','Enfoca','Ejecuta','Completa','Celebra'],
+  ['Empieza','Conquista','Impulso','Persistencia','Logro'],
+  ['Muévete','Enfoca','Avanza','Resiste','Gana'],
+  ['Hoy','Aquí','Enfoque','Constancia','Cumplido'],
+  ['Levántate','Apunta','Avanza','Resiste','Vence'],
+  ['Crea','Construye','Fortalece','Persevera','Domina'],
+  ['Piensa','Decide','Ejecuta','Persiste','Cumple'],
+  ['Control','Calma','Fluye','Constancia','Resultado'],
+  ['Enciende','Concentra','Profundiza','Resiste','Finaliza'],
+  ['Empieza','Produce','Progresa','Remata','Victoria'],
+  ['Acción','Entra','Fluye','Resiste','Conquista'],
+  ['Inicia','Impulso','Ritmo','Disciplina','Éxito'],
+  ['Vamos','Enfoque','Avanza','Persiste','Logrado'],
+  ['Hazlo','Sigue','Continúa','Resiste','Termina'],
+  ['Despega','Acelera','Mantén','Empuja','Conquista'],
+  ['Inicia','Crece','Fortalece','Supera','Domina'],
+]
+
 function calculateScore(elapsed: number, total: number, cycleCount: number): number {
   const base = 50
   const completion = Math.round((elapsed / Math.max(total, 1)) * 30)
@@ -119,6 +153,7 @@ export function FullscreenPage() {
   const [xpGained, setXpGained] = useState(0)
   const [floatXp, setFloatXp] = useState(0)
   const [sessionsToday, setSessionsToday] = useState(0)
+  const [motivationList] = useState(() => MOTIVATION_LISTS[Math.floor(Math.random() * MOTIVATION_LISTS.length)])
 
   const pickBg = useCallback(() => {
     setBgIndex((prev) => {
@@ -301,11 +336,7 @@ export function FullscreenPage() {
           const idealSegments = Math.max(1, Math.round(totalSeconds / 1500))
           const segCount = Math.min(12, Math.max(2, idealSegments))
           const segSeconds = totalSeconds / segCount
-          const labels = [
-            '¡Dale!', 'Enfoque', 'Ritmo', 'Persiste',
-            'Mitad', 'Avanza', 'Constancia', 'Cerca',
-            'Empuja', 'Remata', 'Cierra', 'Meta',
-          ]
+          const segLabels = motivationList
           return (
             <div id="fullscreenProgress" className="w-full">
               <div className="flex gap-1.5">
@@ -327,7 +358,7 @@ export function FullscreenPage() {
                     <span className={`text-[11px] text-center leading-tight font-medium tracking-wide transition-all duration-500 ${
                       isComplete ? 'text-accent' : isCurrent ? 'text-white' : 'text-white/20'
                     }`}>
-                      {labels[i] || ''}
+                      {segLabels[i % segLabels.length] || ''}
                     </span>
                   </div>
                 )
