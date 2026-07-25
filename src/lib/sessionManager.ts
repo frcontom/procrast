@@ -1,6 +1,7 @@
 import { supabase } from '../supabase/client'
 import { TimerEngine } from './timerEngine'
 import { useTimerStore } from '../store/useTimerStore'
+import { useSettingsStore } from '../store/useSettingsStore'
 
 const XP = {
   SESSION_COMPLETED: 50,
@@ -121,6 +122,9 @@ export class SessionManager {
 
       await this.addXp(XP.SESSION_CANCELLED)
     }
+    store.setSessionName('')
+    store.setDuration(useSettingsStore.getState().timerConfig.workMinutes || 25)
+    this.currentSubtaskId = null
   }
 
   async finish() {
