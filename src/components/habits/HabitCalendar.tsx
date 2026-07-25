@@ -52,8 +52,8 @@ export function HabitCalendar({ habits, logs, year, month, onDayClick }: Props) 
   return (
     <div>
       <div className="grid grid-cols-7 gap-[3px] mb-[3px]">
-        {DAY_NAMES.map((d) => (
-          <div key={d} className="text-center text-[10px] text-text-secondary/60 uppercase tracking-wider py-1">{d}</div>
+        {DAY_NAMES.map((d, i) => (
+          <div key={d} className={`text-center text-[10px] font-semibold tracking-wider py-1.5 rounded ${i === 0 || i === 6 ? 'text-[#EA5455]/50' : 'text-text-secondary/50'}`}>{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-[3px]">
