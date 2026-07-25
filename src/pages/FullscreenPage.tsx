@@ -301,40 +301,6 @@ export function FullscreenPage() {
           </div>
         )}
 
-        {showCelebration && (
-          <div className="fixed inset-0 z-20 flex flex-col items-center justify-center bg-black gap-6 px-10">
-            <SparkleBurst color={stateColor} />
-            <div className="text-5xl mb-2">🎉</div>
-            <div className="text-2xl font-semibold text-white tracking-wide">¡Sesión completada!</div>
-
-            <div className="text-[100px] font-extrabold leading-none" style={{ color: stateColor, textShadow: `0 0 50px ${stateColor}50` }}>
-              {score}
-            </div>
-            <div className="text-base tracking-[6px] uppercase text-white/50 -mt-2">FOCUS SCORE</div>
-
-            <div className="max-w-md text-center text-base text-white/70 leading-relaxed mt-2">
-              {celebrationMessage(durationMinutes, streak, sessionsToday, score)}
-            </div>
-
-            <div className="flex items-center gap-6 text-sm text-white/60 mt-2">
-              <span className="flex items-center gap-1.5">⚡ +{xpGained} XP</span>
-              <span className="flex items-center gap-1.5">{streakEmoji(streak)} {streak} días</span>
-              <span className="flex items-center gap-1.5">📊 {sessionsToday} hoy</span>
-            </div>
-
-            <div className="flex gap-3 mt-4">
-              <button onClick={() => { sessionManager.startSession(isStopwatch ? 480 : durationMinutes, activityType, sessionName, strictMode, false); playStartSound() }}
-                className="px-8 py-3 rounded-xl text-sm font-medium bg-[#156390] hover:bg-[#1a7ab5] text-white transition-all active:scale-[0.97]">
-                ▶ Siguiente
-              </button>
-              <button onClick={() => navigate('/focus')}
-                className="px-8 py-3 rounded-xl text-sm font-medium border border-white/20 text-white/60 hover:text-white/90 hover:border-white/40 transition-all active:scale-[0.97]">
-                Ir a Focus
-              </button>
-            </div>
-          </div>
-        )}
-
         <div id="fullscreenProgress" className="w-full h-[3px] bg-white/10 rounded overflow-hidden">
           <div className="h-full rounded transition-all duration-500 ease" style={{ width: `${Math.min(100, pct)}%`, backgroundColor: ringColor }} />
         </div>
@@ -381,6 +347,40 @@ export function FullscreenPage() {
           </div>
         )}
       </div>
+
+      {showCelebration && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black gap-6 px-10">
+          <SparkleBurst color={stateColor} />
+          <div className="text-5xl mb-2">🎉</div>
+          <div className="text-2xl font-semibold text-white tracking-wide">¡Sesión completada!</div>
+
+          <div className="text-[100px] font-extrabold leading-none" style={{ color: stateColor, textShadow: `0 0 50px ${stateColor}50` }}>
+            {score}
+          </div>
+          <div className="text-base tracking-[6px] uppercase text-white/50 -mt-2">FOCUS SCORE</div>
+
+          <div className="max-w-md text-center text-base text-white/70 leading-relaxed mt-2">
+            {celebrationMessage(durationMinutes, streak, sessionsToday, score)}
+          </div>
+
+          <div className="flex items-center gap-6 text-sm text-white/60 mt-2">
+            <span className="flex items-center gap-1.5">⚡ +{xpGained} XP</span>
+            <span className="flex items-center gap-1.5">{streakEmoji(streak)} {streak} días</span>
+            <span className="flex items-center gap-1.5">📊 {sessionsToday} hoy</span>
+          </div>
+
+          <div className="flex gap-3 mt-4">
+            <button onClick={() => { sessionManager.startSession(isStopwatch ? 480 : durationMinutes, activityType, sessionName, strictMode, false); playStartSound() }}
+              className="px-8 py-3 rounded-xl text-sm font-medium bg-[#156390] hover:bg-[#1a7ab5] text-white transition-all active:scale-[0.97]">
+              ▶ Siguiente
+            </button>
+            <button onClick={() => navigate('/focus')}
+              className="px-8 py-3 rounded-xl text-sm font-medium border border-white/20 text-white/60 hover:text-white/90 hover:border-white/40 transition-all active:scale-[0.97]">
+              Ir a Focus
+            </button>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes fullscreenEnter {
