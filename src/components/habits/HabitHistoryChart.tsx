@@ -21,14 +21,14 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
     const months: MonthData[] = []
     for (let i = 0; i < 12; i++) {
       const d = new Date(now.getFullYear(), i, 1)
-      months.push({ year: d.getFullYear(), month: i + 1, label: d.toLocaleDateString('es-ES', { month: 'short' }), pct: 0, daysWithLogs: 0, daysInMonth: 0 })
+      const daysInMonth = new Date(now.getFullYear(), i + 1, 0).getDate()
+      months.push({ year: d.getFullYear(), month: i + 1, label: d.toLocaleDateString('es-ES', { month: 'short' }), pct: 0, daysWithLogs: 0, daysInMonth })
     }
     const firstStart = months[0]
     const lastEnd = months[months.length - 1]
     supabase.from('habit_logs').select('date').eq('user_id', user.id).gte('date', `${firstStart.year}-${String(firstStart.month).padStart(2, '0')}-01`).lte('date', `${lastEnd.year}-${String(lastEnd.month).padStart(2, '0')}-31`).then(({ data: logs }: any) => {
       if (logs) {
         months.forEach((m) => {
-          m.daysInMonth = new Date(m.year, m.month, 0).getDate()
           m.daysWithLogs = new Set(logs.filter((l: any) => l.date.startsWith(`${m.year}-${String(m.month).padStart(2, '0')}`)).map((l: any) => l.date)).size
           m.pct = Math.round((m.daysWithLogs / m.daysInMonth) * 100)
         })
