@@ -67,11 +67,15 @@ export function HexCalendar({ startDate, deadline, estimatedMinutes, completedMi
       </div>
 
       <div className="flex items-start justify-between gap-2 mb-2.5">
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-text-secondary">
+        <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-[11px] text-text-secondary">
           <span>✅ {completedDays} cumplidos</span>
+          <span className="text-white/20">·</span>
           <span>❌ {failedDays} fallados</span>
+          <span className="text-white/20">·</span>
           <span>⏳ {futureDays} futuros</span>
+          <span className="text-white/20">·</span>
           <span>⏱ {completedMinutes}min</span>
+          <span className="text-white/20">·</span>
           <span>🔥 {streak}d racha</span>
         </div>
         {failedDays > 0 && (
