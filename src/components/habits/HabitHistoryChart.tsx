@@ -24,7 +24,7 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
       months.push({ label: d.toLocaleDateString('es-ES', { month: 'short' }), month: i, pct: 0, daysWithLogs: 0, daysInMonth })
     }
     supabase.from('habit_logs').select('date').eq('user_id', user.id).gte('date', `${now.getFullYear()}-01-01`).then(({ data: logs }: any) => {
-      if (logs) {
+      if (logs && logs.length > 0) {
         months.forEach((m, i) => {
           const monthStr = `${now.getFullYear()}-${String(i + 1).padStart(2, '0')}`
           m.daysWithLogs = new Set(logs.filter((l: any) => l.date.startsWith(monthStr)).map((l: any) => l.date)).size
