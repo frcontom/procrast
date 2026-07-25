@@ -85,15 +85,15 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
 
       {/* Legend */}
       <div className="flex items-center justify-center gap-2 mt-3 text-[9px] text-text-secondary/50">
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#28C76F]" /> Meta</span>
-        <span className="text-white/10">|</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#00BCD4]" /> Cerca</span>
-        <span className="text-white/10">|</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#3B82F6]" /> Ritmo</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#EA5455]" /> Inicia</span>
         <span className="text-white/10">|</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#FF9800]" /> Empuja</span>
         <span className="text-white/10">|</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#EA5455]" /> Inicia</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#3B82F6]" /> Ritmo</span>
+        <span className="text-white/10">|</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#00BCD4]" /> Cerca</span>
+        <span className="text-white/10">|</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#28C76F]" /> Meta</span>
       </div>
     </div>
   )
