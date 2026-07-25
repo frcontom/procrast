@@ -27,15 +27,15 @@ function calculateScore(elapsed: number, total: number, cycleCount: number): num
   return Math.min(100, base + completion + cycleBonus)
 }
 
-function progressColor(pct: number, state: string): string {
-  if (state === 'PAUSED') return '#FF9F43'
-  if (state === 'FINISHED') return '#00CFE8'
-  if (state === 'CANCELLED') return '#EA5455'
-  if (state === 'IDLE') return '#A8E6CF'
-  if (pct < 33) return '#4CAF50'
-  if (pct < 66) return '#2196F3'
-  if (pct < 90) return '#FF9800'
-  return '#FF6B6B'
+function progressColor(pct: number, state: string): { color: string; label: string } {
+  if (state === 'PAUSED') return { color: '#FF9F43', label: 'Pausado' }
+  if (state === 'FINISHED') return { color: '#00CFE8', label: 'Completado' }
+  if (state === 'CANCELLED') return { color: '#EA5455', label: 'Cancelado' }
+  if (state === 'IDLE') return { color: '#A8E6CF', label: 'Listo' }
+  if (pct < 25) return { color: '#6B7280', label: 'Inicio' }
+  if (pct < 50) return { color: '#60A5FA', label: 'Mitad' }
+  if (pct < 75) return { color: '#34D399', label: 'Bien' }
+  return { color: '#22C55E', label: '¡Meta!' }
 }
 
 export function FullscreenPage() {
@@ -127,7 +127,9 @@ export function FullscreenPage() {
     state === 'FINISHED' ? '#00CFE8' :
     state === 'CANCELLED' ? '#EA5455' : '#A8E6CF'
 
-  const ringColor = progressColor(pct, state)
+  const pc = progressColor(pct, state)
+  const ringColor = pc.color
+  const progressLabel = pc.label
 
   const stateLabel = state === 'IDLE' ? 'Listo' :
     state === 'RUNNING' ? 'En curso' :
@@ -220,7 +222,7 @@ export function FullscreenPage() {
           <span className="opacity-40">/</span>
           <span>{formatTime(totalSeconds)}</span>
           <span className="opacity-40">·</span>
-          <span style={{ color: ringColor }}>{Math.round(pct)}%</span>
+          <span style={{ color: ringColor }}>{Math.round(pct)}% <span className="text-white/40 text-sm">{progressLabel}</span></span>
         </div>
 
         {showMiniStats && (
