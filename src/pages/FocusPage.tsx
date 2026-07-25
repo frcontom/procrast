@@ -1,0 +1,166 @@
+import { useEffect, useState } from 'react'
+import { useUser } from '../supabase/auth'
+import { useTimerStore } from '../store/useTimerStore'
+import { sessionManager } from '../lib/sessionManager'
+import { playStartSound, playFinishSound, playWarningSound } from '../lib/sound'
+import { TimerConfigBar } from '../components/focus/TimerConfigBar'
+import { TimerDisplay } from '../components/focus/TimerDisplay'
+import { TimerControls } from '../components/focus/TimerControls'
+import { SessionNameInput } from '../components/focus/SessionNameInput'
+import { StatsOverview } from '../components/focus/StatsOverview'
+import { FocusChart } from '../components/focus/FocusChart'
+import { ActivityBreakdown } from '../components/focus/ActivityBreakdown'
+import { SessionHistory } from '../components/focus/SessionHistory'
+import { FullscreenOverlay } from '../components/focus/FullscreenOverlay'
+import { supabase } from '../supabase/client'
+
+export function FocusPage() {
+  const user = useUser()
+  const store = useTimerStore()
+  const [showOverlay, setShowOverlay] = useState(false)
+  const [lastXp, setLastXp] = useState(0)
+  const [sessions, setSessions] = useState<any[]>([])
+
+  useEffect(() => {
+    if (!user) return
+    sessionManager.setUser(user.id)
+    supabase.from('sessions').select('*').eq('user_id', user.id).order('started_at', { ascending: false }).limit(500).then(({ data }: any) => {
+      if (data) setSessions(data)
+    })
+  }, [user])
+
+  useEffect(() => {
+    const engine = sessionManager.getEngine()
+    const unsubs = [
+      engine.on('TICK', () => {
+        const s = engine.getSnapshot()
+        store.setRemaining(s.remainingSeconds)
+        store.setElapsed(s.elapsedSeconds)
+        store.setProgress(s.progressPercent)
+        if (!store.isStopwatch && s.remainingSeconds <= 10 && s.remainingSeconds > 0) playWarningSound()
+      }),
+      engine.on('FINISH', async () => {
+        await sessionManager.finish()
+        playFinishSound()
+        store.setFinishedAt(new Date().toISOString())
+        store.setRemaining(0)
+        store.setProgress(100)
+        setLastXp(50 + Math.round(store.durationMinutes * 1))
+        setTimeout(() => setLastXp(0), 4000)
+        supabase.from('sessions').select('*').eq('user_id', user!.id).order('started_at', { ascending: false }).limit(500).then(({ data }: any) => {
+          if (data) setSessions(data)
+        })
+      }),
+    ]
+    return () => unsubs.forEach((u) => u())
+  }, [])
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      const st = useTimerStore.getState()
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (e.code === 'Space') {
+        e.preventDefault()
+        if (st.state === 'IDLE' || st.state === 'FINISHED' || st.state === 'CANCELLED') {
+          playStartSound()
+           sessionManager.startSession(st.isStopwatch ? 480 : st.durationMinutes, st.activityType, st.sessionName, st.strictMode, false)
+         } else if (st.state === 'RUNNING') sessionManager.pause()
+        else if (st.state === 'PAUSED') sessionManager.resume()
+      }
+      if (e.code === 'Escape' && st.state !== 'IDLE' && !st.strictMode) { sessionManager.cancel() }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [])
+
+  const handleStart = async () => {
+    playStartSound()
+    await sessionManager.startSession(store.isStopwatch ? 480 : store.durationMinutes, store.activityType, store.sessionName, store.strictMode, false)
+  }
+
+  const handleCancel = async () => {
+    if (store.strictMode) return
+    await sessionManager.cancel()
+  }
+
+  const completed = sessions.filter((s: any) => s.state === 'completed').length
+  const totalMinutes = Math.round(sessions.reduce((acc: number, s: any) => acc + (s.elapsed_seconds || 0) / 60, 0))
+  const canConfigure = store.state === 'IDLE' || store.state === 'FINISHED' || store.state === 'CANCELLED'
+
+  return (
+    <div id="focus-page" className="w-full max-w-3xl mx-auto space-y-6">
+
+      <div id="focus-timer-section" className="bg-card rounded-2xl border border-white/10 overflow-hidden">
+        <div id="focus-config-bar" className="px-5 pt-5 pb-3 border-b border-white/5">
+          <TimerConfigBar />
+        </div>
+
+        <div id="focus-timer-body" className="px-5 py-8 space-y-6">
+          <div id="focus-timer-display">
+            <TimerDisplay
+              remainingSeconds={store.remainingSeconds}
+              elapsedSeconds={store.elapsedSeconds}
+              progressPercent={store.progressPercent}
+              state={store.state}
+              isStopwatch={store.isStopwatch}
+            />
+          </div>
+
+          <div id="focus-session-info" className="flex items-center justify-center gap-6 text-sm">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-primary)]/50">
+              <span className="text-text-secondary/60 text-xs uppercase tracking-wider">Duración</span>
+              <span className="text-white font-medium tabular-nums">{store.durationMinutes} min</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-primary)]/50">
+              <span className="text-text-secondary/60 text-xs uppercase tracking-wider">Transcurrido</span>
+              <span className="text-white font-medium tabular-nums">{Math.floor(store.elapsedSeconds / 60).toString().padStart(2, '0')}:{(store.elapsedSeconds % 60).toString().padStart(2, '0')}</span>
+            </div>
+          </div>
+
+          <div id="focus-session-name" className="flex justify-center pt-2">
+            <SessionNameInput value={store.sessionName} onChange={store.setSessionName} disabled={!canConfigure} />
+          </div>
+
+          <div id="focus-timer-controls" className="pt-2">
+            <TimerControls
+              state={store.state}
+              onStart={handleStart}
+              onPause={() => sessionManager.pause()}
+              onResume={() => sessionManager.resume()}
+              onCancel={handleCancel}
+            />
+          </div>
+        </div>
+      </div>
+
+      {lastXp > 0 && (
+        <div id="focus-xp-notification" className="bg-card rounded-xl border border-accent/30 p-3 text-center animate-pulse">
+          <div className="text-lg font-bold text-accent">+{lastXp} XP</div>
+        </div>
+      )}
+
+
+
+      <div id="focus-stats-card" className="bg-card rounded-xl border border-white/10 p-4">
+        <div id="focus-stats-header" className="flex items-center gap-2 mb-3">
+          <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">📊 Stats</span>
+        </div>
+        <div id="focus-stats-overview">
+          <StatsOverview totalSessions={sessions.length} completedSessions={completed} totalMinutes={totalMinutes} currentStreak={0} />
+        </div>
+        <div id="focus-stats-charts" className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FocusChart sessions={sessions} />
+          <ActivityBreakdown sessions={sessions} />
+        </div>
+      </div>
+
+      <div id="focus-session-history">
+        <SessionHistory />
+      </div>
+
+      {showOverlay && store.state !== 'IDLE' && (
+        <FullscreenOverlay onExit={() => setShowOverlay(false)} />
+      )}
+    </div>
+  )
+}
