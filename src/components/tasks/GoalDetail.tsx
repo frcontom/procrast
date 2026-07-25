@@ -34,7 +34,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   const goalIcon = goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'
 
   const totalEstimated = subtasks.reduce((a, s) => a + s.estimated_minutes, 0) || goal.estimated_minutes
-  const totalCompleted = subtasks.reduce((a, s) => a + s.completed_minutes, 0)
+  const totalCompleted = subtasks.reduce((a, s) => a + Math.min(s.completed_minutes, s.estimated_minutes), 0)
   const pct = Math.min(100, Math.round((totalCompleted / Math.max(1, totalEstimated)) * 100))
   const doneCount = subtasks.filter((s) => s.status === 'completed').length
 
@@ -51,8 +51,19 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
     supabase.from('task_pomodoro_links').select('*').eq('user_id', user.id).in('subtask_id', subtasks.map((s) => s.id)).gte('date', today).then(({ data }: any) => {
       if (data) setLinks(data)
     })
-    supabase.from('task_pomodoro_links').select('minutes').eq('user_id', user.id).in('subtask_id', subtasks.map((s) => s.id)).gte('date', today).then(({ data }: any) => {
-      if (data) setTodayMin(Math.round(data.reduce((a: number, l: any) => a + (l.minutes || 0), 0)))
+    supabase.from('task_pomodoro_links').select('subtask_id, minutes').eq('user_id', user.id).in('subtask_id', subtasks.map((s) => s.id)).gte('date', today).then(({ data }: any) => {
+      if (data) {
+        const bySubtask: Record<string, number> = {}
+        for (const l of data) {
+          bySubtask[l.subtask_id] = (bySubtask[l.subtask_id] || 0) + (l.minutes || 0)
+        }
+        let capped = 0
+        for (const s of subtasks) {
+          const raw = bySubtask[s.id] || 0
+          capped += Math.min(raw, s.estimated_minutes)
+        }
+        setTodayMin(Math.round(capped))
+      }
     })
   }, [user, subtasks])
 
