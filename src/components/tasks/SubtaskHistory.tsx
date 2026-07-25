@@ -54,9 +54,9 @@ export function SubtaskHistory({ subtask, onClose }: Props) {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-5 gap-2 mb-5">
-          <div className="bg-secondary rounded-xl p-3 text-center col-span-2">
-            <div className="text-xl font-bold text-white">{totalMin}<span className="text-xs font-normal text-text-secondary ml-0.5">/{subtask.estimated_minutes}min</span></div>
+        <div className="grid grid-cols-4 gap-2 mb-5">
+          <div className="bg-secondary rounded-xl p-3 text-center">
+            <div className="text-lg font-bold text-white">{totalMin}<span className="text-xs font-normal text-text-secondary ml-0.5">/{subtask.estimated_minutes}min</span></div>
             <div className="text-[9px] text-text-secondary uppercase tracking-wider mt-1">Completado</div>
             <div className="mt-2 w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
               <div className="h-full rounded-full bg-gradient-to-r from-accent to-[#b388ff] transition-all duration-700" style={{ width: `${progress}%` }} />
