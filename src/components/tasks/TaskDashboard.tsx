@@ -59,7 +59,6 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
     return g.status === 'active' && expected > 0 && (g as any).completed_minutes < expected * 0.5
   }).length
 
-  const hasWeekData = weekData.some((v) => v > 0)
 
   return (
     <div id="task-dashboard" className="space-y-4">
@@ -112,8 +111,7 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
             </div>
           </div>
 
-          {hasWeekData && (
-            <div id="task-weekly-activity" className="bg-card rounded-xl border border-white/10 p-5">
+          <div id="task-weekly-activity" className="bg-card rounded-xl border border-white/10 p-5">
               <div id="task-wa-header" className="flex items-center justify-between mb-3">
                 <span className="text-sm font-semibold text-text-secondary">📅 Actividad semanal</span>
                 <span className="text-[10px] text-text-secondary">Total: {totalWeek}min · Prom: {avgWeek}min</span>
@@ -143,7 +141,6 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
                 <span style={{ color: todayMin > 0 ? '#A66CFF' : undefined }}>📊 Hoy: {todayMin}min</span>
               </div>
             </div>
-          )}
 
           <div className="space-y-2">
             <span className="text-[10px] text-text-secondary uppercase tracking-wider">🏴 {goals.length} meta(s) activas</span>
