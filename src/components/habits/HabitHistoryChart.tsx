@@ -42,15 +42,24 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
 
   return (
     <div>
-      <div className="flex items-end gap-2" style={{ height: 130 }}>
+      <div className="flex gap-2 mb-1">
+        {data.map((m) => {
+          const isCurrent = m.year === now.getFullYear() && m.month === now.getMonth() + 1
+          return (
+            <div key={m.label} className="flex-1 text-center">
+              <span className={`text-[7px] font-bold ${isCurrent ? 'text-[#28C76F]' : 'text-text-secondary/40'}`}>
+                {m.daysWithLogs || '0'}/{m.daysInMonth || '0'}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+      <div className="flex items-end gap-2" style={{ height: 100 }}>
         {data.map((m) => {
           const isCurrent = m.year === now.getFullYear() && m.month === now.getMonth() + 1
           const h = Math.max(6, (m.pct / maxPct) * 100)
           return (
             <div key={m.label} className="flex-1 flex flex-col items-center justify-end gap-0.5">
-              <span className={`text-[7px] font-bold h-3 flex items-center ${isCurrent ? 'text-[#28C76F]' : 'text-text-secondary/40'}`}>
-                {m.daysWithLogs || '0'}/{m.daysInMonth || '0'}
-              </span>
               <div
                 className="w-full rounded-t transition-all"
                 style={{
