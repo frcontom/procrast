@@ -112,6 +112,7 @@ export function TasksPage() {
     sessionManager.setUser(user.id)
     sessionManager.setCurrentSubtask(st.id)
     sessionStorage.setItem('_refreshSubtasks', '1')
+    store.setIsStopwatch(false)
     await sessionManager.startSession(sessionMinutes, 'focus', st.name, false, false)
     navigate('/focus/fullscreen')
   }

@@ -339,7 +339,7 @@ export function FullscreenPage() {
 
         {/* Segmented progress timeline */}
         {totalSeconds > 0 && (() => {
-          const segCount = Math.min(12, Math.max(motivationList.length, Math.round(totalSeconds / 1500)))
+          const segCount = motivationList.length
           const segSeconds = totalSeconds / segCount
           const segLabels = motivationList
           return (
