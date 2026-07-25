@@ -26,7 +26,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
 
   const goalIcon = goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'
 
-  const totalEstimated = goal.estimated_minutes
+  const totalEstimated = subtasks.reduce((a, s) => a + s.estimated_minutes, 0) || goal.estimated_minutes
   const totalCompleted = subtasks.reduce((a, s) => a + s.completed_minutes, 0)
   const pct = Math.min(100, Math.round((totalCompleted / Math.max(1, totalEstimated)) * 100))
   const doneCount = subtasks.filter((s) => s.status === 'completed').length

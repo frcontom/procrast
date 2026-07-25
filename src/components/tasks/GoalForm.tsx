@@ -17,10 +17,10 @@ export function GoalForm({ goal, onSave, onClose }: Props) {
     description: goal?.description || '',
     deadline: goal?.deadline || '',
     start_date: goal?.start_date || new Date().toISOString().slice(0, 10),
-    estimated_minutes: goal?.estimated_minutes || 60,
+    estimated_minutes: 0,
     icon: goal?.icon || '🎯',
     color: goal?.color || '#FF6B6B',
-    priority: goal?.priority || 'normal',
+    priority: goal?.priority || 'normal' as const,
     notes: goal?.notes || '',
   })
 
@@ -61,10 +61,8 @@ export function GoalForm({ goal, onSave, onClose }: Props) {
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs text-text-secondary mb-1">Tiempo total estimado (min) *</label>
-            <input type="number" value={form.estimated_minutes} onChange={(e) => setForm({ ...form, estimated_minutes: Number(e.target.value) })}
-              className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent" min={1} required />
+          <div className="text-[11px] text-text-secondary/60">
+            ⏱ El tiempo total se calculará automáticamente según las subtareas que agregues.
           </div>
 
           <div>
