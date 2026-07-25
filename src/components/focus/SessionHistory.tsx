@@ -124,36 +124,31 @@ export function SessionHistory() {
               const isCompleted = s.state === 'completed'
               const pct = s.duration_minutes > 0 ? Math.min(100, Math.round(((s.elapsed_seconds || 0) / 60 / s.duration_minutes) * 100)) : 0
               return (
-                <div key={s.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors group">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${isCompleted ? 'bg-success/10' : 'bg-danger/5'}`}>
+                <div key={s.id} className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors group">
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0 ${isCompleted ? 'bg-success/10' : 'bg-danger/5'}`}>
                     {ACTIVITY_ICONS[s.activity_type] || '⏱'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-medium truncate">{s.activity_type || 'focus'}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[10px] mt-0.5 flex-wrap">
-                      <span className={`${isCompleted ? 'text-success' : 'text-danger'} font-medium`}>
+                    <div className="flex items-center gap-1.5 text-xs flex-wrap">
+                      <span className="font-medium truncate">{s.activity_type || 'focus'}</span>
+                      <span className="text-text-secondary">·</span>
+                      <span className={`${isCompleted ? 'text-success' : 'text-danger'}`}>
                         {isCompleted ? pickPhrase(s.id, DONE_PHRASES) : pickPhrase(s.id, FAIL_PHRASES)}
                       </span>
                       <span className="text-text-secondary">·</span>
-                      <span className="text-text-secondary">{s.duration_minutes} min</span>
+                      <span className="text-text-secondary">{s.duration_minutes}min</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px] text-text-secondary/60 mt-0.5 flex-wrap">
+                      <span>{new Date(s.started_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>
+                      {s.session_name && <span className="truncate italic">· {s.session_name}</span>}
                       {s.elapsed_seconds > 0 && (
-                        <>
-                          <span className="text-text-secondary">·</span>
-                          <span className={pct >= 90 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-danger'}>
-                            {Math.round((s.elapsed_seconds || 0) / 60)}/{s.duration_minutes}
-                          </span>
-                        </>
+                        <span className={pct >= 90 ? 'text-success/60' : pct >= 50 ? 'text-warning/60' : 'text-danger/60'}>
+                          · {Math.round((s.elapsed_seconds || 0) / 60)}/{s.duration_minutes}
+                        </span>
                       )}
                     </div>
-                    {s.session_name && (
-                      <div className="text-[10px] text-text-secondary/60 mt-0.5 truncate italic">
-                        {s.session_name}
-                      </div>
-                    )}
                   </div>
-                  <div className="w-12">
+                  <div className="w-12 shrink-0">
                     <div className="w-full bg-secondary rounded-full h-1">
                       <div className={`h-full rounded-full transition-all ${isCompleted ? 'bg-accent' : 'bg-danger/50'}`}
                         style={{ width: `${pct}%` }} />
