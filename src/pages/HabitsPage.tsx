@@ -48,9 +48,9 @@ export function HabitsPage() {
 
   const monthLabel = new Date(year, month - 1).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })
 
-  const saveHabit = async (data: { name: string; icon: string; color: string; is_primary: boolean }) => {
+  const saveHabit = async (data: { name: string }) => {
     if (!user) return
-    await supabase.from('habits').insert({ user_id: user.id, month_key: monthKey, ...data })
+    await supabase.from('habits').insert({ user_id: user.id, month_key: monthKey, name: data.name, icon: '▸', color: '#A66CFF', is_primary: false })
     setShowForm(false)
     loadData()
   }
@@ -140,7 +140,7 @@ export function HabitsPage() {
             className="flex-1 bg-secondary border border-white/10 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-accent text-white"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
-                saveHabit({ name: (e.target as HTMLInputElement).value.trim(), icon: 'bi-star', color: '#A66CFF', is_primary: false })
+                saveHabit({ name: (e.target as HTMLInputElement).value.trim() })
                 ;(e.target as HTMLInputElement).value = ''
               }
             }}
