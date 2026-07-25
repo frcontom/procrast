@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import type { Habit, HabitLog } from '../../supabase/types'
 
 interface Props {
@@ -6,7 +5,7 @@ interface Props {
   logs: HabitLog[]
   daysInMonth: number
   onDelete: (id: string) => void
-  onRename: (id: string, name: string) => void
+  onEdit: (habit: Habit) => void
 }
 
 function getStreak(habitId: string, logs: HabitLog[]): { current: number; lastDate: string | null } {
@@ -36,20 +35,7 @@ function daysSince(dateStr: string | null): number {
   return Math.round((Date.now() - new Date(dateStr).getTime()) / 86400000)
 }
 
-export function HabitList({ habits, logs, daysInMonth, onDelete, onRename }: Props) {
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editName, setEditName] = useState('')
-
-  const startEdit = (habit: Habit) => {
-    setEditingId(habit.id)
-    setEditName(habit.name)
-  }
-
-  const saveEdit = () => {
-    if (!editingId || !editName.trim()) { setEditingId(null); return }
-    onRename(editingId, editName.trim())
-    setEditingId(null)
-  }
+export function HabitList({ habits, logs, daysInMonth, onDelete, onEdit }: Props) {
 
   return (
     <div className="space-y-1.5">
@@ -66,21 +52,7 @@ export function HabitList({ habits, logs, daysInMonth, onDelete, onRename }: Pro
           <div key={habit.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-secondary/50 hover:bg-secondary/80 transition-colors group">
             <span className="text-base shrink-0" style={{ color: habit.color }}>{habit.icon && !habit.icon.startsWith('bi-') ? habit.icon : '◉'}</span>
 
-            {editingId === habit.id ? (
-              <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" onClick={() => setEditingId(null)}>
-                <div className="bg-[#2B313D] border border-[#156390] rounded-xl p-4 w-80 mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="text" value={editName} onChange={(e) => setEditName(e.target.value.slice(0, 60))}
-                    onKeyDown={(e) => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') setEditingId(null) }}
-                    className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent text-white"
-                    autoFocus
-                  />
-                  <p className="text-[10px] text-text-secondary mt-2">Enter = guardar · Escape = cancelar · Se cierra en 30s</p>
-                </div>
-              </div>
-            ) : (
-              <span className="text-[13px] text-white truncate flex-1">{habit.name}</span>
-            )}
+            <span className="text-[13px] text-white truncate flex-1">{habit.name}</span>
 
             <div className="w-[60px] h-1 bg-white/5 rounded-full overflow-hidden shrink-0">
               <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: habit.color }} />
@@ -102,7 +74,7 @@ export function HabitList({ habits, logs, daysInMonth, onDelete, onRename }: Pro
             </span>
 
             <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => startEdit(habit)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Editar">✏️</button>
+              <button onClick={() => onEdit(habit)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Editar">✏️</button>
               <button onClick={() => onDelete(habit.id)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-danger/50 hover:bg-danger/10 hover:border-danger/30 hover:text-danger transition-all" title="Eliminar">🗑️</button>
             </div>
           </div>

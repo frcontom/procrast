@@ -18,6 +18,7 @@ export function HabitsPage() {
   const [habits, setHabits] = useState<Habit[]>([])
   const [logs, setLogs] = useState<HabitLog[]>([])
   const [showForm, setShowForm] = useState(false)
+  const [editHabit, setEditHabit] = useState<Habit | null>(null)
   const [showImport, setShowImport] = useState(false)
   const [dayModal, setDayModal] = useState<string | null>(null)
 
@@ -50,7 +51,12 @@ export function HabitsPage() {
 
   const saveHabit = async (data: { name: string }) => {
     if (!user) return
-    await supabase.from('habits').insert({ user_id: user.id, month_key: monthKey, name: data.name, icon: '◉', color: '#A66CFF', is_primary: false })
+    if (editHabit) {
+      await supabase.from('habits').update({ name: data.name }).eq('id', editHabit.id)
+      setEditHabit(null)
+    } else {
+      await supabase.from('habits').insert({ user_id: user.id, month_key: monthKey, name: data.name, icon: '◉', color: '#A66CFF', is_primary: false })
+    }
     setShowForm(false)
     loadData()
   }
@@ -60,10 +66,6 @@ export function HabitsPage() {
     loadData()
   }
 
-  const renameHabit = async (id: string, name: string) => {
-    await supabase.from('habits').update({ name }).eq('id', id)
-    loadData()
-  }
 
   const toggleDay = async (habitId: string, date: string) => {
     if (!user) return
@@ -132,7 +134,7 @@ export function HabitsPage() {
       {/* Habit List */}
       <div id="hm-list-card" className="bg-card rounded-xl border border-white/10 p-4">
         <div id="hm-list-title" className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-3">📌 Hábitos de {monthLabel}</div>
-        <div id="hm-list"><HabitList habits={habits} logs={logs} daysInMonth={daysInMonth} onDelete={deleteHabit} onRename={renameHabit} /></div>
+        <div id="hm-list"><HabitList habits={habits} logs={logs} daysInMonth={daysInMonth} onDelete={deleteHabit} onEdit={(h) => { setEditHabit(h); setShowForm(true) }} /></div>
         <div id="hm-add-row" className="flex items-center gap-2 mt-3">
           <input id="hm-new-input"
             type="text"
@@ -218,7 +220,7 @@ export function HabitsPage() {
       )}
 
       {/* Modals */}
-      {showForm && <HabitForm onSave={(data) => { saveHabit(data); setShowForm(false) }} onClose={() => setShowForm(false)} />}
+      {showForm && <HabitForm initialName={editHabit?.name} onSave={(data) => { saveHabit(data); setShowForm(false) }} onClose={() => { setShowForm(false); setEditHabit(null) }} />}
       {showImport && <HabitMassImport monthKey={monthKey} onImport={importHabits} onClose={() => setShowImport(false)} />}
       {dayModal && (
         <HabitDayModal

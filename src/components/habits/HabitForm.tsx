@@ -1,12 +1,14 @@
 import { useState } from 'react'
 
 interface Props {
+  initialName?: string
   onSave: (data: { name: string }) => void
   onClose: () => void
 }
 
-export function HabitForm({ onSave, onClose }: Props) {
-  const [name, setName] = useState('')
+export function HabitForm({ initialName, onSave, onClose }: Props) {
+  const [name, setName] = useState(initialName || '')
+  const isEdit = !!initialName
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -17,7 +19,7 @@ export function HabitForm({ onSave, onClose }: Props) {
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-card rounded-xl border border-white/10 p-5 w-full max-w-sm mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-sm font-semibold text-white mb-4">Nuevo hábito</h2>
+        <h2 className="text-sm font-semibold text-white mb-4">{isEdit ? 'Editar hábito' : 'Nuevo hábito'}</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input type="text" value={name} onChange={(e) => setName(e.target.value)}
             placeholder="Nombre del hábito"
@@ -30,7 +32,7 @@ export function HabitForm({ onSave, onClose }: Props) {
               style={{ backgroundColor: 'var(--accent)', boxShadow: '0 4px 14px rgba(166,108,255,0.25)' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}>
-              + Crear
+              {isEdit ? 'Guardar' : '+ Crear'}
             </button>
             <button type="button" onClick={onClose}
               className="flex-1 px-4 py-2.5 rounded-xl text-xs font-medium text-text-secondary hover:text-white transition-all active:scale-[0.97]"
