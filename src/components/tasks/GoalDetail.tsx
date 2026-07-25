@@ -77,18 +77,6 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           </div>
         </div>
 
-        <div id="tk-warning-banner">
-        {rhythm.behind && (
-          <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs text-[#EA5455] mb-3"
-            style={{ backgroundColor: 'rgba(234,84,85,0.1)', border: '1px solid rgba(234,84,85,0.3)' }}>
-            <span className="text-base shrink-0">⚠️</span>
-            <span className="flex-1">
-              <strong>ATRASADO</strong> — Deberías tener <strong>{rhythm.expectedNow}min</strong>, llevas <strong>{totalCompleted}min</strong>. Necesitas <strong>{rhythm.neededDaily}min/día</strong>.
-            </span>
-          </div>
-        )}
-        </div>
-
         <div id="tk-progress-bar" className="mb-3">
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="text-text-secondary">Progreso</span>
@@ -114,12 +102,13 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           ))}
         </div>
 
-        <div id="tk-warning-old">
+        <div id="tk-warning-banner">
         {rhythm.behind && (
-          <div className="bg-danger/10 border border-danger/20 rounded-lg p-3 text-xs">
-            <span className="text-danger font-medium">🔴 ATRASADO</span>
-            <span className="text-text-secondary ml-1">
-              — Deberías tener {rhythm.expectedNow}min, llevas {totalCompleted}min. Necesitas {rhythm.neededDaily}min/día.
+          <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs text-[#EA5455] mb-3"
+            style={{ backgroundColor: 'rgba(234,84,85,0.1)', border: '1px solid rgba(234,84,85,0.3)' }}>
+            <span className="text-base shrink-0">⚠️</span>
+            <span className="flex-1">
+              <strong>ATRASADO</strong> — Deberías tener <strong>{rhythm.expectedNow}min</strong>, llevas <strong>{totalCompleted}min</strong>. Necesitas <strong>{rhythm.neededDaily}min/día</strong>.
             </span>
           </div>
         )}
