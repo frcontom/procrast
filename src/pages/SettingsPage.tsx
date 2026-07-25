@@ -49,7 +49,7 @@ export function SettingsPage() {
       <DangerZone />
 
       <button onClick={save}
-        className="bg-accent hover:bg-[var(--accent-hover)] text-white px-8 py-2.5 rounded-lg text-sm font-medium transition-colors">
+        className="bg-[#156390] hover:bg-[#1a7ab5] text-white px-8 py-3 rounded-xl text-sm font-medium transition-all active:scale-[0.97] shadow-lg shadow-[#156390]/30">
         {saved ? '✓ Guardado' : 'Guardar cambios'}
       </button>
     </div>

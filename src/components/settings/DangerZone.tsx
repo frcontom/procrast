@@ -37,7 +37,7 @@ export function DangerZone() {
             placeholder="Escribe RESET para confirmar"
             className="flex-1 bg-secondary border border-danger/30 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-danger" />
           <button onClick={resetAllData} disabled={confirmDelete !== 'RESET'}
-            className="bg-danger hover:bg-[#d32f2f] text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+            className="bg-[#d32f2f] hover:bg-[#b71c1c] text-white px-5 py-2.5 rounded-xl text-xs font-medium transition-all active:scale-[0.97] shadow-lg shadow-[#d32f2f]/30 disabled:opacity-30 disabled:cursor-not-allowed">
             Resetear datos
           </button>
         </div>

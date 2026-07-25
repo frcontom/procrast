@@ -29,7 +29,7 @@ export function ProfileSettings({ name, activityType, onNameChange, onActivityCh
           <div className="flex gap-2">
             {ACTIVITY_TYPES.map((a) => (
               <button key={a.id} onClick={() => onActivityChange(a.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${activityType === a.id ? 'bg-accent text-white' : 'bg-secondary text-text-secondary hover:text-white'}`}>
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${activityType === a.id ? 'bg-[var(--accent)] text-white' : 'bg-secondary text-text-secondary hover:text-white'}`}>
                 {a.label}
               </button>
             ))}
