@@ -6,6 +6,24 @@ const ACTIVITY_ICONS: Record<string, string> = {
   estudio: '📚', programacion: '💻', trading: '📈', lectura: '📖', escritura: '✍️', trabajo: '💼',
 }
 
+const DONE_PHRASES = [
+  '¡Lo lograste!', 'Bien hecho', 'Meta cumplida', 'Sin excusas',
+  'Un paso más', 'Modo fiera', 'Te mereces esto', 'En llamas 🔥',
+  'Sigues en pie', 'Un día a la vez',
+]
+
+const FAIL_PHRASES = [
+  'Podía ser mejor', '¿La próxima?', 'Sin excusa',
+  'Tú decides', 'Duele, pero enseña', 'No pasa nada, sigue',
+  'Mañana es otro día', 'Levántate y sigue',
+]
+
+function pickPhrase(id: string, list: string[]): string {
+  let hash = 0
+  for (let i = 0; i < id.length; i++) hash = ((hash << 5) - hash) + id.charCodeAt(i)
+  return list[Math.abs(hash) % list.length]
+}
+
 function groupDate(dateStr: string): string {
   const d = new Date(dateStr)
   const today = new Date()
@@ -112,24 +130,28 @@ export function SessionHistory() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-medium truncate">{s.session_name || s.activity_type || 'focus'}</span>
-                      <span className={`text-[10px] ${isCompleted ? 'text-success' : 'text-danger'}`}>
-                        {isCompleted ? '✓' : '✗'}
-                      </span>
+                      <span className="text-xs font-medium truncate">{s.activity_type || 'focus'}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] text-text-secondary mt-0.5">
-                      <span>{new Date(s.started_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>
-                      <span>·</span>
-                      <span>{s.duration_minutes} min</span>
+                    <div className="flex items-center gap-1.5 text-[10px] mt-0.5 flex-wrap">
+                      <span className={`${isCompleted ? 'text-success' : 'text-danger'} font-medium`}>
+                        {isCompleted ? pickPhrase(s.id, DONE_PHRASES) : pickPhrase(s.id, FAIL_PHRASES)}
+                      </span>
+                      <span className="text-text-secondary">·</span>
+                      <span className="text-text-secondary">{s.duration_minutes} min</span>
                       {s.elapsed_seconds > 0 && (
                         <>
-                          <span>·</span>
+                          <span className="text-text-secondary">·</span>
                           <span className={pct >= 90 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-danger'}>
-                            {Math.round((s.elapsed_seconds || 0) / 60)}/{s.duration_minutes}min
+                            {Math.round((s.elapsed_seconds || 0) / 60)}/{s.duration_minutes}
                           </span>
                         </>
                       )}
                     </div>
+                    {s.session_name && (
+                      <div className="text-[10px] text-text-secondary/60 mt-0.5 truncate italic">
+                        {s.session_name}
+                      </div>
+                    )}
                   </div>
                   <div className="w-12">
                     <div className="w-full bg-secondary rounded-full h-1">
