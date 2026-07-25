@@ -15,6 +15,7 @@ interface TimerStore {
   isStopwatch: boolean
   cycleCount: number
   cycleTotal: number
+  workDuration: number
   phase: 'work' | 'short_break' | 'long_break'
   startedAt: string | null
   finishedAt: string | null
@@ -32,6 +33,7 @@ interface TimerStore {
   setIsStopwatch: (on: boolean) => void
   setCycleCount: (n: number) => void
   setCycleTotal: (n: number) => void
+  setWorkDuration: (n: number) => void
   setPhase: (phase: 'work' | 'short_break' | 'long_break') => void
   setStartedAt: (v: string | null) => void
   setFinishedAt: (v: string | null) => void
@@ -52,6 +54,7 @@ const initialState = {
   isStopwatch: false,
   cycleCount: 0,
   cycleTotal: 0,
+  workDuration: 0,
   phase: 'work' as const,
   startedAt: null as string | null,
   finishedAt: null as string | null,
@@ -72,6 +75,7 @@ export const useTimerStore = create<TimerStore>((set) => ({
   setIsStopwatch: (isStopwatch) => set({ isStopwatch }),
   setCycleCount: (cycleCount) => set({ cycleCount }),
   setCycleTotal: (cycleTotal) => set({ cycleTotal }),
+  setWorkDuration: (workDuration) => set({ workDuration }),
   setPhase: (phase) => set({ phase }),
   setStartedAt: (startedAt) => set({ startedAt }),
   setFinishedAt: (finishedAt) => set({ finishedAt }),

@@ -3,7 +3,6 @@ import { useTimerStore } from '../store/useTimerStore'
 import { playFinishSound, playWarningSound, playStartSound } from './sound'
 
 let initialized = false
-let workDurationMinutes = 25 // guarda la duracion original del trabajo
 
 export function initTimerEngine() {
   if (initialized) return
@@ -26,8 +25,8 @@ export function initTimerEngine() {
     const st = useTimerStore.getState()
 
     if (st.phase === 'work' && st.cycleTotal > 0 && st.cycleCount < st.cycleTotal) {
-      // Ciclo completado -> guardar duracion original e iniciar descanso
-      workDurationMinutes = st.durationMinutes
+      // Guardar duracion original del trabajo antes del descanso
+      st.setWorkDuration(st.durationMinutes)
       const newCount = st.cycleCount + 1
       const isLongBreak = newCount % st.cycleTotal === 0
       const breakMinutes = isLongBreak ? 15 : 5
@@ -43,12 +42,13 @@ export function initTimerEngine() {
     }
 
     if (st.phase !== 'work' && st.cycleTotal > 0) {
-      // Descanso terminado -> restaurar duracion original e iniciar trabajo
+      // Restaurar duracion del trabajo guardada antes del descanso
+      const workMin = st.workDuration > 0 ? st.workDuration : st.durationMinutes
       st.setPhase('work')
-      st.setDuration(workDurationMinutes)
+      st.setDuration(workMin)
       playFinishSound()
 
-      sessionManager.startSession(workDurationMinutes, st.activityType, st.sessionName, st.strictMode, false)
+      sessionManager.startSession(workMin, st.activityType, st.sessionName, st.strictMode, false)
       playStartSound()
 
       if (st.cycleCount >= st.cycleTotal) {
@@ -58,7 +58,6 @@ export function initTimerEngine() {
       return
     }
 
-    // Sesion normal o todos los ciclos completados -> guardar y finalizar
     await sessionManager.finish()
     playFinishSound()
     st.setFinishedAt(new Date().toISOString())
