@@ -92,10 +92,15 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
         onSetDependency(dragged.id, newParent)
       }
     } else if (onReorder) {
-      const flat = tree.map((t) => t.node)
-      const [moved] = flat.splice(dragIdx, 1)
-      flat.splice(idx, 0, moved)
-      onReorder(flat.map((s) => s.id))
+      // Si el destino tiene distinto padre, cambiar dependencia en vez de reordenar
+      if (dragged.depends_on !== target.id && onSetDependency) {
+        onSetDependency(dragged.id, target.id)
+      } else {
+        const flat = tree.map((t) => t.node)
+        const [moved] = flat.splice(dragIdx, 1)
+        flat.splice(idx, 0, moved)
+        onReorder(flat.map((s) => s.id))
+      }
     }
 
     setDragIdx(null)
@@ -104,7 +109,6 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
   const handleDragEnd = () => { setDragIdx(null); setOverIdx(null); setOverHeader(false) }
 
   const handleHeaderDragOver = (e: React.DragEvent) => {
-    if (!e.shiftKey) return
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
     setOverHeader(true)
@@ -113,7 +117,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
   const handleHeaderDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setOverHeader(false)
-    if (dragIdx === null || !e.shiftKey || !onSetDependency) return
+    if (dragIdx === null || !onSetDependency) return
     const dragged = tree[dragIdx]?.node
     if (!dragged || !dragged.depends_on) { setDragIdx(null); return }
     onSetDependency(dragged.id, null)
