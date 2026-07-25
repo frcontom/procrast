@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { useUIStore } from '../../store/useUIStore'
 import { signOut } from '../../supabase/auth'
+import { MiniTimer } from './MiniTimer'
 
 const NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard', icon: '📊' },
@@ -41,6 +42,8 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      <MiniTimer />
 
       <div className="px-3 py-3 border-t border-white/10 shrink-0">
         <div className="flex items-center gap-2 text-[10px] text-text-secondary mb-2">
