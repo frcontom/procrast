@@ -154,6 +154,7 @@ export function FullscreenPage() {
   const [floatXp, setFloatXp] = useState(0)
   const [sessionsToday, setSessionsToday] = useState(0)
   const [motivationList] = useState(() => MOTIVATION_LISTS[Math.floor(Math.random() * MOTIVATION_LISTS.length)])
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
 
   const pickBg = useCallback(() => {
     setBgIndex((prev) => {
@@ -214,13 +215,18 @@ export function FullscreenPage() {
     const handleKey = (e: KeyboardEvent) => {
       if (e.code === 'Escape') {
         if (strictMode) return
-        sessionManager.cancel()
-        navigate('/focus')
+        setShowCancelConfirm(true)
       }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [strictMode])
+
+  const handleCancel = () => {
+    sessionManager.cancel()
+    if (returnGoalId) navigate(`/tasks?goal=${returnGoalId}`)
+    else navigate('/focus')
+  }
 
   const prevState = prevStateRef.current
   prevStateRef.current = state
@@ -402,7 +408,7 @@ export function FullscreenPage() {
             </button>
             <button id="fullscreenCancel"
               disabled={cancelDisabled}
-              onClick={() => { if (!strictMode) { sessionManager.cancel(); navigate('/focus') } }}
+              onClick={() => { if (!strictMode) setShowCancelConfirm(true) }}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium border transition-all active:scale-[0.97] ${cancelDisabled ? 'border-white/5 text-white/20 cursor-not-allowed' : 'border-white/20 text-white/60 hover:text-white/90 hover:border-white/40 cursor-pointer'}`}>
               <span>✕</span>
               <span>Cancelar</span>
@@ -464,6 +470,29 @@ export function FullscreenPage() {
                 className="px-8 py-3 rounded-xl text-sm font-medium border border-accent/40 text-accent hover:text-accent/80 hover:border-accent/60 transition-all active:scale-[0.97]">
                 📋 {returnGoalName || 'Ir a la tarea'}
               </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {showCancelConfirm && (
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/70" onClick={() => setShowCancelConfirm(false)}>
+          <div className="bg-card rounded-xl border border-white/10 p-6 w-full max-w-sm mx-4 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="text-4xl mb-3">😤</div>
+            <h3 className="text-base font-semibold text-white mb-1">¿Rendirte?</h3>
+            <p className="text-xs text-text-secondary mb-5">Si cancelas ahora, perderás el progreso de esta sesión.</p>
+            <div className="flex gap-2">
+              <button onClick={() => setShowCancelConfirm(false)}
+                className="flex-1 px-4 py-2 rounded-lg text-xs font-medium bg-secondary hover:bg-white/10 text-text-secondary hover:text-white transition-all">
+                Seguir
+              </button>
+              <button onClick={handleCancel}
+                className="flex-1 px-4 py-2 rounded-lg text-xs font-medium bg-danger hover:bg-danger/80 text-white transition-all">
+                Rendirme 😤
+              </button>
+            </div>
+            {returnGoalName && (
+              <p className="text-[10px] text-text-secondary/40 mt-3">Volverás a: {returnGoalName}</p>
             )}
           </div>
         </div>
