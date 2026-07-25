@@ -14,7 +14,8 @@ export function FocusChart({ sessions }: Props) {
   })
 
   return (
-    <div>
+    <div className="bg-card rounded-xl border border-white/10 p-4">
+      <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-4">Minutos por día</h3>
       <Bar
         data={{
           labels: shortNames,
