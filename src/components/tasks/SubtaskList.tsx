@@ -68,6 +68,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
   const [overHeader, setOverHeader] = useState(false)
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
   const tree = buildTree(subtasks)
 
@@ -218,7 +219,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                               <button onClick={() => onShowHistory?.(st)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Historial">🕐</button>
                             </>
                           )}
-                          <button onClick={() => onDelete(st.id)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-danger/50 hover:bg-danger/10 hover:border-danger/30 hover:text-danger transition-all" title="Eliminar">🗑️</button>
+                          <button onClick={() => setDeleteConfirmId(st.id)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-danger/50 hover:bg-danger/10 hover:border-danger/30 hover:text-danger transition-all" title="Eliminar">🗑️</button>
                         </div>
                       </div>
                     </div>
@@ -233,6 +234,26 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
               </div>
             )
           })}
+        </div>
+      )}
+
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setDeleteConfirmId(null)}>
+          <div className="bg-card rounded-xl border border-white/10 p-5 w-full max-w-xs mx-4 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="text-3xl mb-3">🗑️</div>
+            <h3 className="text-sm font-semibold text-white mb-1">¿Eliminar tarea?</h3>
+            <p className="text-[11px] text-text-secondary mb-5">Esta acción no se puede deshacer.</p>
+            <div className="flex gap-2">
+              <button onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 px-4 py-2 rounded-lg text-xs font-medium bg-secondary hover:bg-white/10 text-text-secondary hover:text-white transition-all">
+                Cancelar
+              </button>
+              <button onClick={() => { onDelete(deleteConfirmId); setDeleteConfirmId(null) }}
+                className="flex-1 px-4 py-2 rounded-lg text-xs font-medium bg-danger hover:bg-danger/80 text-white transition-all">
+                Eliminar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
