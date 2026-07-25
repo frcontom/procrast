@@ -17,42 +17,82 @@ export function HabitWeekCircles({ habits, logs }: Props) {
     d.setDate(weekStart.getDate() + i)
     const dateStr = d.toISOString().slice(0, 10)
     const doneCount = habits.filter((h) => logs.some((l) => l.habit_id === h.id && l.date === dateStr)).length
-    const allDone = doneCount >= habits.length && habits.length > 0
-    const someDone = doneCount > 0 && !allDone
-    const isPast = dateStr < today.toISOString().slice(0, 10)
-    const isToday = dateStr === today.toISOString().slice(0, 10)
-    return { dateStr, dayName: DAYS[d.getDay()], dayNum: d.getDate(), allDone, someDone, isPast, isToday, doneCount }
+    return {
+      dateStr,
+      dayName: DAYS[d.getDay()],
+      dayNum: d.getDate(),
+      allDone: doneCount >= habits.length && habits.length > 0,
+      someDone: doneCount > 0 && !(doneCount >= habits.length && habits.length > 0),
+      isPast: dateStr < today.toISOString().slice(0, 10),
+      isToday: dateStr === today.toISOString().slice(0, 10),
+      doneCount,
+      pct: habits.length > 0 ? Math.round((doneCount / habits.length) * 100) : 0,
+    }
   })
 
   const completedCount = weekDays.filter((d) => d.allDone).length
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wider">Últimos 7 días</span>
         <span className="text-[10px] text-text-secondary/50">{completedCount}/7 completos</span>
       </div>
-      <div className="flex items-center justify-between">
-        {weekDays.map((d) => {
-          let circleBg = 'bg-white/5'
-          let circleText = 'text-white/20'
-          let dot = '○'
-          if (d.allDone) { circleBg = 'bg-[#28C76F]'; circleText = 'text-white'; dot = '✓' }
-          else if (d.someDone && d.isPast) { circleBg = 'bg-[#FF9800]/20'; circleText = 'text-[#FF9800]'; dot = '◐' }
-          else if (d.isPast && !d.someDone) { circleBg = 'bg-[#EA5455]/8'; circleText = 'text-[#EA5455]/40'; dot = '✕' }
+      <div className="flex items-start justify-between relative">
+        {/* Connecting line */}
+        <div className="absolute top-[18px] left-[8%] right-[8%] h-px bg-white/5" />
+        {weekDays.map((d, i) => {
+          let gradient = ''
+          let shadow = ''
+          let textColor = 'text-white/20'
+          let label = ''
+
+          if (d.allDone) {
+            gradient = 'bg-gradient-to-br from-[#28C76F] to-[#1E9B5B]'
+            shadow = 'shadow-lg shadow-[#28C76F]/30'
+            textColor = 'text-white'
+            label = '✓'
+          } else if (d.someDone && d.isPast) {
+            gradient = 'bg-gradient-to-br from-[#FF9800] to-[#E65100]'
+            shadow = 'shadow-lg shadow-[#FF9800]/20'
+            textColor = 'text-white'
+            label = `${d.pct}%`
+          } else if (d.isPast && !d.someDone) {
+            gradient = 'bg-gradient-to-br from-[#EA5455]/20 to-[#EA5455]/5'
+            shadow = ''
+            textColor = 'text-[#EA5455]/40'
+            label = '✕'
+          } else {
+            gradient = 'bg-white/5'
+            shadow = ''
+            textColor = 'text-white/20'
+          }
 
           if (d.isToday) {
-            circleBg = d.allDone ? 'bg-[#28C76F]' : d.someDone ? 'bg-[#FF9800]/20' : 'bg-secondary'
-            circleText = d.allDone ? 'text-white' : d.someDone ? 'text-[#FF9800]' : 'text-accent'
-            dot = d.allDone ? '✓' : d.someDone ? '◐' : '◉'
+            gradient = d.allDone
+              ? 'bg-gradient-to-br from-[#28C76F] to-[#1E9B5B]'
+              : d.someDone
+                ? 'bg-gradient-to-br from-[#FF9800] to-[#E65100]'
+                : 'bg-gradient-to-br from-accent/20 to-accent/5'
+            shadow = d.allDone
+              ? 'shadow-lg shadow-[#28C76F]/30 ring-2 ring-accent/40'
+              : d.someDone
+                ? 'shadow-lg shadow-[#FF9800]/20 ring-2 ring-accent/40'
+                : 'ring-2 ring-accent/50 shadow-lg shadow-accent/10'
+            textColor = d.allDone ? 'text-white' : d.someDone ? 'text-white' : 'text-accent'
+            label = d.allDone ? '✓' : d.someDone ? `${d.pct}%` : '◉'
           }
 
           return (
-            <div key={d.dateStr} className="flex flex-col items-center gap-1 flex-1">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${circleBg} ${circleText}`}>
-                {d.isToday || d.isPast ? dot : d.dayNum}
+            <div key={d.dateStr} className="flex flex-col items-center gap-1.5 flex-1 relative z-10">
+              <div className={`w-[36px] h-[36px] rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300 ${gradient} ${shadow} ${textColor}`}>
+                {d.isToday || d.isPast ? (
+                  <span className="drop-shadow-sm">{label}</span>
+                ) : (
+                  <span className="text-white/15 font-normal text-xs drop-shadow-sm">{d.dayNum}</span>
+                )}
               </div>
-              <span className={`text-[9px] ${d.isToday ? 'text-accent font-medium' : 'text-text-secondary/40'}`}>{d.dayName}</span>
+              <span className={`text-[9px] ${d.isToday ? 'text-accent font-semibold' : 'text-text-secondary/40'} tracking-wide`}>{d.dayName}</span>
             </div>
           )
         })}
