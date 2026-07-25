@@ -50,7 +50,7 @@ export function HabitsPage() {
 
   const saveHabit = async (data: { name: string }) => {
     if (!user) return
-    await supabase.from('habits').insert({ user_id: user.id, month_key: monthKey, name: data.name, icon: '▸', color: '#A66CFF', is_primary: false })
+    await supabase.from('habits').insert({ user_id: user.id, month_key: monthKey, name: data.name, icon: '◉', color: '#A66CFF', is_primary: false })
     setShowForm(false)
     loadData()
   }
