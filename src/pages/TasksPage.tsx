@@ -117,7 +117,6 @@ export function TasksPage() {
                   const { data: ns }: any = await supabase.from('task_subtasks').insert({ user_id: user.id, goal_id: selectedId!, sort_order: subtasks.length, ...data }).select().single()
                   if (ns) setSubtasks((p) => [...p, ns])
                 }}
-                onEditGoal={() => { setEditingGoal(selectedGoal); setShowForm(true) }}
                 onImportSubtasks={async (tasks) => {
                   if (!user || !selectedId) return
                   const toInsert = tasks.map((t: any, i: number) => ({ user_id: user.id, goal_id: selectedId, sort_order: subtasks.length + i, ...t }))
