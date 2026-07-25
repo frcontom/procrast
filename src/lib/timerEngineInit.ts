@@ -29,10 +29,9 @@ export function initTimerEngine() {
       // Guardar duracion original del trabajo antes del descanso
       st.setWorkDuration(st.durationMinutes)
       const settings = useSettingsStore.getState()
-      const isLongBreak = st.cycleCount % st.cycleTotal === 0
-      const breakMinutes = isLongBreak ? settings.timerConfig.longBreakMinutes : settings.timerConfig.shortBreakMinutes
+      const breakMinutes = settings.timerConfig.shortBreakMinutes
 
-      st.setPhase(isLongBreak ? 'long_break' : 'short_break')
+      st.setPhase('short_break')
       st.setDuration(breakMinutes)
       playFinishSound()
 
