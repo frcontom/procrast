@@ -477,22 +477,22 @@ export function FullscreenPage() {
 
       {showCancelConfirm && (
         <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/70" onClick={() => setShowCancelConfirm(false)}>
-          <div className="bg-card rounded-xl border border-white/10 p-6 w-full max-w-sm mx-4 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="text-4xl mb-3">😤</div>
-            <h3 className="text-base font-semibold text-white mb-1">¿Rendirte?</h3>
-            <p className="text-xs text-text-secondary mb-5">Si cancelas ahora, perderás el progreso de esta sesión.</p>
-            <div className="flex gap-2">
+          <div className="bg-card rounded-xl border border-white/10 p-7 w-full max-w-sm mx-4 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="text-5xl mb-4">😤</div>
+            <h3 className="text-lg font-bold text-white mb-1">¿Rendirte?</h3>
+            <p className="text-sm text-text-secondary mb-6">Si cancelas ahora perderás el progreso de esta sesión.</p>
+            <div className="flex flex-col gap-2">
               <button onClick={() => setShowCancelConfirm(false)}
-                className="flex-1 px-4 py-2 rounded-lg text-xs font-medium bg-secondary hover:bg-white/10 text-text-secondary hover:text-white transition-all">
-                Seguir
+                className="w-full px-5 py-3 rounded-xl text-sm font-semibold bg-accent hover:bg-accent-hover text-white transition-all active:scale-[0.97] shadow-lg shadow-accent/20">
+                💪 Seguir enfocado
               </button>
               <button onClick={handleCancel}
-                className="flex-1 px-4 py-2 rounded-lg text-xs font-medium bg-danger hover:bg-danger/80 text-white transition-all">
+                className="w-full px-5 py-3 rounded-xl text-sm font-medium border-2 border-danger/40 text-danger hover:bg-danger/10 hover:border-danger transition-all active:scale-[0.97]">
                 Rendirme 😤
               </button>
             </div>
             {returnGoalName && (
-              <p className="text-[10px] text-text-secondary/40 mt-3">Volverás a: {returnGoalName}</p>
+              <p className="text-[11px] text-text-secondary/50 mt-4">Volverás a: <span className="text-text-secondary">{returnGoalName}</span></p>
             )}
           </div>
         </div>
