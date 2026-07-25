@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-interface TimerConfig {
+export interface TimerConfig {
   workMinutes: number
   breakMinutes: number
   maxPauseMinutes: number
