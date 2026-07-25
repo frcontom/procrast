@@ -79,6 +79,8 @@ export function TasksPage() {
     store.setDuration(st.estimated_minutes)
     store.setActivityType('focus')
     store.setSessionName(st.name)
+    store.setReturnGoal(selectedId, selectedGoal?.name || null)
+    sessionManager.setCurrentSubtask(st.id)
     await sessionManager.startSession(st.estimated_minutes, 'focus', st.name, false, false)
     navigate('/focus/fullscreen')
   }

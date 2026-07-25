@@ -5,6 +5,7 @@ import type { TaskGoal, TaskSubtask } from '../../supabase/types'
 import { calculateRhythm } from '../../lib/rhythmCalculator'
 import { SubtaskList } from './SubtaskList'
 import { SubtaskForm } from './SubtaskForm'
+import { SubtaskHistory } from './SubtaskHistory'
 import { HexCalendar } from './HexCalendar'
 
 interface Props {
@@ -28,6 +29,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   const [links, setLinks] = useState<any[]>([])
   const [todayMin, setTodayMin] = useState(0)
   const [editingSubtask, setEditingSubtask] = useState<TaskSubtask | null>(null)
+  const [historySubtask, setHistorySubtask] = useState<TaskSubtask | null>(null)
 
   const goalIcon = goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'
 
@@ -57,6 +59,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   const subtaskDays = links.map((l: any) => l.date)
 
   return (
+    <>
     <div className="space-y-4">
       <div className="bg-card rounded-xl border border-white/10 p-4">
         <div id="tk-detail-header" className="flex items-start justify-between gap-3">
@@ -140,7 +143,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           }} onImport={onImportSubtasks} editSubtask={editingSubtask} onCloseEdit={() => setEditingSubtask(null)} subtaskList={subtasks} />
         </div>
 
-        <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} onReorder={onReorderSubtasks} onSetDependency={onSetDependency} onStartPomodoro={onStartPomodoro} />
+        <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} onReorder={onReorderSubtasks} onSetDependency={onSetDependency} onStartPomodoro={onStartPomodoro} onShowHistory={setHistorySubtask} />
       </div>
 
       {goal.notes && (
@@ -150,5 +153,10 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
         </div>
       )}
     </div>
+
+    {historySubtask && (
+      <SubtaskHistory subtask={historySubtask} onClose={() => setHistorySubtask(null)} />
+    )}
+    </>
   )
 }

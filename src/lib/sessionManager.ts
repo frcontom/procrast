@@ -12,9 +12,14 @@ const XP = {
 export class SessionManager {
   private engine = new TimerEngine()
   private currentUserId: string | null = null
+  private currentSubtaskId: string | null = null
 
   setUser(userId: string) {
     this.currentUserId = userId
+  }
+
+  setCurrentSubtask(subtaskId: string | null) {
+    this.currentSubtaskId = subtaskId
   }
 
   getEngine() { return this.engine }
@@ -103,7 +108,7 @@ export class SessionManager {
     store.setProgress(100)
 
     if (this.currentUserId) {
-      await supabase.from('sessions').insert({
+      const { data: session } = await supabase.from('sessions').insert({
         user_id: this.currentUserId,
         activity_type: store.activityType,
         session_name: store.sessionName,
@@ -111,7 +116,15 @@ export class SessionManager {
         elapsed_seconds: store.durationMinutes * 60,
         state: 'completed',
         finished_at: new Date().toISOString(),
-      })
+      }).select().single()
+
+      if (this.currentSubtaskId && session) {
+        await supabase.rpc('link_pomodoro', {
+          p_subtask_id: this.currentSubtaskId,
+          p_session_id: session.id,
+          p_minutes: store.durationMinutes,
+        })
+      }
 
       const xpGained = XP.SESSION_COMPLETED + Math.round(store.durationMinutes * XP.MINUTE_BONUS)
       await this.addXp(xpGained)

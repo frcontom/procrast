@@ -109,7 +109,7 @@ function SparkleBurst({ color }: { color: string }) {
 export function FullscreenPage() {
   const navigate = useNavigate()
   const store = useTimerStore()
-  const { state, remainingSeconds, elapsedSeconds, durationMinutes, activityType, sessionName, cycleCount, cycleTotal, isStopwatch, strictMode } = store
+  const { state, remainingSeconds, elapsedSeconds, durationMinutes, activityType, sessionName, cycleCount, cycleTotal, isStopwatch, strictMode, returnGoalId, returnGoalName } = store
   const [bgIndex, setBgIndex] = useState(0)
   const prevStateRef = useRef(state)
   const cursorTimerRef = useRef<number | undefined>(undefined)
@@ -392,6 +392,12 @@ export function FullscreenPage() {
               className="px-8 py-3 rounded-xl text-sm font-medium border border-white/20 text-white/60 hover:text-white/90 hover:border-white/40 transition-all active:scale-[0.97]">
               Ir a Focus
             </button>
+            {returnGoalId && (
+              <button onClick={() => navigate('/tasks')}
+                className="px-8 py-3 rounded-xl text-sm font-medium border border-accent/40 text-accent hover:text-accent/80 hover:border-accent/60 transition-all active:scale-[0.97]">
+                📋 {returnGoalName || 'Ir a la tarea'}
+              </button>
+            )}
           </div>
         </div>
       )}
