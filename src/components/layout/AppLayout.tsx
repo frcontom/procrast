@@ -10,7 +10,7 @@ export function AppLayout() {
 
   useEffect(() => {
     const update = () => {
-      setClock(new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }))
+      setClock(new Date().toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' }))
     }
     update()
     const id = setInterval(update, 1000)
