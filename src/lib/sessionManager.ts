@@ -96,7 +96,7 @@ export class SessionManager {
       }).select().single()
 
       if (this.currentSubtaskId && session) {
-        const elapsedMin = Math.round((s.elapsedSeconds || 0) / 60)
+        const elapsedMin = Math.max(1, Math.round((s.elapsedSeconds || 0) / 60))
         await supabase.from('task_pomodoro_links').insert({
           user_id: this.currentUserId,
           subtask_id: this.currentSubtaskId,
