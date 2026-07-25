@@ -12,6 +12,7 @@ import { CoachPage } from './pages/CoachPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { FullscreenPage } from './pages/FullscreenPage'
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       { path: 'coach', element: <CoachPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
+  },
+  {
+    path: '/focus/fullscreen',
+    element: <ProtectedRoute><FullscreenPage /></ProtectedRoute>,
   },
 ])
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useUser } from '../supabase/auth'
 import { useTimerStore } from '../store/useTimerStore'
 import { sessionManager } from '../lib/sessionManager'
@@ -11,13 +12,12 @@ import { StatsOverview } from '../components/focus/StatsOverview'
 import { FocusChart } from '../components/focus/FocusChart'
 import { ActivityBreakdown } from '../components/focus/ActivityBreakdown'
 import { SessionHistory } from '../components/focus/SessionHistory'
-import { FullscreenOverlay } from '../components/focus/FullscreenOverlay'
 import { supabase } from '../supabase/client'
 
 export function FocusPage() {
   const user = useUser()
   const store = useTimerStore()
-  const [showOverlay, setShowOverlay] = useState(false)
+  const navigate = useNavigate()
   const [lastXp, setLastXp] = useState(0)
   const [sessions, setSessions] = useState<any[]>([])
 
@@ -68,6 +68,10 @@ export function FocusPage() {
         else if (st.state === 'PAUSED') sessionManager.resume()
       }
       if (e.code === 'Escape' && st.state !== 'IDLE' && !st.strictMode) { sessionManager.cancel() }
+      if (e.code === 'KeyF' && (e.ctrlKey || e.metaKey) && st.state !== 'IDLE') {
+        e.preventDefault()
+        navigate('/focus/fullscreen')
+      }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
@@ -76,6 +80,7 @@ export function FocusPage() {
   const handleStart = async () => {
     playStartSound()
     await sessionManager.startSession(store.isStopwatch ? 480 : store.durationMinutes, store.activityType, store.sessionName, store.strictMode, false)
+    navigate('/focus/fullscreen')
   }
 
   const handleCancel = async () => {
@@ -157,10 +162,6 @@ export function FocusPage() {
       <div id="focus-session-history">
         <SessionHistory />
       </div>
-
-      {showOverlay && store.state !== 'IDLE' && (
-        <FullscreenOverlay onExit={() => setShowOverlay(false)} />
-      )}
     </div>
   )
 }
