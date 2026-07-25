@@ -393,7 +393,7 @@ export function FullscreenPage() {
               Ir a Focus
             </button>
             {returnGoalId && (
-              <button onClick={() => navigate('/tasks')}
+              <button onClick={() => navigate(`/tasks?goal=${returnGoalId}`)}
                 className="px-8 py-3 rounded-xl text-sm font-medium border border-accent/40 text-accent hover:text-accent/80 hover:border-accent/60 transition-all active:scale-[0.97]">
                 📋 {returnGoalName || 'Ir a la tarea'}
               </button>

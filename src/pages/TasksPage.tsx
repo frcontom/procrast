@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../supabase/client'
 import { useUser } from '../supabase/auth'
 import type { TaskGoal, TaskSubtask } from '../supabase/types'
@@ -17,6 +17,7 @@ type TabView = 'metas' | 'hoy' | 'history'
 export function TasksPage() {
   const user = useUser()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [goals, setGoals] = useState<TaskGoal[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -25,6 +26,18 @@ export function TasksPage() {
   const [subtasks, setSubtasks] = useState<TaskSubtask[]>([])
 
   const selectedGoal = goals.find((g) => g.id === selectedId) || null
+
+  // Auto-select goal from ?goal= param on mount
+  useEffect(() => {
+    const goalParam = searchParams.get('goal')
+    if (goalParam && goals.length > 0) {
+      const found = goals.find((g) => g.id === goalParam)
+      if (found) {
+        setSelectedId(goalParam)
+        setTab('metas')
+      }
+    }
+  }, [searchParams, goals])
 
   const loadGoals = useCallback(() => {
     if (!user) return
@@ -44,6 +57,20 @@ export function TasksPage() {
   useEffect(() => {
     if (selectedId) loadSubtasks(selectedId)
   }, [selectedId, loadSubtasks])
+
+  // Refresh subtasks and goals after returning from a pomodoro session
+  useEffect(() => {
+    const needsRefresh = sessionStorage.getItem('_refreshSubtasks')
+    if (needsRefresh === '1') {
+      sessionStorage.removeItem('_refreshSubtasks')
+      loadGoals()
+      if (selectedId) loadSubtasks(selectedId)
+    }
+    // Clear return goal and subtask from session manager
+    const store = useTimerStore.getState()
+    if (store.returnGoalId) store.setReturnGoal(null, null)
+    sessionManager.setCurrentSubtask(null)
+  })
 
   const selectGoal = (id: string) => {
     setSelectedId(id)
@@ -81,6 +108,7 @@ export function TasksPage() {
     store.setSessionName(st.name)
     store.setReturnGoal(selectedId, selectedGoal?.name || null)
     sessionManager.setCurrentSubtask(st.id)
+    sessionStorage.setItem('_refreshSubtasks', '1')
     await sessionManager.startSession(st.estimated_minutes, 'focus', st.name, false, false)
     navigate('/focus/fullscreen')
   }
