@@ -36,14 +36,15 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
     })
   }, [user, habitsLength, refreshKey])
 
-  // Test data visual — inyectar datos aleatorios para previsualizar
+  // Test data visual — datos ficticios para previsualizar
   const testData: MonthData[] = []
+  const testPattern = [15, 20, 8, 3, 25, 18, 12, 5, 22, 10, 28, 6] // días con log por mes
   for (let i = 0; i < 12; i++) {
     const d = new Date(now.getFullYear(), i, 1)
     const daysInMonth = new Date(now.getFullYear(), i + 1, 0).getDate()
     const isCurrent = i === now.getMonth()
     const effectiveDays = isCurrent ? now.getDate() : daysInMonth
-    const daysWithLogs = i === now.getMonth() ? Math.floor(Math.random() * (effectiveDays + 1)) : Math.floor(Math.random() * (daysInMonth + 1))
+    const daysWithLogs = Math.min(testPattern[i], effectiveDays)
     testData.push({
       label: d.toLocaleDateString('es-ES', { month: 'short' }),
       month: i,
@@ -83,7 +84,7 @@ export function HabitHistoryChart({ habitsLength, refreshKey }: { habitsLength: 
               <div
                 className="w-full rounded-t transition-all"
                 style={{
-                  height: `${Math.max(4, pctToShow)}px`,
+                  height: `${Math.max(6, pctToShow)}px`,
                   backgroundColor: isCurrent ? '#28C76F' : '#3B82F6',
                   boxShadow: isCurrent ? '0 0 8px rgba(40,199,111,0.4)' : 'none',
                 }}
