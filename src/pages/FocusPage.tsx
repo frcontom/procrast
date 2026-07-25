@@ -21,12 +21,20 @@ export function FocusPage() {
   const navigate = useNavigate()
   const [lastXp, setLastXp] = useState(0)
   const [sessions, setSessions] = useState<any[]>([])
+  const [todayStats, setTodayStats] = useState({ sessions: 0, minutes: 0, streak: 0 })
 
   useEffect(() => {
     if (!user) return
     sessionManager.setUser(user.id)
+    const today = new Date().toISOString().slice(0, 10)
     supabase.from('sessions').select('*').eq('user_id', user.id).order('started_at', { ascending: false }).limit(500).then(({ data }: any) => {
       if (data) setSessions(data)
+    })
+    supabase.from('sessions').select('elapsed_seconds').eq('user_id', user.id).eq('state', 'completed').gte('started_at', today).then(({ data }: any) => {
+      if (data) setTodayStats((p) => ({ ...p, sessions: data.length, minutes: Math.round(data.reduce((a: number, s: any) => a + (s.elapsed_seconds || 0) / 60, 0)) }))
+    })
+    supabase.from('statistics').select('current_streak').eq('user_id', user.id).single().then(({ data }: any) => {
+      if (data) setTodayStats((p) => ({ ...p, streak: data.current_streak || 0 }))
     })
   }, [user])
 
@@ -84,6 +92,14 @@ export function FocusPage() {
 
   return (
     <div id="focus-page" className="w-full max-w-3xl mx-auto space-y-6">
+
+      {todayStats.minutes > 0 && (
+        <div className="flex items-center justify-center gap-5 text-xs text-text-secondary/70 animate-[fadeSlideDown_0.4s_ease]">
+          <span>📊 Hoy: {todayStats.sessions} sesiones</span>
+          <span>⏱ {todayStats.minutes} min</span>
+          {todayStats.streak > 0 && <span>🔥 {todayStats.streak} días</span>}
+        </div>
+      )}
 
       <div id="focus-timer-section" className="bg-card rounded-2xl border border-white/10 overflow-hidden">
         <div id="focus-config-bar" className="px-5 pt-5 pb-3 border-b border-white/5">

@@ -12,12 +12,19 @@ export function TimerControls({ state, onStart, onPause, onResume, onCancel }: P
   const isRunning = state === 'RUNNING'
   const isPaused = state === 'PAUSED'
   const canCancel = state === 'RUNNING' || state === 'PAUSED'
+  const isIdle = state === 'IDLE'
 
   return (
     <div className="flex items-center justify-center gap-4">
       <button
         onClick={isRunning ? onPause : isPaused ? onResume : onStart}
-        className="flex items-center gap-2.5 px-10 py-3 rounded-xl text-sm font-medium transition-all active:scale-[0.97] duration-150 bg-accent hover:bg-[var(--accent-hover)] text-white shadow-lg shadow-accent/20 hover:shadow-accent/30"
+        className={`flex items-center gap-2.5 px-10 py-3 rounded-xl text-sm font-medium transition-all active:scale-[0.97] duration-150 text-white ${
+          isRunning
+            ? 'bg-warning hover:bg-[#e68900] shadow-lg shadow-warning/20'
+            : isIdle
+              ? 'bg-[#156390] hover:bg-[#1a7ab5] shadow-lg shadow-[#156390]/30 hover:shadow-[#156390]/50'
+              : 'bg-[#156390] hover:bg-[#1a7ab5] shadow-lg shadow-black/30'
+        }`}
       >
         <span className="text-lg">{isRunning ? '⏸' : '▶'}</span>
         <span>{isRunning ? 'Pausar' : isPaused ? 'Reanudar' : 'Iniciar'}</span>
