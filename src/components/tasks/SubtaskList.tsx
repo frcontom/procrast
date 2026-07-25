@@ -84,8 +84,6 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                 } ${
                   isOver ? 'border-accent/50 ring-1 ring-accent/30' : ''
                 } ${
-                  isLocked ? 'opacity-40 border-white/5' : ''
-                } ${
                   isDone
                     ? 'bg-white/[0.02] border-white/5 opacity-55'
                     : 'bg-secondary/70 border-white/[0.06] hover:bg-secondary hover:border-white/10'
@@ -147,17 +145,17 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                     </div>
 
                     <div className="flex items-center gap-0.5 shrink-0">
-                      {!isChecklist && !isLocked && (
+                      {!isChecklist && (
                         <button onClick={() => onStartPomodoro?.(st)} className="w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Iniciar Pomodoro">▶ {st.estimated_minutes}min</button>
                       )}
                       <div className={`flex items-center gap-0.5 ${isDone ? 'opacity-0 group-hover:opacity-100' : ''}`}>
-                      {!isDone && !isLocked && (
+                      {!isDone && (
                         <>
                           <button onClick={() => onEdit?.(st)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Editar">✏️</button>
                           <button className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all" title="Historial">🕐</button>
                         </>
                       )}
-                      <button onClick={() => !isLocked && onDelete(st.id)} className={`w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] transition-all ${isLocked ? 'text-text-secondary/20 cursor-not-allowed' : 'text-danger/50 hover:bg-danger/10 hover:border-danger/30 hover:text-danger'}`} title="Eliminar">🗑️</button>
+                      <button onClick={() => onDelete(st.id)} className="w-7 h-7 flex items-center justify-center rounded-md text-xs bg-secondary border border-white/[0.06] text-danger/50 hover:bg-danger/10 hover:border-danger/30 hover:text-danger transition-all" title="Eliminar">🗑️</button>
                       </div>
                     </div>
                   </div>
