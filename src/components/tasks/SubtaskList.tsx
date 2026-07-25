@@ -37,10 +37,8 @@ function buildTree(items: TaskSubtask[]): { node: TaskSubtask; depth: number; ha
     for (let i = 0; i < list.length; i++) {
       const node = list[i]
       const children = map.get(node.id) || []
-      const hasChildren = children.length > 0
-      const isLast = i === list.length - 1
-      result.push({ node, depth, hasChildren, isLast })
-      if (hasChildren) walk(children, depth + 1)
+      result.push({ node, depth, hasChildren: children.length > 0, isLast: i === list.length - 1 })
+      if (children.length > 0) walk(children, depth + 1)
     }
   }
 
@@ -81,7 +79,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
         </div>
       ) : (
         <div className="space-y-1">
-          {tree.map(({ node: st, depth, hasChildren, isLast }, idx) => {
+          {tree.map(({ node: st, depth }, idx) => {
             const isDragging = dragIdx === idx
             const isOver = overIdx === idx
             const isDone = st.status === 'completed'
@@ -94,7 +92,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
             return (
               <div key={st.id} className="relative">
                 {depth > 0 && (
-                  <div className="absolute left-[18px] top-0 bottom-0 w-px bg-white/5" />
+                  <div className="absolute left-[35px] top-0 bottom-0 w-px bg-white/[0.06]" />
                 )}
                 <div
                   draggable
@@ -112,9 +110,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                   <div className="px-3 py-2.5">
                     <div className="flex items-start gap-1.5">
                       {depth > 0 && (
-                        <div className="mt-3 shrink-0 flex flex-col items-center" style={{ width: 12 }}>
-                          <div className="w-2 h-px bg-white/20" />
-                        </div>
+                        <div className="absolute left-[18px] top-3 w-[18px] h-px bg-white/10" />
                       )}
                       <span className="mt-1.5 text-text-secondary/20 group-hover:text-text-secondary/40 transition-colors cursor-grab active:cursor-grabbing text-xs select-none shrink-0">⠿</span>
                       <button
