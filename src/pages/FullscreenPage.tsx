@@ -170,17 +170,26 @@ export function FullscreenPage() {
           {name}
         </div>
 
-        <div id="fullscreenTimerRingContainer" className="relative w-[280px] h-[280px]">
-          <div id="fullscreenRingFill"
-            className="w-full h-full rounded-full transition-all duration-300"
+        <div id="fullscreenTimerRingContainer" className="relative w-[240px] h-[240px]">
+          <div id="fullscreenRingTrack"
+            className="absolute inset-0 rounded-full"
             style={{
-              background: `conic-gradient(${stateColor} ${pct}%, rgba(255,255,255,0.08) ${pct}%)`,
-              WebkitMask: 'radial-gradient(circle at center, transparent 55%, black 55%)',
-              mask: 'radial-gradient(circle at center, transparent 55%, black 55%)',
+              background: 'conic-gradient(rgba(255,255,255,0.06) 0deg, rgba(255,255,255,0.06) 360deg)',
+              WebkitMask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
+              mask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
+            }}
+          />
+          <div id="fullscreenRingFill"
+            className="absolute inset-0 rounded-full transition-all duration-300"
+            style={{
+              background: `conic-gradient(${stateColor} ${pct}%, transparent ${pct}%)`,
+              WebkitMask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
+              mask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
+              filter: 'drop-shadow(0 0 6px ' + stateColor + '40)',
             }}
           />
           <div id="fullscreenTimer"
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[56px] font-bold drop-shadow-lg transition-opacity duration-300"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[52px] font-bold drop-shadow-lg transition-opacity duration-300"
             style={{ color: showScore ? 'rgba(255,255,255,0.2)' : stateColor, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
             {formatTime(displaySeconds)}
           </div>
