@@ -54,25 +54,6 @@ export function DashboardPage() {
     return streak
   }, [sessions])
 
-  // Racha máxima histórica
-  const bestStreak = useMemo(() => {
-    const doneDays = [...new Set(
-      sessions.filter((s) => s.state === 'completed' && s.started_at).map((s) => s.started_at.slice(0, 10))
-    )].sort()
-    if (doneDays.length === 0) return 0
-    let best = 1, temp = 1
-    for (let i = 1; i < doneDays.length; i++) {
-      const diff = Math.round((new Date(doneDays[i]).getTime() - new Date(doneDays[i - 1]).getTime()) / 86400000)
-      if (diff === 1) { temp++; best = Math.max(best, temp) }
-      else temp = 1
-    }
-    return best
-  }, [sessions])
-
-  // Top 3 mejores días
-  const topDays = Object.entries(dayTotals).sort(([, a], [, b]) => b - a).slice(0, 3)
-  const maxDayMin = topDays.length > 0 ? Number(topDays[0][1]) : 1
-
   const avgMinutes = completed > 0 ? Math.round(totalMinutes / completed) : 0
 
   return (
