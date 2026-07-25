@@ -14,10 +14,15 @@ const PRIORITY_COLORS: Record<string, string> = {
   low: '#4CAF50',
 }
 
-const PRIORITY_ORDER = { critical: 0, high: 1, normal: 2, low: 3 }
-
 export function GoalList({ goals, selectedId, onSelect, onEdit }: Props) {
-  const sorted = [...goals].sort((a, b) => (PRIORITY_ORDER[a.priority] || 2) - (PRIORITY_ORDER[b.priority] || 2))
+  const sorted = [...goals].sort((a, b) => {
+    const order = { critical: 0, high: 1, normal: 2, low: 3 }
+    const pa = a.priority && order[a.priority] !== undefined ? order[a.priority] : 2
+    const pb = b.priority && order[b.priority] !== undefined ? order[b.priority] : 2
+    if (pa !== pb) return pa - pb
+    if (a.status !== b.status) return a.status === 'active' ? -1 : 1
+    return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+  })
 
   if (sorted.length === 0) {
     return (
@@ -29,19 +34,20 @@ export function GoalList({ goals, selectedId, onSelect, onEdit }: Props) {
   }
 
   return (
-    <div className="bg-card rounded-xl border border-white/10 overflow-hidden">
-      <div className="px-3 py-2 border-b border-white/5">
+    <div id="goal-list" className="bg-card rounded-xl border border-white/10 overflow-hidden">
+      <div id="goal-list-header" className="px-3 py-2 border-b border-white/5">
         <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wider">Metas activas</span>
       </div>
-      <div className="divide-y divide-white/5 max-h-[60vh] overflow-y-auto">
+      <div id="goal-list-items" className="divide-y divide-white/5 max-h-[60vh] overflow-y-auto">
         {sorted.map((goal) => {
           return (
             <div
               key={goal.id}
+              id={`goal-item-${goal.id}`}
               onClick={() => onSelect(goal.id)}
               className={`flex items-stretch cursor-pointer transition-colors hover:bg-white/5 ${selectedId === goal.id ? 'bg-white/10' : ''}`}
             >
-              <div className="w-1 shrink-0" style={{ backgroundColor: PRIORITY_COLORS[goal.priority] || '#60A5FA' }} />
+              <div id={`goal-priority-bar-${goal.id}`} className="w-1 shrink-0" style={{ backgroundColor: PRIORITY_COLORS[goal.priority] || '#60A5FA' }} />
               <div className="flex-1 px-3 py-2.5 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm">{goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'}</span>

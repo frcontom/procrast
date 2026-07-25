@@ -48,10 +48,17 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
 
   const totalSubtasks = goals.reduce((a, g) => a + (g as any).subtask_count || 0, 0)
 
+  const behindCount = goals.filter((g) => {
+    const elapsed = Math.max(0, Math.round((Date.now() - new Date(g.start_date || g.created_at).getTime()) / 86400000)) || 1
+    const dailyTarget = Math.round(g.estimated_minutes / Math.max(1, Math.round((new Date(g.deadline).getTime() - new Date(g.start_date || g.created_at).getTime()) / 86400000)))
+    const expected = dailyTarget * elapsed
+    return g.status === 'active' && expected > 0 && (g as any).completed_minutes < expected * 0.5
+  }).length
+
   const hasWeekData = weekData.some((v) => v > 0)
 
   return (
-    <div className="space-y-4">
+    <div id="task-dashboard" className="space-y-4">
       {goals.length === 0 ? (
         <div className="bg-card rounded-xl border border-white/10 p-12 text-center text-text-secondary text-sm">
           <div className="text-3xl mb-2">🎯</div>
@@ -59,41 +66,55 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-card rounded-xl border border-white/10 p-5 text-center">
-              <div className="text-[10px] uppercase tracking-[1px] text-text-secondary mb-2">PROGRESO GLOBAL</div>
-              <div className="text-[44px] font-extrabold leading-none" style={{ color: pctColor }}>{pct}%</div>
-              <div className="text-xs text-text-secondary mt-1">{totalCompleted} / {totalEstimated} min</div>
-              <div className="w-full bg-secondary rounded-full h-[6px] mt-3 overflow-hidden">
-                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: pctColor }} />
+          <div id="task-stats-row" className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div id="task-progreso-global" className="bg-card rounded-xl border border-white/10 p-5 text-center">
+              <div id="task-pg-label" className="text-[10px] uppercase tracking-[1px] text-text-secondary mb-2">PROGRESO GLOBAL</div>
+              <div id="task-pg-number" className="text-[44px] font-extrabold leading-none" style={{ color: pctColor }}>{pct}%</div>
+              <div id="task-pg-minutes" className="text-xs text-text-secondary mt-1">{totalCompleted} / {totalEstimated} min</div>
+              <div id="task-pg-bar" className="w-full bg-secondary rounded-full h-[6px] mt-3 overflow-hidden">
+                <div id="task-pg-bar-fill" className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: pctColor }} />
               </div>
-              <div className="text-[11px] text-text-secondary mt-2">{goals.length} meta(s) · {totalSubtasks || 0} tarea(s)</div>
+              <div id="task-pg-footer" className="text-[11px] text-text-secondary mt-2">{goals.length} meta(s) · {totalSubtasks || 0} tarea(s)</div>
             </div>
 
-            <div className="bg-card rounded-xl border border-white/10 p-5 text-center">
-              <div className="text-[10px] uppercase tracking-[1px] text-text-secondary mb-2">HOY</div>
-              <div className="flex items-baseline justify-center gap-1">
+            <div id="task-hoy" className="bg-card rounded-xl border border-white/10 p-5 text-center">
+              <div id="task-hoy-label" className="text-[10px] uppercase tracking-[1px] text-text-secondary mb-2">HOY</div>
+              <div id="task-hoy-number" className="flex items-baseline justify-center gap-1">
                 <span className="text-[44px] font-extrabold leading-none" style={{ color: todayColor }}>{todayMin}</span>
                 <span className="text-base text-text-secondary">/ {goalTodayMin} min</span>
               </div>
-              <div className="text-xs text-text-secondary mt-1">{todaySessions.length} sesión(es) · {todayPct}% cumplido</div>
-              <div className="w-full bg-secondary rounded-full h-[6px] mt-3 overflow-hidden">
-                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${todayPct}%`, backgroundColor: todayColor }} />
+              <div id="task-hoy-info" className="text-xs text-text-secondary mt-1">{todaySessions.length} sesión(es) · {todayPct}% cumplido</div>
+              <div id="task-hoy-bar" className="w-full bg-secondary rounded-full h-[6px] mt-3 overflow-hidden">
+                <div id="task-hoy-bar-fill" className="h-full rounded-full transition-all duration-500" style={{ width: `${todayPct}%`, backgroundColor: todayColor }} />
               </div>
-              <div className="flex items-center justify-center gap-5 text-xs text-text-secondary mt-2">
+              <div id="task-hoy-footer" className="flex items-center justify-center gap-5 text-xs text-text-secondary mt-2">
                 <span>🔥 Racha: 0d</span>
                 <span>🏆 Mejor: 0d</span>
               </div>
             </div>
+
+            <div id="task-streak-card" className="bg-card rounded-xl border border-white/10 p-5 text-center">
+              <div id="task-streak-label" className="text-[10px] uppercase tracking-[1px] text-text-secondary mb-2">🔥 RACHA</div>
+              <div id="task-streak-number" className="text-[44px] font-extrabold leading-none text-warning">0</div>
+              <div id="task-streak-info" className="text-xs text-text-secondary mt-1">días seguidos</div>
+              <div id="task-streak-footer" className="text-[11px] text-text-secondary mt-2">🏆 Mejor racha: 0d</div>
+            </div>
+
+            <div id="task-atrisk-card" className="bg-card rounded-xl border border-white/10 p-5 text-center">
+              <div id="task-atrisk-label" className="text-[10px] uppercase tracking-[1px] text-text-secondary mb-2">🚨 EN RIESGO</div>
+              <div id="task-atrisk-number" className="text-[44px] font-extrabold leading-none" style={{ color: behindCount > 0 ? '#EA5455' : '#28C76F' }}>{behindCount}</div>
+              <div id="task-atrisk-info" className="text-xs text-text-secondary mt-1">{behindCount === 1 ? 'meta atrasada' : 'metas atrasadas'}</div>
+              <div id="task-atrisk-footer" className="text-[11px] text-text-secondary mt-2">{behindCount > 0 ? 'Revisa tu plan diario' : 'Todo al día ✅'}</div>
+            </div>
           </div>
 
           {hasWeekData && (
-            <div className="bg-card rounded-xl border border-white/10 p-5">
-              <div className="flex items-center justify-between mb-3">
+            <div id="task-weekly-activity" className="bg-card rounded-xl border border-white/10 p-5">
+              <div id="task-wa-header" className="flex items-center justify-between mb-3">
                 <span className="text-sm font-semibold text-text-secondary">📅 Actividad semanal</span>
                 <span className="text-[10px] text-text-secondary">Total: {totalWeek}min · Prom: {avgWeek}min</span>
               </div>
-              <div className="flex items-end gap-[6px] h-[130px]">
+              <div id="task-wa-bars" className="flex items-end gap-[6px] h-[130px]">
                 {weekData.map((v, i) => {
                   const isToday = i === todayIdx
                   const height = v > 0 ? (v / maxVal) * 100 : 0
@@ -110,7 +131,7 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
                   )
                 })}
               </div>
-              <div className="flex justify-between text-[10px] text-text-secondary mt-3">
+              <div id="task-wa-footer" className="flex justify-between text-[10px] text-text-secondary mt-3">
                 <span>🏆 Mejor día: {bestDay.charAt(0).toUpperCase() + bestDay.slice(1)} ({Math.max(...weekData)}min)</span>
                 <span style={{ color: todayMin > 0 ? '#A66CFF' : undefined }}>📊 Hoy: {todayMin}min</span>
               </div>
@@ -119,7 +140,14 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
 
           <div className="space-y-2">
             <span className="text-[10px] text-text-secondary uppercase tracking-wider">🏴 {goals.length} meta(s) activas</span>
-            {goals.map((goal) => {
+            {goals.sort((a, b) => {
+              const order = { critical: 0, high: 1, normal: 2, low: 3 }
+              const pa = a.priority && order[a.priority] !== undefined ? order[a.priority] : 2
+              const pb = b.priority && order[b.priority] !== undefined ? order[b.priority] : 2
+              if (pa !== pb) return pa - pb
+              if (a.status !== b.status) return a.status === 'active' ? -1 : 1
+              return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+            }).map((goal) => {
               const goalPct = goal.estimated_minutes > 0 ? Math.min(100, Math.round((Math.min(goal.estimated_minutes, goal.estimated_minutes) / goal.estimated_minutes) * 100)) : 0
               const status = goalPct >= 100 ? 'completed' : goalPct >= 40 ? 'on_track' : 'behind'
               const statusLabel = status === 'completed' ? 'Completado' : status === 'on_track' ? 'Al día' : 'Atrasado'
