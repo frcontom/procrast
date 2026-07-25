@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTimerStore } from '../store/useTimerStore'
+import { useSettingsStore } from '../store/useSettingsStore'
 import { sessionManager } from '../lib/sessionManager'
 import { playStartSound } from '../lib/sound'
 import { formatTime } from '../lib/formatters'
@@ -155,6 +156,7 @@ export function FullscreenPage() {
   const [sessionsToday, setSessionsToday] = useState(0)
   const [motivationList] = useState(() => MOTIVATION_LISTS[Math.floor(Math.random() * MOTIVATION_LISTS.length)])
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [pauseCountdown, setPauseCountdown] = useState<number | null>(null)
 
   const pickBg = useCallback(() => {
     setBgIndex((prev) => {
@@ -244,6 +246,35 @@ export function FullscreenPage() {
       navigate('/focus')
     }
   }, [state])
+
+  // Pause countdown — auto-cancel si se excede el tiempo en pausa
+  useEffect(() => {
+    if (state !== 'PAUSED') { setPauseCountdown(null); return }
+    if (pauseCountdown !== null) return
+    const maxSec = useSettingsStore.getState().maxPauseMinutes * 60
+    setPauseCountdown(maxSec)
+  }, [state, pauseCountdown])
+
+  useEffect(() => {
+    if (pauseCountdown === null || pauseCountdown <= 0) return
+    const id = setInterval(() => {
+      setPauseCountdown((prev) => {
+        if (prev === null || prev <= 1) return 0
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(id)
+  }, [pauseCountdown])
+
+  // Auto-cancel cuando pauseCountdown llega a 0
+  useEffect(() => {
+    if (pauseCountdown !== 0) return
+    const goalId = useTimerStore.getState().returnGoalId
+    sessionManager.cancel().then(() => {
+      if (goalId) navigate(`/tasks?goal=${goalId}`)
+      else navigate('/focus')
+    })
+  }, [pauseCountdown])
 
   const displaySeconds = isStopwatch ? elapsedSeconds : remainingSeconds
   const totalSeconds = durationMinutes * 60
@@ -421,6 +452,15 @@ export function FullscreenPage() {
               <span>✕</span>
               <span>Cancelar</span>
             </button>
+          </div>
+        )}
+
+        {state === 'PAUSED' && pauseCountdown !== null && pauseCountdown > 0 && (
+          <div className="mt-4 text-center">
+            <div className={`text-sm tabular-nums font-bold ${pauseCountdown <= 10 ? 'text-danger animate-pulse' : 'text-white/60'}`}>
+              ⏸ {Math.floor(pauseCountdown / 60)}:{String(pauseCountdown % 60).padStart(2, '0')}
+            </div>
+            <div className="text-[10px] text-white/30 mt-0.5">Tiempo máximo en pausa</div>
           </div>
         )}
 
