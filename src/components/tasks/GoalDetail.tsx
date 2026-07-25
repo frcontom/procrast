@@ -13,13 +13,14 @@ interface Props {
   onSubtaskToggle: (id: string, status: string) => void
   onSubtaskDelete: (id: string) => void
   onAddSubtask: (data: any) => void
+  onImportSubtasks?: (tasks: any[]) => void
   onEditGoal: () => void
 }
 
 const PRIORITY_LABELS: Record<string, string> = { critical: 'Crítica', high: 'Alta', normal: 'Normal', low: 'Baja' }
 const PRIORITY_COLORS: Record<string, string> = { critical: '#FF6B6B', high: '#FF9800', normal: '#60A5FA', low: '#4CAF50' }
 
-export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onEditGoal }: Props) {
+export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onImportSubtasks, onEditGoal }: Props) {
   const user = useUser()
   const [links, setLinks] = useState<any[]>([])
   const [todayMin, setTodayMin] = useState(0)
@@ -110,7 +111,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
         </div>
 
         <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} />
-        <SubtaskForm onSave={onAddSubtask} />
+        <SubtaskForm onSave={onAddSubtask} onImport={onImportSubtasks} />
       </div>
 
       <div className="bg-card rounded-xl border border-white/10 p-4">
