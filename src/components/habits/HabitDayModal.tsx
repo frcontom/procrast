@@ -13,6 +13,11 @@ export function HabitDayModal({ dateStr, habits, logs, isToday, onClose, onToggl
   const date = new Date(dateStr + 'T12:00:00')
   const label = date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
+  const sorted = [...habits].sort((a, b) => {
+    if (a.is_starred !== b.is_starred) return a.is_starred ? -1 : 1
+    if (a.is_primary !== b.is_primary) return a.is_primary ? -1 : 1
+    return (a.sort_order || 0) - (b.sort_order || 0)
+  })
   const isDone = (habitId: string) => logs.some((l) => l.habit_id === habitId && l.date === dateStr)
 
   return (
@@ -24,7 +29,7 @@ export function HabitDayModal({ dateStr, habits, logs, isToday, onClose, onToggl
         </div>
 
         <div className="space-y-2">
-          {habits.map((habit) => {
+          {sorted.map((habit) => {
             const done = isDone(habit.id)
             return (
               <div key={habit.id} className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-all ${done ? 'bg-[#28C76F]/8' : 'bg-secondary/50'}`}>
