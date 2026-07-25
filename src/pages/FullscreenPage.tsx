@@ -352,6 +352,23 @@ export function FullscreenPage() {
             </button>
           </div>
         )}
+
+        {!showCelebration && cycleCount > 0 && store.phase !== 'work' && (
+          <div className="relative z-[2] flex justify-center mt-1">
+            <button onClick={() => {
+              const engine = sessionManager.getEngine()
+              engine.reset()
+              const wd = store.workDuration > 0 ? store.workDuration : durationMinutes
+              store.setPhase('work')
+              store.setDuration(wd)
+              sessionManager.startSession(wd, activityType, sessionName, strictMode, false)
+              playStartSound()
+            }}
+              className="text-xs text-white/40 hover:text-white/70 transition-colors underline underline-offset-4">
+              ⏭ Saltar descanso
+            </button>
+          </div>
+        )}
       </div>
 
       {showCelebration && (
