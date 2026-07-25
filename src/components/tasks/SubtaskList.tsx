@@ -7,6 +7,7 @@ interface Props {
   onDelete: (id: string) => void
   onEdit?: (st: TaskSubtask) => void
   onReorder?: (ids: string[]) => void
+  onSetDependency?: (id: string, dependsOn: string | null) => void
   onStartPomodoro?: (st: TaskSubtask) => void
 }
 
@@ -46,7 +47,7 @@ function buildTree(items: TaskSubtask[]): { node: TaskSubtask; depth: number; ha
   return result
 }
 
-export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onStartPomodoro }: Props) {
+export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro }: Props) {
   const doneCount = subtasks.filter((s) => s.status === 'completed').length
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
@@ -56,11 +57,16 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
   const handleDragStart = (idx: number) => setDragIdx(idx)
   const handleDragOver = (e: React.DragEvent, idx: number) => { e.preventDefault(); setOverIdx(idx) }
   const handleDrop = (idx: number) => {
-    if (dragIdx === null || dragIdx === idx || !onReorder) return
-    const flat = tree.map((t) => t.node)
-    const [moved] = flat.splice(dragIdx, 1)
-    flat.splice(idx, 0, moved)
-    onReorder(flat.map((s) => s.id))
+    if (dragIdx === null || dragIdx === idx) return
+    const dragged = tree[dragIdx]?.node
+    const target = tree[idx]?.node
+    if (!dragged || !target) return
+
+    if (onSetDependency) {
+      const newParent = target.id === dragged.depends_on ? null : target.id
+      onSetDependency(dragged.id, newParent)
+    }
+
     setDragIdx(null)
     setOverIdx(null)
   }

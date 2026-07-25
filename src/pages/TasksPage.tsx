@@ -147,6 +147,11 @@ export function TasksPage() {
                   const { data }: any = await supabase.from('task_subtasks').insert(toInsert).select()
                   if (data) setSubtasks((prev) => [...prev, ...data])
                 }}
+                onSetDependency={async (id, dependsOn) => {
+                  if (!user) return
+                  await supabase.from('task_subtasks').update({ depends_on: dependsOn }).eq('id', id)
+                  setSubtasks((prev) => prev.map((s) => s.id === id ? { ...s, depends_on: dependsOn } : s))
+                }}
                 onReorderSubtasks={async (ids) => {
                   if (!user) return
                   const updates = ids.map((id, i) => supabase.from('task_subtasks').update({ sort_order: i }).eq('id', id))
