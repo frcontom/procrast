@@ -37,7 +37,8 @@ BEGIN
     VALUES (auth.uid(), p_subtask_id, p_session_id, p_minutes, CURRENT_DATE);
 
     UPDATE task_subtasks
-    SET completed_minutes = LEAST(estimated_minutes, completed_minutes + p_minutes)
+    SET completed_minutes = LEAST(estimated_minutes, completed_minutes + p_minutes),
+        status = CASE WHEN LEAST(estimated_minutes, completed_minutes + p_minutes) >= estimated_minutes AND estimated_minutes > 0 THEN 'completed' ELSE status END
     WHERE id = p_subtask_id;
 
     SELECT SUM(completed_minutes), SUM(estimated_minutes)
