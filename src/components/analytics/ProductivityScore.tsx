@@ -22,22 +22,20 @@ export function ProductivityScore({ completed, total, totalMinutes }: Props) {
   const level = getLevel(score)
 
   return (
-    <div className="bg-card rounded-xl border border-white/10 p-4 text-center">
-      <div className="relative w-28 h-28 mx-auto mb-3">
+    <div className="bg-card rounded-xl border border-white/10 p-3 text-center">
+      <div className="relative w-20 h-20 mx-auto mb-2">
         <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
           <circle cx="60" cy="60" r="52" fill="none" stroke="#1a1a2e" strokeWidth="8" />
           <circle cx="60" cy="60" r="52" fill="none" stroke={level.color} strokeWidth="8"
             strokeLinecap="round" strokeDasharray={`${(score / 100) * 326.7} 326.7`} />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold" style={{ color: level.color }}>{score}</span>
-          <span className="text-[10px] text-text-secondary uppercase">Puntos</span>
+          <span className="text-lg font-bold" style={{ color: level.color }}>{score}</span>
+          <span className="text-[8px] text-text-secondary uppercase">Pts</span>
         </div>
       </div>
-      <div className="text-sm font-medium" style={{ color: level.color }}>{level.label}</div>
-      <div className="text-xs text-text-secondary mt-1">
-        {completed}/{total} sesiones · {totalMinutes} min totales
-      </div>
+      <div className="text-xs font-medium" style={{ color: level.color }}>{level.label}</div>
+      <div className="text-[9px] text-text-secondary mt-0.5">{completed}/{total} · {totalMinutes}min</div>
     </div>
   )
 }

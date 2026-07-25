@@ -54,6 +54,25 @@ export function DashboardPage() {
     return streak
   }, [sessions])
 
+  // Racha máxima histórica
+  const bestStreak = useMemo(() => {
+    const doneDays = [...new Set(
+      sessions.filter((s) => s.state === 'completed' && s.started_at).map((s) => s.started_at.slice(0, 10))
+    )].sort()
+    if (doneDays.length === 0) return 0
+    let best = 1, temp = 1
+    for (let i = 1; i < doneDays.length; i++) {
+      const diff = Math.round((new Date(doneDays[i]).getTime() - new Date(doneDays[i - 1]).getTime()) / 86400000)
+      if (diff === 1) { temp++; best = Math.max(best, temp) }
+      else temp = 1
+    }
+    return best
+  }, [sessions])
+
+  // Top 3 mejores días
+  const topDays = Object.entries(dayTotals).sort(([, a], [, b]) => b - a).slice(0, 3)
+  const maxDayMin = topDays.length > 0 ? Number(topDays[0][1]) : 1
+
   const avgMinutes = completed > 0 ? Math.round(totalMinutes / completed) : 0
 
   return (
@@ -78,20 +97,46 @@ export function DashboardPage() {
 
       {/* Highlights */}
       <div id="db-highlights" className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div id="db-racha" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all flex flex-col justify-center">
-          <div className="text-sm text-text-secondary mb-1">🔥 Racha</div>
-          <div className="text-3xl font-bold text-[#FF9800]">{streakDays}</div>
-          <div className="text-[10px] text-text-secondary/60 mt-0.5">días seguidos</div>
+        <div id="db-racha" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all flex flex-col justify-center relative overflow-hidden">
+          <div className="absolute -top-6 -right-6 text-6xl opacity-[0.06] select-none">🔥</div>
+          <div className="relative">
+             <div className="text-sm text-text-secondary mb-1 uppercase tracking-wider font-semibold">🔥 Racha</div>
+             <div className="text-4xl font-bold text-[#FF9800]">{streakDays}</div>
+            <div className="text-[10px] text-text-secondary/60 mt-0.5">días seguidos</div>
+            {streakDays > 0 && (
+              <div className="mt-2 w-full bg-white/5 rounded-full h-1 overflow-hidden">
+                <div className="h-full rounded-full bg-gradient-to-r from-[#FF9800] to-[#FFB74D] transition-all" style={{ width: `${Math.min(100, (streakDays / 30) * 100)}%` }} />
+              </div>
+            )}
+          </div>
         </div>
-        <div id="db-promedio" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all flex flex-col justify-center">
-          <div className="text-sm text-text-secondary mb-1">⚡ Promedio</div>
-          <div className="text-3xl font-bold text-[#A66CFF]">{avgMinutes}</div>
-          <div className="text-[10px] text-text-secondary/60 mt-0.5">min / sesión</div>
+        <div id="db-promedio" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all flex flex-col justify-center relative overflow-hidden">
+          <div className="absolute -top-6 -right-6 text-6xl opacity-[0.06] select-none">⚡</div>
+          <div className="relative">
+            <div className="text-sm text-text-secondary mb-1 uppercase tracking-wider font-semibold">⚡ Promedio</div>
+            <div className="text-4xl font-bold text-[#A66CFF]">{avgMinutes}</div>
+            <div className="text-[10px] text-text-secondary/60 mt-0.5">min / sesión</div>
+            <div className="mt-2 flex items-center justify-center gap-1">
+              <div className="w-6 h-[3px] rounded-full bg-[#A66CFF]/30" />
+              <span className="text-[8px] text-text-secondary/40">objetivo 25</span>
+              <div className="w-6 h-[3px] rounded-full bg-[#A66CFF]" style={{ width: `${Math.min(100, (avgMinutes / 25) * 100)}%`, maxWidth: 24 }} />
+            </div>
+          </div>
         </div>
-        <div id="db-mejordia" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all flex flex-col justify-center">
-          <div className="text-sm text-text-secondary mb-1">🏆 Mejor día</div>
-          <div className="text-3xl font-bold text-[#00BCD4]">{bestDay ? Math.round(Number(bestDay[1])) : 0}</div>
-          <div className="text-[10px] text-text-secondary/60 mt-0.5">{bestDayName}</div>
+        <div id="db-mejordia" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all flex flex-col justify-center relative overflow-hidden">
+          <div className="absolute -top-6 -right-6 text-6xl opacity-[0.06] select-none">🏆</div>
+          <div className="relative">
+            <div className="text-sm text-text-secondary mb-1">🏆 Mejor día</div>
+            <div className="text-3xl font-bold text-[#00BCD4]">{bestDay ? Math.round(Number(bestDay[1])) : 0}</div>
+            <div className="text-[10px] text-text-secondary/60 mt-0.5">{bestDayName}</div>
+            {bestDay && (
+              <div className="mt-2 flex items-center justify-center gap-1 text-[9px] text-text-secondary/40">
+                {['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'].map((d, i) => (
+                  <span key={d} className={`w-4 py-0.5 rounded text-[7px] text-center ${Number(bestDay[0]) === i ? 'bg-[#00BCD4]/30 text-[#00BCD4] font-bold' : 'text-white/20'}`}>{d}</span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         <div id="db-score" className="flex flex-col"><div className="flex-1"><ProductivityScore completed={completed} total={sessions.length} totalMinutes={totalMinutes} /></div></div>
       </div>
