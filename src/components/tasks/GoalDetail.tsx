@@ -87,7 +87,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           </div>
         </div>
 
-        <div className="grid grid-cols-5 gap-2 mb-3">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(90px,1fr))] gap-2 mb-3">
           {[
             { label: 'Completado', value: `${totalCompleted}min` },
             { label: 'Meta total', value: `${totalEstimated}min` },
@@ -95,9 +95,9 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
             { label: 'Faltan', value: `${rhythm.daysRemaining}d` },
             { label: 'Hecho hoy', value: `${todayMin}min` },
           ].map((s) => (
-            <div key={s.label} className="bg-secondary/50 rounded-lg p-2 text-center">
-              <div className="text-sm font-bold text-white">{s.value}</div>
-              <div className="text-[9px] text-text-secondary uppercase tracking-wider">{s.label}</div>
+            <div key={s.label} className="bg-secondary rounded-lg p-2.5 text-center">
+              <div className="text-base font-bold text-white">{s.value}</div>
+              <div className="text-[10px] text-text-secondary mt-0.5">{s.label}</div>
             </div>
           ))}
         </div>
