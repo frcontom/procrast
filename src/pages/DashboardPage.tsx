@@ -27,7 +27,7 @@ function StatCard({ icon, label, value, color, suffix }: { icon: string; label: 
   )
 }
 
-function HighlightCard({ icon, label, value, unit, color }: { icon: string; label: string; value: string | number; unit: string; color: string }) {
+function HighlightCard({ label, value, unit, color }: { label: string; value: string | number; unit: string; color: string }) {
   return (
     <div className="relative rounded-2xl border border-white/[0.06] p-4 overflow-hidden group hover:border-white/20 transition-all duration-500 h-full"
       style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))' }}>
@@ -113,51 +113,42 @@ export function DashboardPage() {
         <Greeting />
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5 mb-5">
-          <StatCard icon="⚡" label="Sesiones" value={sessions.length} color="#A66CFF" />
-          <StatCard icon="✅" label="Completadas" value={completed} color="#28C76F" />
-          <StatCard icon="✕" label="Canceladas" value={cancelled} color="#EA5455" />
-          <StatCard icon="⏱" label="Minutos" value={formatMinutes(totalMinutes)} color="#00BCD4" />
-          <StatCard icon="🎯" label="Tasa" value={completionRate} color={bgColor} suffix="%" />
+        <div id="db-stats" className="grid grid-cols-2 md:grid-cols-5 gap-2.5 mb-5">
+          <div id="db-stat-sesiones"><StatCard icon="⚡" label="Sesiones" value={sessions.length} color="#A66CFF" /></div>
+          <div id="db-stat-completadas"><StatCard icon="✅" label="Completadas" value={completed} color="#28C76F" /></div>
+          <div id="db-stat-canceladas"><StatCard icon="✕" label="Canceladas" value={cancelled} color="#EA5455" /></div>
+          <div id="db-stat-minutos"><StatCard icon="⏱" label="Minutos" value={formatMinutes(totalMinutes)} color="#00BCD4" /></div>
+          <div id="db-stat-tasa"><StatCard icon="🎯" label="Tasa" value={completionRate} color={bgColor} suffix="%" /></div>
         </div>
 
         {/* Highlights + Score */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2.5 mb-5">
-          <HighlightCard icon="🔥" label="Racha actual" value={streakDays} unit="días" color="#FF9800" />
-          <HighlightCard icon="⚡" label="Promedio" value={avgMinutes} unit="min/sesión" color="#A66CFF" />
-          <HighlightCard icon="🏆" label="Mejor día" value={bestDay ? Math.round(Number(bestDay[1])) : 0} unit={bestDayName} color="#00BCD4" />
-          <GlassCard>
-            <ProductivityScore completed={completed} total={sessions.length} totalMinutes={totalMinutes} />
-          </GlassCard>
+        <div id="db-highlights" className="grid grid-cols-1 md:grid-cols-4 gap-2.5 mb-5">
+          <div id="db-highlight-racha"><HighlightCard label="Racha actual" value={streakDays} unit="días" color="#FF9800" /></div>
+          <div id="db-highlight-promedio"><HighlightCard label="Promedio" value={avgMinutes} unit="min/sesión" color="#A66CFF" /></div>
+          <div id="db-highlight-mejordia"><HighlightCard label="Mejor día" value={bestDay ? Math.round(Number(bestDay[1])) : 0} unit={bestDayName} color="#00BCD4" /></div>
+          <div id="db-highlight-score">
+            <GlassCard>
+              <ProductivityScore completed={completed} total={sessions.length} totalMinutes={totalMinutes} />
+            </GlassCard>
+          </div>
         </div>
 
         {/* Primary Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-5">
-          <GlassCard title="Enfoque semanal" icon="📊">
-            <FocusChart sessions={sessions} />
-          </GlassCard>
-          <GlassCard title="Tendencia mensual" icon="📈">
-            <MonthlyTrend sessions={sessions} />
-          </GlassCard>
+        <div id="db-charts-primary" className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-5">
+          <div id="db-chart-focus"><GlassCard title="Enfoque semanal" icon="📊"><FocusChart sessions={sessions} /></GlassCard></div>
+          <div id="db-chart-trend"><GlassCard title="Tendencia mensual" icon="📈"><MonthlyTrend sessions={sessions} /></GlassCard></div>
         </div>
 
         {/* Secondary Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-5">
-          <GlassCard title="Actividad por día" icon="📅">
-            <ActivityBreakdown sessions={sessions} />
-          </GlassCard>
-          <GlassCard title="Ranking semanal" icon="🏆">
-            <WeeklyRanking sessions={sessions} />
-          </GlassCard>
+        <div id="db-charts-secondary" className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-5">
+          <div id="db-chart-activity"><GlassCard title="Actividad por día" icon="📅"><ActivityBreakdown sessions={sessions} /></GlassCard></div>
+          <div id="db-chart-ranking"><GlassCard title="Ranking semanal" icon="🏆"><WeeklyRanking sessions={sessions} /></GlassCard></div>
         </div>
 
         {/* Bottom Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          <GlassCard title="Jugador" icon="🎮">
-            <GamificationPanel />
-          </GlassCard>
-          <GlassCard title="Metas del día" icon="🎯">
-            <div className="space-y-2">
+        <div id="db-bottom" className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          <div id="db-gamification"><GlassCard title="Jugador" icon="🎮"><GamificationPanel /></GlassCard></div>
+          <div id="db-goals"><GlassCard title="Metas del día" icon="🎯"><div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-text-secondary">Sesiones</span>
                 <span className="text-white font-medium tabular-nums">0 / 4</span>
@@ -172,11 +163,8 @@ export function DashboardPage() {
               <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
                 <div className="h-full rounded-full bg-gradient-to-r from-[#00BCD4] to-[#4DD0E1] transition-all" style={{ width: '0%' }} />
               </div>
-            </div>
-          </GlassCard>
-          <GlassCard title="Actividad reciente" icon="📋">
-            <RecentActivity sessions={sessions} />
-          </GlassCard>
+            </div></GlassCard></div>
+          <div id="db-recent"><GlassCard title="Actividad reciente" icon="📋"><RecentActivity sessions={sessions} /></GlassCard></div>
         </div>
       </div>
     </div>
