@@ -61,15 +61,15 @@ export function DashboardPage() {
       <Greeting />
 
       {/* Stats */}
-      <div className="grid grid-cols-5 gap-3">
+      <div id="db-stats" className="grid grid-cols-5 gap-3">
         {[
-          { label: 'Sesiones', value: sessions.length, color: '#A66CFF' },
-          { label: 'Completadas', value: completed, color: '#28C76F' },
-          { label: 'Canceladas', value: cancelled, color: '#EA5455' },
-          { label: 'Tasa', value: `${completionRate}%`, color: completionRate >= 70 ? '#28C76F' : completionRate >= 40 ? '#FF9800' : '#EA5455' },
-          { label: 'Minutos', value: formatMinutes(totalMinutes), color: '#00BCD4' },
+          { id: 'db-stat-sesiones', label: 'Sesiones', value: sessions.length, color: '#A66CFF' },
+          { id: 'db-stat-completadas', label: 'Completadas', value: completed, color: '#28C76F' },
+          { id: 'db-stat-canceladas', label: 'Canceladas', value: cancelled, color: '#EA5455' },
+          { id: 'db-stat-tasa', label: 'Tasa', value: `${completionRate}%`, color: completionRate >= 70 ? '#28C76F' : completionRate >= 40 ? '#FF9800' : '#EA5455' },
+          { id: 'db-stat-minutos', label: 'Minutos', value: formatMinutes(totalMinutes), color: '#00BCD4' },
         ].map((s) => (
-          <div key={s.label} className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all">
+          <div key={s.id} id={s.id} className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all">
             <div className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</div>
             <div className="text-[10px] text-text-secondary uppercase tracking-wider mt-1 font-medium">{s.label}</div>
           </div>
@@ -77,39 +77,39 @@ export function DashboardPage() {
       </div>
 
       {/* Highlights */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all">
+      <div id="db-highlights" className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div id="db-racha" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all">
           <div className="text-sm text-text-secondary mb-1">🔥 Racha</div>
           <div className="text-3xl font-bold text-[#FF9800]">{streakDays}</div>
           <div className="text-[10px] text-text-secondary/60 mt-0.5">días seguidos</div>
         </div>
-        <div className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all">
+        <div id="db-promedio" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all">
           <div className="text-sm text-text-secondary mb-1">⚡ Promedio</div>
           <div className="text-3xl font-bold text-[#A66CFF]">{avgMinutes}</div>
           <div className="text-[10px] text-text-secondary/60 mt-0.5">min / sesión</div>
         </div>
-        <div className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all">
+        <div id="db-mejordia" className="bg-card rounded-xl border border-white/10 p-4 text-center hover:border-white/25 transition-all">
           <div className="text-sm text-text-secondary mb-1">🏆 Mejor día</div>
           <div className="text-3xl font-bold text-[#00BCD4]">{bestDay ? Math.round(Number(bestDay[1])) : 0}</div>
           <div className="text-[10px] text-text-secondary/60 mt-0.5">{bestDayName}</div>
         </div>
-        <ProductivityScore completed={completed} total={sessions.length} totalMinutes={totalMinutes} />
+        <div id="db-score"><ProductivityScore completed={completed} total={sessions.length} totalMinutes={totalMinutes} /></div>
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
+      <div id="db-charts" className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div id="db-focus-chart" className="md:col-span-2">
           <FocusChart sessions={sessions} />
         </div>
-        <div className="space-y-4">
-          <GamificationPanel />
-          <DailyGoals />
+        <div id="db-sidebar" className="space-y-4">
+          <div id="db-gamification"><GamificationPanel /></div>
+          <div id="db-daily-goals"><DailyGoals /></div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <ActivityBreakdown sessions={sessions} />
-        <SessionHistory />
+      <div id="db-bottom" className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="db-activity"><ActivityBreakdown sessions={sessions} /></div>
+        <div id="db-history"><SessionHistory /></div>
       </div>
     </div>
   )
