@@ -124,7 +124,7 @@ export function SubtaskHistory({ subtask, onClose }: Props) {
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
                           {isCancelled ? (
-                            <span className="text-[10px] text-danger/40 italic">Cancelado — {log.subtask_name?.replace(' (cancelado)', '') || 'sin completar'}</span>
+                            <span className="text-[10px] text-danger/40 italic">Cancelado</span>
                           ) : (
                             <span className="text-[10px] text-success/60">✅ Completado</span>
                           )}
