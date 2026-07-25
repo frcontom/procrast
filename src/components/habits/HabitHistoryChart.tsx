@@ -47,7 +47,7 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
           const isCurrent = m.year === now.getFullYear() && m.month === now.getMonth() + 1
           return (
             <div key={m.label} className="flex-1 text-center">
-              <span className={`text-[7px] font-bold ${isCurrent ? 'text-[#28C76F]' : 'text-text-secondary/40'}`}>
+              <span className={`text-[10px] font-bold tabular-nums ${isCurrent ? 'text-[#28C76F]' : 'text-text-secondary/50'}`}>
                 {m.daysWithLogs || '0'}/{m.daysInMonth || '0'}
               </span>
             </div>
@@ -68,7 +68,7 @@ export function HabitHistoryChart({ habitsLength }: { habitsLength: number }) {
                   boxShadow: isCurrent ? '0 0 8px rgba(40,199,111,0.4)' : 'none',
                 }}
               />
-              <span className={`text-[9px] ${isCurrent ? 'text-white font-bold' : 'text-text-secondary/60'}`}>{m.label}</span>
+              <span className={`text-[10px] ${isCurrent ? 'text-white font-bold' : 'text-text-secondary/60'}`}>{m.label}</span>
             </div>
           )
         })}
