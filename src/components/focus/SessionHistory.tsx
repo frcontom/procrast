@@ -132,6 +132,16 @@ export function SessionHistory() {
                     <div className="flex items-center gap-1.5 text-xs flex-wrap">
                       <span className="font-medium truncate">{s.activity_type || 'focus'}</span>
                       <span className="text-text-secondary">·</span>
+                      <span className={`${isCompleted ? 'text-success' : 'text-danger'}`}>
+                        {isCompleted ? pickPhrase(s.id, DONE_PHRASES) : pickPhrase(s.id, FAIL_PHRASES)}
+                      </span>
+                      {s.session_name && <span className="truncate text-text-secondary">· {s.session_name}</span>}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px] text-text-secondary/60 mt-0.5 flex-wrap">
+                      <span suppressHydrationWarning>
+                        {new Date(s.started_at).toLocaleDateString('es-ES', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      <span className="text-text-secondary">·</span>
                       <span className="text-text-secondary">{s.duration_minutes}min</span>
                       {s.elapsed_seconds > 0 && (
                         <>
@@ -141,14 +151,6 @@ export function SessionHistory() {
                           </span>
                         </>
                       )}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[10px] text-text-secondary/60 mt-0.5 flex-wrap">
-                      <span>{new Date(s.started_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>
-                      <span className="text-text-secondary">·</span>
-                      <span className={`${isCompleted ? 'text-success/70' : 'text-danger/70'}`}>
-                        {isCompleted ? pickPhrase(s.id, DONE_PHRASES) : pickPhrase(s.id, FAIL_PHRASES)}
-                      </span>
-                      {s.session_name && <span className="truncate italic">· {s.session_name}</span>}
                     </div>
                   </div>
                   <div className="w-12 shrink-0">
