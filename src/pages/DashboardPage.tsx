@@ -93,7 +93,7 @@ export function DashboardPage() {
           <div className="text-3xl font-bold text-[#00BCD4]">{bestDay ? Math.round(Number(bestDay[1])) : 0}</div>
           <div className="text-[10px] text-text-secondary/60 mt-0.5">{bestDayName}</div>
         </div>
-        <div id="db-score" className="flex"><ProductivityScore completed={completed} total={sessions.length} totalMinutes={totalMinutes} /></div>
+        <div id="db-score" className="flex flex-col"><div className="flex-1"><ProductivityScore completed={completed} total={sessions.length} totalMinutes={totalMinutes} /></div></div>
       </div>
 
       {/* Charts */}
