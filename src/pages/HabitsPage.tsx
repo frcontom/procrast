@@ -176,12 +176,10 @@ export function HabitsPage() {
       )}
 
       {/* History Chart */}
-      {habits.length > 0 && (
-        <div id="hm-history-card" className="bg-card rounded-xl border border-white/10 p-4">
-          <div id="hm-history-title" className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-3">📊 Historial mensual</div>
-          <div id="hm-history-chart"><HabitHistoryChart habitsLength={habits.length} refreshKey={logs.length} /></div>
-        </div>
-      )}
+      <div id="hm-history-card" className="bg-card rounded-xl border border-white/10 p-4">
+        <div id="hm-history-title" className="text-[10px] font-medium text-text-secondary uppercase tracking-wider mb-3">📊 Historial mensual</div>
+        <div id="hm-history-chart"><HabitHistoryChart habitsLength={habits.length} refreshKey={logs.length} /></div>
+      </div>
 
       {/* Consistency Analysis */}
       {consistencyData.length > 0 && (
