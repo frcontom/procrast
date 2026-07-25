@@ -55,17 +55,25 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   return (
     <div className="space-y-4">
       <div className="bg-card rounded-xl border border-white/10 p-4">
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-lg">{goalIcon}</span>
-              <span className="text-lg font-semibold">{goal.name}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: PRIORITY_COLORS[goal.priority] + '30', color: PRIORITY_COLORS[goal.priority] }}>
-                {PRIORITY_LABELS[goal.priority]}
-              </span>
-              {rhythm.behind && <span className="text-[10px] px-2 py-0.5 rounded-full bg-danger/20 text-danger">⚠️ Atrasado</span>}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0">
+            <span className="text-2xl shrink-0" style={{ color: goal.color || '#A66CFF' }}>{goalIcon}</span>
+            <div>
+              <h3 className="text-lg font-bold text-white leading-tight truncate">{goal.name}</h3>
+              {goal.description && <p className="text-xs text-text-secondary mt-0.5">{goal.description}</p>}
             </div>
-            {goal.description && <p className="text-sm text-text-secondary">{goal.description}</p>}
+          </div>
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+            {(goal.priority === 'critical' || goal.priority === 'high') && (
+              <span className="inline-block px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.5px] text-white"
+                style={{ backgroundColor: PRIORITY_COLORS[goal.priority] }}>
+                {goal.priority === 'critical' ? '🔴 Crítica' : '🟠 Alta'}
+              </span>
+            )}
+            <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-[0.5px] text-white"
+              style={{ backgroundColor: rhythm.behind ? '#EA5455' : pct >= 100 ? '#28C76F' : pct > 0 ? '#28C76F' : '#a0a0b0' }}>
+              {pct >= 100 ? 'Completado' : rhythm.behind ? 'ATRASADO' : pct > 0 ? 'Al día' : 'Sin empezar'}
+            </span>
           </div>
         </div>
 
