@@ -274,8 +274,7 @@ export function FullscreenPage() {
           <div id="fullscreenMiniStats" className="flex items-center gap-0 text-lg text-white/70 animate-[breatheFadeIn_0.3s_ease]">
             <span className="px-5 border-r border-white/10">{streakEmoji(streak)} <span id="fsStreak">{streak}</span></span>
             <span className="px-5 border-r border-white/10">⚡ <span id="fsXp">{xpGained}</span> XP</span>
-            <span className="px-5 border-r border-white/10">📊 <span id="fsToday">{sessionsToday}</span> hoy</span>
-            <span className="px-5">🎯 {sessionsToday}/4 ses</span>
+            <span className="px-5">📊 <span id="fsToday">{sessionsToday}</span> hoy</span>
           </div>
         )}
 
