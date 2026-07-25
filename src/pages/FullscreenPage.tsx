@@ -27,6 +27,13 @@ function calculateScore(elapsed: number, total: number, cycleCount: number): num
   return Math.min(100, base + completion + cycleBonus)
 }
 
+function celebrationMessage(duration: number, streak: number, sessionsToday: number, score: number): string {
+  if (score >= 90) return `¡Imparable! ${duration} min de enfoque absoluto. ${streak > 0 ? `${streak} días seguidos.` : ''} Sigue así, esta racha te llevará lejos.`
+  if (score >= 70) return `Muy bien! ${duration} min completados. ${sessionsToday > 0 ? `Ya llevas ${sessionsToday} sesión${sessionsToday > 1 ? 'es' : ''} hoy.` : ''} Un paso más cerca de tu meta.`
+  if (score >= 50) return `Buen inicio! ${duration} min de trabajo. La constancia construye resultados. ¿Listo para la siguiente?`
+  return `${duration} min completados. Cada sesión cuenta. Sigue acumulando minutos de enfoque.`
+}
+
 function progressColor(pct: number, state: string): { color: string; label: string } {
   if (state === 'PAUSED') return { color: '#FF9F43', label: '⏸' }
   if (state === 'FINISHED') return { color: '#00CFE8', label: '🎉' }
@@ -135,7 +142,6 @@ export function FullscreenPage() {
     if (justFinished) {
       setFloatXp(xpGained)
       setTimeout(() => setFloatXp(0), 3000)
-      scoreTimerRef.current = setTimeout(() => navigate('/focus'), 2500)
     }
     if (justCancelled) {
       navigate('/focus')
@@ -162,7 +168,7 @@ export function FullscreenPage() {
 
   const showBreathing = state === 'PAUSED'
   const showMiniStats = state === 'RUNNING' || state === 'PAUSED'
-  const showScore = state === 'FINISHED'
+  const showCelebration = state === 'FINISHED'
 
   const canStart = state === 'IDLE' || state === 'FINISHED' || state === 'CANCELLED'
   const primaryLabel = canStart ? 'Iniciar' : state === 'RUNNING' ? 'Pausar' : 'Reanudar'
@@ -231,7 +237,7 @@ export function FullscreenPage() {
           />
           <div id="fullscreenTimer"
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[80px] font-bold drop-shadow-lg transition-opacity duration-300"
-            style={{ color: showScore ? 'rgba(255,255,255,0.2)' : stateColor, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
+            style={{ color: showCelebration ? 'rgba(255,255,255,0.2)' : stateColor, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
             {formatTime(displaySeconds)}
           </div>
         </div>
@@ -247,12 +253,36 @@ export function FullscreenPage() {
           </div>
         )}
 
-        {showScore && (
-          <div id="fullscreenScore" className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70 animate-[scoreFadeIn_0.3s_ease]">
-            <div id="scoreNumber" className="text-[120px] font-extrabold drop-shadow-lg" style={{ color: stateColor, textShadow: `0 0 40px ${stateColor}50` }}>
+        {showCelebration && (
+          <div className="fixed inset-0 z-20 flex flex-col items-center justify-center bg-black gap-6 px-10">
+            <div className="text-5xl mb-2">🎉</div>
+            <div className="text-2xl font-semibold text-white tracking-wide">¡Sesión completada!</div>
+
+            <div className="text-[100px] font-extrabold leading-none" style={{ color: stateColor, textShadow: `0 0 50px ${stateColor}50` }}>
               {score}
             </div>
-            <div id="scoreLabel" className="text-lg tracking-[6px] uppercase text-white/60 mt-2">FOCUS SCORE</div>
+            <div className="text-base tracking-[6px] uppercase text-white/50 -mt-2">FOCUS SCORE</div>
+
+            <div className="max-w-md text-center text-base text-white/70 leading-relaxed mt-2">
+              {celebrationMessage(durationMinutes, streak, sessionsToday, score)}
+            </div>
+
+            <div className="flex items-center gap-6 text-sm text-white/60 mt-2">
+              <span className="flex items-center gap-1.5">⚡ +{xpGained} XP</span>
+              <span className="flex items-center gap-1.5">{streakEmoji(streak)} {streak} días</span>
+              <span className="flex items-center gap-1.5">📊 {sessionsToday} hoy</span>
+            </div>
+
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => { sessionManager.startSession(isStopwatch ? 480 : durationMinutes, activityType, sessionName, strictMode, false); playStartSound() }}
+                className="px-8 py-3 rounded-xl text-sm font-medium bg-[#156390] hover:bg-[#1a7ab5] text-white transition-all active:scale-[0.97]">
+                ▶ Siguiente
+              </button>
+              <button onClick={() => navigate('/focus')}
+                className="px-8 py-3 rounded-xl text-sm font-medium border border-white/20 text-white/60 hover:text-white/90 hover:border-white/40 transition-all active:scale-[0.97]">
+                Ir a Focus
+              </button>
+            </div>
           </div>
         )}
 
@@ -280,25 +310,27 @@ export function FullscreenPage() {
 
 
 
-        <div id="fullscreenActions" className="flex gap-3 w-full justify-center">
-          <button id="fullscreenPrimary"
-            onClick={() => {
-              if (canStart) { sessionManager.startSession(isStopwatch ? 480 : durationMinutes, activityType, sessionName, strictMode, false); playStartSound() }
-              else if (state === 'RUNNING') sessionManager.pause()
-              else sessionManager.resume()
-            }}
-            className="flex items-center gap-2.5 px-10 py-3.5 rounded-xl text-base font-medium bg-[#156390] hover:bg-[#1a7ab5] text-white transition-all active:scale-[0.97] shadow-lg shadow-black/30">
-            <span className="text-xl">{state === 'RUNNING' ? '⏸' : '▶'}</span>
-            <span>{primaryLabel}</span>
-          </button>
-          <button id="fullscreenCancel"
-            disabled={cancelDisabled}
-            onClick={() => { if (!strictMode) { sessionManager.cancel(); navigate('/focus') } }}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium border transition-all active:scale-[0.97] ${cancelDisabled ? 'border-white/5 text-white/20 cursor-not-allowed' : 'border-white/20 text-white/60 hover:text-white/90 hover:border-white/40 cursor-pointer'}`}>
-            <span>✕</span>
-            <span>Cancelar</span>
-          </button>
-        </div>
+        {!showCelebration && (
+          <div id="fullscreenActions" className="flex gap-3 w-full justify-center">
+            <button id="fullscreenPrimary"
+              onClick={() => {
+                if (canStart) { sessionManager.startSession(isStopwatch ? 480 : durationMinutes, activityType, sessionName, strictMode, false); playStartSound() }
+                else if (state === 'RUNNING') sessionManager.pause()
+                else sessionManager.resume()
+              }}
+              className="flex items-center gap-2.5 px-10 py-3.5 rounded-xl text-base font-medium bg-[#156390] hover:bg-[#1a7ab5] text-white transition-all active:scale-[0.97] shadow-lg shadow-black/30">
+              <span className="text-xl">{state === 'RUNNING' ? '⏸' : '▶'}</span>
+              <span>{primaryLabel}</span>
+            </button>
+            <button id="fullscreenCancel"
+              disabled={cancelDisabled}
+              onClick={() => { if (!strictMode) { sessionManager.cancel(); navigate('/focus') } }}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium border transition-all active:scale-[0.97] ${cancelDisabled ? 'border-white/5 text-white/20 cursor-not-allowed' : 'border-white/20 text-white/60 hover:text-white/90 hover:border-white/40 cursor-pointer'}`}>
+              <span>✕</span>
+              <span>Cancelar</span>
+            </button>
+          </div>
+        )}
       </div>
 
       <style>{`
