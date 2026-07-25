@@ -109,6 +109,7 @@ export function TasksPage() {
     store.setActivityType('focus')
     store.setSessionName(st.name)
     store.setReturnGoal(selectedId, selectedGoal?.name || null)
+    store.setCurrentSubtask(st.id)
     sessionManager.setUser(user.id)
     sessionManager.setCurrentSubtask(st.id)
     sessionStorage.setItem('_refreshSubtasks', '1')

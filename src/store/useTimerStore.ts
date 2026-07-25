@@ -22,6 +22,7 @@ interface TimerStore {
   cancelledAt: string | null
   returnGoalId: string | null
   returnGoalName: string | null
+  currentSubtaskId: string | null
 
   setState: (state: TimerState) => void
   setActivityType: (type: string) => void
@@ -41,6 +42,7 @@ interface TimerStore {
   setFinishedAt: (v: string | null) => void
   setCancelledAt: (v: string | null) => void
   setReturnGoal: (id: string | null, name: string | null) => void
+  setCurrentSubtask: (id: string | null) => void
   reset: () => void
 }
 
@@ -64,6 +66,7 @@ const initialState = {
   cancelledAt: null as string | null,
   returnGoalId: null as string | null,
   returnGoalName: null as string | null,
+  currentSubtaskId: null as string | null,
 }
 
 export const useTimerStore = create<TimerStore>((set) => ({
@@ -86,5 +89,6 @@ export const useTimerStore = create<TimerStore>((set) => ({
   setFinishedAt: (finishedAt) => set({ finishedAt }),
   setCancelledAt: (cancelledAt) => set({ cancelledAt }),
   setReturnGoal: (returnGoalId, returnGoalName) => set({ returnGoalId, returnGoalName }),
+  setCurrentSubtask: (currentSubtaskId) => set({ currentSubtaskId }),
   reset: () => set(initialState),
 }))
