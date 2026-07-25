@@ -59,43 +59,49 @@ function SparkleBurst({ color }: { color: string }) {
     if (!c) return
     const ctx = c.getContext('2d')
     if (!ctx) return
-    c.width = window.innerWidth
-    c.height = window.innerHeight
+    let animId = 0
+    const resize = () => { c.width = window.innerWidth; c.height = window.innerHeight }
+    resize()
+    window.addEventListener('resize', resize)
     const particles: { x: number; y: number; vx: number; vy: number; r: number; alpha: number }[] = []
-    for (let i = 0; i < 40; i++) {
-      const angle = Math.random() * Math.PI * 2
-      const speed = 2 + Math.random() * 5
-      particles.push({
-        x: c.width / 2, y: c.height / 2,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        r: 2 + Math.random() * 4,
-        alpha: 1,
-      })
-    }
-    let frame = 0
+    let elapsed = 0
     const animate = () => {
-      if (frame > 80) return
+      elapsed++
+      if (elapsed % 90 === 0 && particles.length < 120) {
+        for (let i = 0; i < 15; i++) {
+          const angle = Math.random() * Math.PI * 2
+          const speed = 2 + Math.random() * 5
+          particles.push({
+            x: c.width / 2, y: c.height / 2,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            r: 2 + Math.random() * 4,
+            alpha: 1,
+          })
+        }
+      }
       ctx.clearRect(0, 0, c.width, c.height)
       ctx.shadowBlur = 8
       ctx.shadowColor = color
-      particles.forEach((p) => {
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i]
         p.x += p.vx
         p.y += p.vy
         p.vy += 0.05
-        p.alpha -= 0.014
+        p.alpha -= 0.008
+        if (p.alpha <= 0) { particles.splice(i, 1); continue }
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
         ctx.fillStyle = color
-        ctx.globalAlpha = Math.max(0, p.alpha)
+        ctx.globalAlpha = p.alpha
         ctx.fill()
-      })
+      }
       ctx.shadowBlur = 0
       ctx.globalAlpha = 1
-      frame++
-      requestAnimationFrame(animate)
+      animId = requestAnimationFrame(animate)
     }
     animate()
+    return () => { cancelAnimationFrame(animId); window.removeEventListener('resize', resize) }
   }, [])
   return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-30" />
 }
