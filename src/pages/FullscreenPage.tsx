@@ -222,16 +222,16 @@ export function FullscreenPage() {
             className="absolute inset-0 rounded-full"
             style={{
               background: `conic-gradient(${ringColor}18 0deg, ${ringColor}18 360deg)`,
-              WebkitMask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
-              mask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
+              WebkitMask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
+              mask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
             }}
           />
           <div id="fullscreenRingFill"
             className="absolute inset-0 rounded-full transition-all duration-300"
             style={{
               background: `conic-gradient(${ringColor} ${Math.max(0.5, pct)}%, rgba(255,255,255,0.04) ${Math.max(0.5, pct)}%)`,
-              WebkitMask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
-              mask: 'radial-gradient(circle at center, transparent 65%, black 65%)',
+              WebkitMask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
+              mask: 'radial-gradient(circle at center, transparent 68%, black 68%)',
               filter: 'drop-shadow(0 0 8px ' + ringColor + '50)',
             }}
           />
