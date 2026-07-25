@@ -35,7 +35,7 @@ function HighlightCard({ icon, label, value, unit, color }: { icon: string; labe
         style={{ backgroundColor: color, boxShadow: `0 0 80px ${color}` }} />
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{ background: `radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), ${color}10, transparent 60%)` }} />
-      <div className="relative flex flex-col justify-center h-full min-h-[80px]">
+      <div className="relative flex flex-col justify-center items-center h-full min-h-[80px] text-center">
         <div className="text-[9px] text-text-secondary/50 uppercase tracking-[1.5px] font-semibold">{label}</div>
         <div className="text-xl font-bold text-white tabular-nums mt-0.5">
           {value}
