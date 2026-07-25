@@ -249,7 +249,10 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                 Cancelar
               </button>
               <button onClick={() => { onDelete(deleteConfirmId); setDeleteConfirmId(null) }}
-                className="flex-1 px-4 py-2 rounded-lg text-xs font-medium bg-danger hover:bg-danger/80 text-white transition-all">
+                className="flex-1 px-4 py-2 rounded-lg text-xs font-medium text-white transition-all"
+                style={{ backgroundColor: 'var(--danger)' }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}>
                 Eliminar
               </button>
             </div>
