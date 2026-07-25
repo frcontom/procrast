@@ -55,7 +55,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   return (
     <div className="space-y-4">
       <div className="bg-card rounded-xl border border-white/10 p-4">
-        <div className="flex items-start justify-between gap-3">
+        <div id="tk-detail-header" className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0">
             <span className="text-2xl shrink-0" style={{ color: goal.color || '#A66CFF' }}>{goalIcon}</span>
             <div>
@@ -63,20 +63,21 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
               {goal.description && <p className="text-xs text-text-secondary mt-0.5">{goal.description}</p>}
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+          <div id="tk-header-badges" className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
             {(goal.priority === 'critical' || goal.priority === 'high') && (
-              <span className="inline-block px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.5px] text-white"
+              <span id="tk-priority-badge" className="inline-block px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.5px] text-white"
                 style={{ backgroundColor: PRIORITY_COLORS[goal.priority] }}>
                 {goal.priority === 'critical' ? '🔴 Crítica' : '🟠 Alta'}
               </span>
             )}
-            <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-[0.5px] text-white"
+            <span id="tk-status-badge" className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-[0.5px] text-white"
               style={{ backgroundColor: rhythm.behind ? '#EA5455' : pct >= 100 ? '#28C76F' : pct > 0 ? '#28C76F' : '#a0a0b0' }}>
               {pct >= 100 ? 'Completado' : rhythm.behind ? 'ATRASADO' : pct > 0 ? 'Al día' : 'Sin empezar'}
             </span>
           </div>
         </div>
 
+        <div id="tk-warning-banner">
         {rhythm.behind && (
           <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs text-[#EA5455] mb-3"
             style={{ backgroundColor: 'rgba(234,84,85,0.1)', border: '1px solid rgba(234,84,85,0.3)' }}>
@@ -86,8 +87,9 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
             </span>
           </div>
         )}
+        </div>
 
-        <div className="mb-3">
+        <div id="tk-progress-bar" className="mb-3">
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="text-text-secondary">Progreso</span>
             <span className="text-accent font-medium">{pct}%</span>
@@ -97,7 +99,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           </div>
         </div>
 
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(90px,1fr))] gap-2 mb-3">
+        <div id="tk-metrics" className="grid grid-cols-[repeat(auto-fit,minmax(90px,1fr))] gap-2 mb-3">
           {[
             { label: 'Completado', value: `${totalCompleted}min` },
             { label: 'Meta total', value: `${totalEstimated}min` },
@@ -112,6 +114,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           ))}
         </div>
 
+        <div id="tk-warning-old">
         {rhythm.behind && (
           <div className="bg-danger/10 border border-danger/20 rounded-lg p-3 text-xs">
             <span className="text-danger font-medium">🔴 ATRASADO</span>
@@ -120,9 +123,10 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
             </span>
           </div>
         )}
+        </div>
       </div>
 
-      <div className="bg-card rounded-xl border border-white/10 p-4">
+      <div id="tk-subtasks" className="bg-card rounded-xl border border-white/10 p-4">
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">Subtareas ({doneCount}/{subtasks.length})</span>
           <button onClick={onEditGoal} className="text-[10px] text-text-secondary hover:text-white transition-colors">✏️ Editar meta</button>
@@ -132,7 +136,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
         <SubtaskForm onSave={onAddSubtask} onImport={onImportSubtasks} />
       </div>
 
-      <div className="bg-card rounded-xl border border-white/10 p-4">
+      <div id="tk-calendar" className="bg-card rounded-xl border border-white/10 p-4">
         <span className="text-xs font-medium text-text-secondary uppercase tracking-wider">📅 Calendario</span>
         <HexCalendar
           startDate={goal.start_date || goal.created_at.slice(0, 10)}
@@ -144,7 +148,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
       </div>
 
       {goal.notes && (
-        <div className="bg-card rounded-xl border border-white/10 p-4">
+        <div id="tk-notes" className="bg-card rounded-xl border border-white/10 p-4">
           <span className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-2 block">📝 Notas</span>
           <p className="text-sm text-text-secondary whitespace-pre-wrap">{goal.notes}</p>
         </div>
