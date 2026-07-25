@@ -38,6 +38,13 @@ function progressColor(pct: number, state: string): { color: string; label: stri
   return { color: '#22C55E', label: '🏆 Meta' }
 }
 
+function streakEmoji(streak: number): string {
+  if (streak >= 30) return '🔥🔥🔥'
+  if (streak >= 7) return '🔥🔥'
+  if (streak >= 3) return '🔥'
+  return '🔥'
+}
+
 export function FullscreenPage() {
   const navigate = useNavigate()
   const store = useTimerStore()
@@ -49,6 +56,7 @@ export function FullscreenPage() {
   const scoreTimerRef = useRef<number | undefined>(undefined)
   const [streak, setStreak] = useState(0)
   const [xpGained, setXpGained] = useState(0)
+  const [floatXp, setFloatXp] = useState(0)
   const [sessionsToday, setSessionsToday] = useState(0)
 
   const pickBg = useCallback(() => {
@@ -77,6 +85,20 @@ export function FullscreenPage() {
       if (document.fullscreenElement) document.exitFullscreen?.()
     }
   }, [])
+
+  useEffect(() => {
+    if (state === 'RUNNING' && remainingSeconds <= 10 && remainingSeconds > 0 && !isStopwatch) {
+      const ctx = new AudioContext()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain); gain.connect(ctx.destination)
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(1200, ctx.currentTime)
+      gain.gain.setValueAtTime(0.04, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06)
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.06)
+    }
+  }, [remainingSeconds, state])
 
   useEffect(() => {
     const handleMove = () => {
@@ -111,6 +133,8 @@ export function FullscreenPage() {
 
   useEffect(() => {
     if (justFinished) {
+      setFloatXp(xpGained)
+      setTimeout(() => setFloatXp(0), 3000)
       scoreTimerRef.current = setTimeout(() => navigate('/focus'), 2500)
     }
     if (justCancelled) {
@@ -170,6 +194,23 @@ export function FullscreenPage() {
           {name}
         </div>
 
+        {floatXp > 0 && (
+          <div className="text-accent text-xl font-bold animate-[floatUp_2.5s_ease-out] pointer-events-none">
+            +{floatXp} XP
+          </div>
+        )}
+
+        {cycleCount > 0 && (
+          <div className="flex items-center gap-2 text-sm text-white/50">
+            <span>🔄 Ciclo {cycleCount}/{cycleCount}</span>
+            <div className="flex gap-1">
+              {Array.from({ length: cycleCount }, (_, i) => (
+                <div key={i} className={`w-2 h-2 rounded-full ${i < cycleCount ? 'bg-accent' : 'bg-white/10'}`} />
+              ))}
+            </div>
+          </div>
+        )}
+
         <div id="fullscreenTimerRingContainer" className="relative w-[360px] h-[360px]">
           <div id="fullscreenRingTrack"
             className="absolute inset-0 rounded-full"
@@ -197,8 +238,12 @@ export function FullscreenPage() {
 
         {showBreathing && (
           <div id="fullscreenBreathe" className="flex flex-col items-center gap-5 animate-[breatheFadeIn_0.5s_ease]">
-            <div className="w-20 h-20 rounded-full border-2 border-white/30 animate-[breathe_8s_ease-in-out_infinite]" />
-            <span id="breatheText" className="text-2xl font-light text-white/70 tracking-[4px] uppercase">Inhala · Exhala</span>
+            <div className="w-20 h-20 rounded-full border-2 animate-[breathe_8s_ease-in-out_infinite]"
+              style={{ borderColor: 'rgba(255,255,255,0.3)', boxShadow: '0 0 30px rgba(96,165,250,0.15)' }} />
+            <span id="breatheText" className="text-2xl font-light tracking-[4px] uppercase"
+              style={{ color: 'rgba(255,255,255,0.7)', textShadow: '0 0 20px rgba(96,165,250,0.2)' }}>
+              Inhala · Exhala
+            </span>
           </div>
         )}
 
@@ -227,9 +272,10 @@ export function FullscreenPage() {
 
         {showMiniStats && (
           <div id="fullscreenMiniStats" className="flex items-center gap-0 text-lg text-white/70 animate-[breatheFadeIn_0.3s_ease]">
-            <span className="px-5 border-r border-white/10">🔥 <span id="fsStreak">{streak}</span></span>
+            <span className="px-5 border-r border-white/10">{streakEmoji(streak)} <span id="fsStreak">{streak}</span></span>
             <span className="px-5 border-r border-white/10">⚡ <span id="fsXp">{xpGained}</span> XP</span>
-            <span className="px-5">📊 <span id="fsToday">{sessionsToday}</span> hoy</span>
+            <span className="px-5 border-r border-white/10">📊 <span id="fsToday">{sessionsToday}</span> hoy</span>
+            <span className="px-5">🎯 {sessionsToday}/4 ses</span>
           </div>
         )}
 
@@ -276,6 +322,10 @@ export function FullscreenPage() {
         @keyframes bgFadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
+        }
+        @keyframes floatUp {
+          0% { opacity: 1; transform: translateY(0) scale(1); }
+          100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
         }
       `}</style>
     </div>
