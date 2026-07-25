@@ -143,7 +143,7 @@ export function HabitsPage() {
       {/* Habit List */}
       <div id="hm-list-card" className="bg-card rounded-xl border border-white/10 p-4">
         <div id="hm-list-title" className="text-[11px] font-medium text-text-secondary uppercase tracking-wider mb-3">📌 Hábitos de {monthLabel} ({habits.length})</div>
-        <div id="hm-list"><HabitList habits={habits} logs={logs} daysInMonth={daysInMonth} onDelete={deleteHabit} onEdit={(h) => { setEditHabit(h); setShowForm(true) }} onReorder={reorderHabits} onTogglePrimary={async (id, isPrimary) => { if (!user) return; await supabase.from('habits').update({ is_primary: isPrimary }).eq('id', id); loadData() }} /></div>
+        <div id="hm-list"><HabitList habits={habits} logs={logs} daysInMonth={daysInMonth} onDelete={deleteHabit} onEdit={(h) => { setEditHabit(h); setShowForm(true) }} onReorder={reorderHabits} onTogglePrimary={async (id, isPrimary) => { if (!user) return; await supabase.from('habits').update({ is_primary: isPrimary }).eq('id', id); loadData() }} onToggleStarred={async (id, isStarred) => { if (!user) return; await supabase.from('habits').update({ is_starred: isStarred }).eq('id', id); loadData() }} /></div>
       </div>
 
       {/* Weekly Circles */}
