@@ -29,27 +29,3 @@ body {
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-@keyframes glowPulse {
-  0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.05); }
-}
-
-@keyframes scanLine {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
-}
-
-@keyframes countUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-}
-
-.animate-glow-pulse { animation: glowPulse 3s ease-in-out infinite; }
-.animate-scan { animation: scanLine 8s linear infinite; }
-.animate-float { animation: float 4s ease-in-out infinite; }
