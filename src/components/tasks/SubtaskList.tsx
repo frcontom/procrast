@@ -163,7 +163,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
             const displayEstimated = isChecklist && subtree && (subtree.estimated > 0 || subtree.completed > 0) ? subtree.estimated : st.estimated_minutes
             const displayCompleted = isChecklist && subtree && (subtree.estimated > 0 || subtree.completed > 0) ? subtree.completed : st.completed_minutes
             const displayPct = displayEstimated > 0 ? Math.min(100, Math.round((displayCompleted / displayEstimated) * 100)) : 0
-            const bestPct = displayEstimated > 0 ? Math.max(displayPct, Math.min(100, Math.ceil((links.filter((l) => l.subtask_id === st.id).reduce((max, l) => Math.max(max, l.minutes || 0), 0) / displayEstimated) * 100))) : displayPct
+            const bestPct = displayEstimated > 0 ? Math.max(displayPct, Math.min(100, Math.ceil((links.filter((l) => l.subtask_id === st.id && l.minutes >= 1).reduce((max, l) => Math.max(max, l.minutes || 0), 0) / displayEstimated) * 100))) : displayPct
 
             return (
               <div key={st.id} className="relative">
