@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTimerStore } from '../store/useTimerStore'
 import { sessionManager } from '../lib/sessionManager'
-import { playStartSound, playFinishSound } from '../lib/sound'
+import { playStartSound } from '../lib/sound'
 import { formatTime } from '../lib/formatters'
 
 // @ts-ignore - Vite glob import
@@ -47,21 +47,6 @@ export function FullscreenPage() {
       while (next === prev && GRADIENTS.length > 1)
       return next
     })
-  }, [])
-
-  useEffect(() => {
-    const engine = sessionManager.getEngine()
-    const unsubs = [
-      engine.on('TICK', () => {}), // store auto-updates via Zustand
-      engine.on('FINISH', async () => {
-        await sessionManager.finish()
-        playFinishSound()
-        store.setFinishedAt(new Date().toISOString())
-        store.setRemaining(0)
-        store.setProgress(100)
-      }),
-    ]
-    return () => unsubs.forEach((u) => u())
   }, [])
 
   useEffect(() => {
@@ -236,7 +221,7 @@ export function FullscreenPage() {
         <div id="fullscreenActions" className="flex gap-3 w-full justify-center">
           <button id="fullscreenPrimary"
             onClick={() => {
-              if (canStart) { sessionManager.startSession(store.isStopwatch ? 480 : store.durationMinutes, store.activityType, store.sessionName, store.strictMode, false); playStartSound() }
+              if (canStart) { sessionManager.startSession(isStopwatch ? 480 : durationMinutes, activityType, sessionName, strictMode, false); playStartSound() }
               else if (state === 'RUNNING') sessionManager.pause()
               else sessionManager.resume()
             }}
