@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTimerStore } from '../store/useTimerStore'
 import { sessionManager } from '../lib/sessionManager'
 import { playStartSound } from '../lib/sound'
+import { playBreathingSound, stopBreathingSound } from '../lib/sound'
 import { formatTime } from '../lib/formatters'
 
 // @ts-ignore - Vite glob import
@@ -160,6 +161,11 @@ export function FullscreenPage() {
       osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.06)
     }
   }, [remainingSeconds, state])
+
+  useEffect(() => {
+    if (state === 'PAUSED') playBreathingSound()
+    else stopBreathingSound()
+  }, [state])
 
   useEffect(() => {
     const handleMove = () => {

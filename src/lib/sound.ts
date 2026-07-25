@@ -102,3 +102,45 @@ export function setAmbientVolume(volume: number) {
     ambientGain.gain.setValueAtTime(volume, getCtx().currentTime)
   }
 }
+
+let breathingNodes: { osc: OscillatorNode; gain: GainNode; lfo: OscillatorNode } | null = null
+
+export function playBreathingSound() {
+  stopBreathingSound()
+  const ctx = getCtx()
+  const gain = ctx.createGain()
+  gain.connect(ctx.destination)
+  gain.gain.setValueAtTime(0, ctx.currentTime)
+
+  const osc = ctx.createOscillator()
+  osc.type = 'sine'
+  osc.frequency.setValueAtTime(180, ctx.currentTime)
+  osc.connect(gain)
+
+  const lfo = ctx.createOscillator()
+  lfo.type = 'sine'
+  lfo.frequency.setValueAtTime(0.125, ctx.currentTime) // 8s cycle
+  const lfoGain = ctx.createGain()
+  lfoGain.gain.setValueAtTime(80, ctx.currentTime)
+  lfo.connect(lfoGain)
+  lfoGain.connect(osc.frequency)
+
+  // Volume follows the same LFO (inhale louder, exhale softer)
+  const volMod = ctx.createGain()
+  lfo.connect(volMod)
+  volMod.gain.setValueAtTime(0.04, ctx.currentTime)
+  volMod.connect(gain.gain)
+  gain.gain.setValueAtTime(0.05, ctx.currentTime)
+
+  osc.start()
+  lfo.start()
+  breathingNodes = { osc, gain, lfo }
+}
+
+export function stopBreathingSound() {
+  if (breathingNodes) {
+    try { breathingNodes.osc.stop() } catch {}
+    try { breathingNodes.lfo.stop() } catch {}
+    breathingNodes = null
+  }
+}
