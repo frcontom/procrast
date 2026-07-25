@@ -69,8 +69,16 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
 
   const tree = buildTree(subtasks)
 
-  const handleDragStart = (idx: number) => setDragIdx(idx)
-  const handleDragOver = (e: React.DragEvent, idx: number) => { e.preventDefault(); setOverIdx(idx) }
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', String(idx))
+    setDragIdx(idx)
+  }
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setOverIdx(idx)
+  }
   const handleDrop = (e: React.DragEvent, idx: number) => {
     if (dragIdx === null || dragIdx === idx) return
     const dragged = tree[dragIdx]?.node
@@ -124,8 +132,8 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
               <div key={st.id} className="relative">
                 <div
                   draggable
-                  onDragStart={() => handleDragStart(idx)}
-                  onDragOver={(e) => handleDragOver(e, idx)}
+                   onDragStart={(e) => handleDragStart(e, idx)}
+                   onDragOver={(e) => handleDragOver(e, idx)}
                    onDrop={(e) => handleDrop(e, idx)}
                   onDragEnd={handleDragEnd}
                   style={{ marginLeft: depth * 28 }}

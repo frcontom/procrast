@@ -102,11 +102,13 @@ export function TasksPage() {
   }
 
   const startPomodoroFromSubtask = async (st: TaskSubtask) => {
+    if (!user) return
     const store = useTimerStore.getState()
     store.setDuration(st.estimated_minutes)
     store.setActivityType('focus')
     store.setSessionName(st.name)
     store.setReturnGoal(selectedId, selectedGoal?.name || null)
+    sessionManager.setUser(user.id)
     sessionManager.setCurrentSubtask(st.id)
     sessionStorage.setItem('_refreshSubtasks', '1')
     await sessionManager.startSession(st.estimated_minutes, 'focus', st.name, false, false)
