@@ -5,6 +5,10 @@ import { sessionManager } from '../lib/sessionManager'
 import { playStartSound, playFinishSound } from '../lib/sound'
 import { formatTime } from '../lib/formatters'
 
+// @ts-ignore - Vite glob import
+const bgImageModules = import.meta.glob('/src/assets/focus/*.png', { eager: true, query: '?url', import: 'default' })
+const bgImages = Object.values(bgImageModules) as string[]
+
 const GRADIENTS = [
   'linear-gradient(135deg,#0f0c29,#302b63,#24243e)',
   'linear-gradient(135deg,#000428,#004e92)',
@@ -205,8 +209,8 @@ export function FullscreenPage() {
   const score = calculateScore(elapsedSeconds, totalSeconds, cycleCount)
   const name = sessionName || activityType || '—'
 
-  const images = ['/images/focus/bg1.png', '/images/focus/bg2.png', '/images/focus/bg3.png']
-  const hasImages = false
+  const images = bgImages
+  const hasImages = images.length > 0
 
   return (
     <div id="fullscreenOverlay" className="fixed inset-0 z-[2000] flex items-center justify-end overflow-hidden bg-black select-none">
