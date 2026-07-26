@@ -30,8 +30,8 @@ export function Sidebar() {
         {NAV_ITEMS.map(({ path, label, icon }) => (
           <NavLink key={path} to={path} className="block">
             {({ isActive }) => (
-              <div className={`flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all relative ${isActive ? 'text-white bg-accent/20 font-medium' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}>
-                {isActive && <div className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-accent" />}
+              <div className={`flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-all relative ${isActive ? 'text-white bg-white/10 font-medium' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}>
+                {isActive && <div className="absolute left-0 top-1 bottom-1 w-1 rounded-r-full bg-accent" />}
                 <span className="w-5 text-center text-base">{icon}</span>
                 <span>{label}</span>
               </div>
