@@ -91,7 +91,7 @@ export function FocusPage() {
   const canConfigure = store.state === 'IDLE' || store.state === 'FINISHED' || store.state === 'CANCELLED'
 
   return (
-    <div id="focus-page" className="w-full max-w-3xl mx-auto space-y-6">
+    <div id="focus-page" className="w-full space-y-6">
 
       {todayStats.minutes > 0 && (
         <div className="flex items-center justify-center gap-5 text-xs text-text-secondary/70 animate-[fadeSlideDown_0.4s_ease]">
@@ -101,68 +101,85 @@ export function FocusPage() {
         </div>
       )}
 
-      <div id="focus-timer-section" className="bg-card rounded-2xl border border-white/10 overflow-hidden">
-        <div id="focus-config-bar" className="px-5 pt-5 pb-3 border-b border-white/5">
-          <TimerConfigBar />
-        </div>
-
-        <div id="focus-timer-body" className="px-5 py-8 space-y-6">
-          <div id="focus-timer-display">
-            <TimerDisplay
-              remainingSeconds={store.remainingSeconds}
-              elapsedSeconds={store.elapsedSeconds}
-              progressPercent={store.progressPercent}
-              state={store.state}
-              isStopwatch={store.isStopwatch}
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Timer Section - Left (3/5) */}
+        <div id="focus-timer-section" className="lg:col-span-3 bg-card rounded-2xl border border-white/10 overflow-hidden">
+          <div id="focus-config-bar" className="px-5 pt-5 pb-3 border-b border-white/5">
+            <TimerConfigBar />
           </div>
 
-          <div id="focus-session-info" className="flex items-center justify-center gap-6 text-sm">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-primary)]/50">
-              <span className="text-text-secondary/60 text-xs uppercase tracking-wider">Duración</span>
-              <span className="text-white font-medium tabular-nums">{store.durationMinutes} min</span>
+          <div id="focus-timer-body" className="px-5 py-8 space-y-6">
+            <div id="focus-timer-display">
+              <TimerDisplay
+                remainingSeconds={store.remainingSeconds}
+                elapsedSeconds={store.elapsedSeconds}
+                progressPercent={store.progressPercent}
+                state={store.state}
+                isStopwatch={store.isStopwatch}
+              />
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-primary)]/50">
-              <span className="text-text-secondary/60 text-xs uppercase tracking-wider">Transcurrido</span>
-              <span className="text-white font-medium tabular-nums">{Math.floor(store.elapsedSeconds / 60).toString().padStart(2, '0')}:{(store.elapsedSeconds % 60).toString().padStart(2, '0')}</span>
+
+            <div id="focus-session-info" className="flex items-center justify-center gap-6 text-sm">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-primary)]/50">
+                <span className="text-text-secondary/60 text-xs uppercase tracking-wider">Duración</span>
+                <span className="text-white font-medium tabular-nums">{store.durationMinutes} min</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-primary)]/50">
+                <span className="text-text-secondary/60 text-xs uppercase tracking-wider">Transcurrido</span>
+                <span className="text-white font-medium tabular-nums">{Math.floor(store.elapsedSeconds / 60).toString().padStart(2, '0')}:{(store.elapsedSeconds % 60).toString().padStart(2, '0')}</span>
+              </div>
             </div>
-          </div>
 
-          <div id="focus-session-name" className="flex justify-center pt-2">
-            <SessionNameInput value={store.sessionName} onChange={store.setSessionName} disabled={!canConfigure} />
-          </div>
-
-          {store.cycleTotal > 0 && (
-            <div className="flex justify-center pt-1">
-              <CycleIndicator current={store.cycleCount} total={store.cycleTotal} />
+            <div id="focus-session-name" className="flex justify-center pt-2">
+              <SessionNameInput value={store.sessionName} onChange={store.setSessionName} disabled={!canConfigure} />
             </div>
-          )}
 
-          <div id="focus-timer-controls" className="pt-2">
-            <TimerControls
-              state={store.state}
-              onStart={handleStart}
-              onPause={() => sessionManager.pause()}
-              onResume={() => sessionManager.resume()}
-              onCancel={handleCancel}
-            />
-            {store.phase !== 'work' && (store.state === 'RUNNING' || store.state === 'PAUSED' || store.state === 'FINISHED') && (
-              <div className="flex justify-center mt-3">
-                <button onClick={() => {
-                  const engine = sessionManager.getEngine()
-                  engine.reset()
-                  const workMin = store.workDuration > 0 ? store.workDuration : store.durationMinutes
-                  store.setCycleCount(store.cycleCount + 1)
-                  store.setPhase('work')
-                  store.setDuration(workMin)
-                  sessionManager.startSession(workMin, store.activityType, store.sessionName, store.strictMode, false)
-                  playStartSound()
-                }}
-                  className="text-xs text-accent hover:text-white transition-colors underline underline-offset-4 decoration-accent/30 hover:decoration-white/50">
-                  ⏭ Saltar descanso
-                </button>
+            {store.cycleTotal > 0 && (
+              <div className="flex justify-center pt-1">
+                <CycleIndicator current={store.cycleCount} total={store.cycleTotal} />
               </div>
             )}
+
+            <div id="focus-timer-controls" className="pt-2">
+              <TimerControls
+                state={store.state}
+                onStart={handleStart}
+                onPause={() => sessionManager.pause()}
+                onResume={() => sessionManager.resume()}
+                onCancel={handleCancel}
+              />
+              {store.phase !== 'work' && (store.state === 'RUNNING' || store.state === 'PAUSED' || store.state === 'FINISHED') && (
+                <div className="flex justify-center mt-3">
+                  <button onClick={() => {
+                    const engine = sessionManager.getEngine()
+                    engine.reset()
+                    const workMin = store.workDuration > 0 ? store.workDuration : store.durationMinutes
+                    store.setCycleCount(store.cycleCount + 1)
+                    store.setPhase('work')
+                    store.setDuration(workMin)
+                    sessionManager.startSession(workMin, store.activityType, store.sessionName, store.strictMode, false)
+                    playStartSound()
+                  }}
+                    className="text-xs text-accent hover:text-white transition-colors underline underline-offset-4 decoration-accent/30 hover:decoration-white/50">
+                    ⏭ Saltar descanso
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Section - Right (2/5) */}
+        <div id="focus-stats-card" className="lg:col-span-2 bg-card rounded-2xl border border-white/10 p-4">
+          <div id="focus-stats-header" className="flex items-center gap-2 mb-3">
+            <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">📊 Stats</span>
+          </div>
+          <div id="focus-stats-overview">
+            <StatsOverview totalSessions={sessions.length} completedSessions={completed} totalMinutes={totalMinutes} currentStreak={0} />
+          </div>
+          <div id="focus-stats-charts" className="mt-4 space-y-4">
+            <FocusChart sessions={sessions} />
+            <ActivityBreakdown sessions={sessions} />
           </div>
         </div>
       </div>
@@ -186,18 +203,6 @@ export function FocusPage() {
           </button>
         </>
       )}
-      <div id="focus-stats-card" className="bg-card rounded-xl border border-white/10 p-4">
-        <div id="focus-stats-header" className="flex items-center gap-2 mb-3">
-          <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">📊 Stats</span>
-        </div>
-        <div id="focus-stats-overview">
-          <StatsOverview totalSessions={sessions.length} completedSessions={completed} totalMinutes={totalMinutes} currentStreak={0} />
-        </div>
-        <div id="focus-stats-charts" className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FocusChart sessions={sessions} />
-          <ActivityBreakdown sessions={sessions} />
-        </div>
-      </div>
 
       <div id="focus-session-history">
         <SessionHistory />
