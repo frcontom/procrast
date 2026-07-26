@@ -100,11 +100,8 @@ export function Sidebar() {
         <span className="font-bold text-sm tracking-wider">FÉRREO</span>
       </div>
 
-      {/* Mini Timer */}
-      <MiniTimer />
-
       {/* Navegación */}
-      <nav className="flex-1 overflow-y-auto py-3 space-y-0.5 px-3 border-t border-white/10">
+      <nav className="flex-1 overflow-y-auto py-3 space-y-0.5 px-3">
         {NAV_ITEMS.map(({ path, label, icon }) => (
           <NavLink key={path} to={path} className="block">
             {({ isActive }) => (
@@ -201,6 +198,8 @@ export function Sidebar() {
           </div>
         </div>
       )}
+
+      <MiniTimer />
 
       {/* Footer */}
       <div className="px-3 py-3 border-t border-white/10 shrink-0">
