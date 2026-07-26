@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { supabase } from '../../supabase/client'
 import { useUser } from '../../supabase/auth'
+import { formatTime } from '../../lib/formatters'
 
 const ACTIVITY_ICONS: Record<string, string> = {
   estudio: '📚', programacion: '💻', trading: '📈', lectura: '📖', escritura: '✍️', trabajo: '💼',
@@ -97,70 +98,73 @@ export function SessionHistory() {
   })
 
   return (
-    <div className="bg-card rounded-xl border border-white/10 overflow-hidden">
+    <div className="bg-card rounded-2xl border border-white/10 overflow-hidden">
+      {/* Stats header */}
       <div className="p-4 border-b border-white/5">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider">📋 Historial</h3>
-          <span className="text-[10px] text-text-secondary">{total} sesiones</span>
+          <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">📋 Historial</span>
+          <span className="text-[9px] text-text-secondary/60">{total} sesiones</span>
         </div>
         <div className="grid grid-cols-4 gap-2">
-          <div className="bg-secondary/50 rounded-lg p-2 text-center">
-            <div className="text-sm font-bold text-white">{completed}</div>
-            <div className="text-[9px] text-text-secondary uppercase tracking-wider">Hechas</div>
-          </div>
-          <div className="bg-secondary/50 rounded-lg p-2 text-center">
-            <div className="text-sm font-bold text-white">{focusMin}</div>
-            <div className="text-[9px] text-text-secondary uppercase tracking-wider">Min focus</div>
-          </div>
-          <div className="bg-secondary/50 rounded-lg p-2 text-center">
-            <div className="text-sm font-bold text-white">{best}</div>
-            <div className="text-[9px] text-text-secondary uppercase tracking-wider">Mejor ses</div>
-          </div>
-          <div className="bg-secondary/50 rounded-lg p-2 text-center">
-            <div className="text-sm font-bold text-white">{total > 0 ? Math.round((completed / total) * 100) : 0}%</div>
-            <div className="text-[9px] text-text-secondary uppercase tracking-wider">Tasa</div>
-          </div>
+          {[
+            { label: 'Completadas', value: completed, color: '#28C76F' },
+            { label: 'Min focus', value: focusMin, color: '#A66CFF' },
+            { label: 'Mejor sesión', value: `${best}min`, color: '#00BCD4' },
+            { label: 'Tasa', value: `${total > 0 ? Math.round((completed / total) * 100) : 0}%`, color: total > 0 && (completed / total) >= 0.7 ? '#28C76F' : '#FF9800' },
+          ].map((s) => (
+            <div key={s.label} className="bg-white/5 rounded-lg p-2 text-center">
+              <div className="text-sm font-bold" style={{ color: s.color }}>{s.value}</div>
+              <div className="text-[8px] text-text-secondary/60 uppercase tracking-wider mt-0.5">{s.label}</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className="max-h-72 overflow-y-auto">
+      {/* Timeline */}
+      <div className="max-h-80 overflow-y-auto">
         {Object.entries(groups).map(([groupName, groupSessions]) => (
           <div key={groupName}>
-            <div className="px-4 py-1.5 bg-white/5 sticky top-0">
-              <span className="text-[10px] font-medium text-text-secondary uppercase tracking-wider">{groupName}</span>
+            <div className="sticky top-0 px-4 py-1.5 bg-[var(--bg-card)] border-b border-white/5 z-10">
+              <span className="text-[9px] font-semibold text-text-secondary/60 uppercase tracking-wider">{groupName}</span>
             </div>
-            {groupSessions.map((s: any) => {
+            {groupSessions.map((s: any, i: number) => {
               const isCompleted = s.state === 'completed'
               const pct = s.duration_minutes > 0 ? Math.min(100, Math.round(((s.elapsed_seconds || 0) / 60 / s.duration_minutes) * 100)) : 0
+              const isLast = i === groupSessions.length - 1
+
               return (
-                <div key={s.id} className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors group">
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0 ${isCompleted ? 'bg-success/10' : 'bg-danger/5'}`}>
-                    {ACTIVITY_ICONS[s.activity_type] || '⏱'}
+                <div key={s.id} className="flex gap-3 px-4 py-2.5 hover:bg-white/[0.02] transition-colors group relative">
+                  {/* Timeline line */}
+                  <div className="flex flex-col items-center shrink-0">
+                    <div className={`w-2 h-2 rounded-full mt-1.5 ${isCompleted ? 'bg-[#28C76F]' : 'bg-[#EA5455]/60'}`} />
+                    {!isLast && <div className="w-px flex-1 bg-white/5 mt-1" />}
                   </div>
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 text-xs flex-wrap">
-                      <span className="font-medium truncate">{s.activity_type || 'focus'}</span>
-                      <span className="text-text-secondary">·</span>
-                      <span className={`${isCompleted ? 'text-success' : 'text-danger'}`}>
+                      <span className="text-[11px] font-medium text-white/80">{ACTIVITY_ICONS[s.activity_type] || '⏱'} {s.activity_type || 'focus'}</span>
+                      <span className="text-text-secondary/30">·</span>
+                      <span className={`text-[10px] ${isCompleted ? 'text-[#28C76F]/80' : 'text-[#EA5455]/70'}`}>
                         {isCompleted ? pickPhrase(s.id, DONE_PHRASES) : pickPhrase(s.id, FAIL_PHRASES)}
                       </span>
-                      {s.session_name && <span className="truncate text-text-secondary">· {s.session_name}</span>}
+                      {s.session_name && <span className="text-[10px] text-text-secondary/50 truncate">· {s.session_name}</span>}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[10px] text-text-secondary/60 mt-0.5 flex-wrap">
+                    <div className="flex items-center gap-2 text-[9px] text-text-secondary/40 mt-0.5 flex-wrap">
                       <span>{new Date(s.started_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
-                      <span className="text-text-secondary">·</span>
-                      <span>{s.duration_minutes}min</span>
-                      {s.elapsed_seconds > 0 && (
+                      <span>·</span>
+                      <span>{formatTime(s.elapsed_seconds || 0)}</span>
+                      {s.duration_minutes > 0 && (
                         <>
-                          <span className="text-text-secondary">·</span>
-                          <span className={pct >= 90 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-danger'}>
-                            {Math.round((s.elapsed_seconds || 0) / 60)}/{s.duration_minutes}
+                          <span>·</span>
+                          <span className={pct >= 90 ? 'text-[#28C76F]/60' : pct >= 50 ? 'text-[#FF9800]/60' : 'text-[#EA5455]/60'}>
+                            {pct}%
                           </span>
                         </>
                       )}
                     </div>
                   </div>
-                  <div className="text-[10px] text-text-secondary/50 shrink-0 whitespace-nowrap">
+
+                  <div className="text-[9px] text-text-secondary/30 shrink-0 whitespace-nowrap self-center">
                     {timeAgo(s.started_at)}
                   </div>
                 </div>
@@ -168,10 +172,10 @@ export function SessionHistory() {
             })}
           </div>
         ))}
-        <div ref={loaderRef} className="h-4" />
+        <div ref={loaderRef} className="h-3" />
         {hasMore && (
-          <div className="text-center text-[10px] text-text-secondary py-3 bg-white/5">
-            Cargando más...
+          <div className="text-center text-[9px] text-text-secondary/40 py-3 bg-white/[0.02]">
+            Cargando más sesiones...
           </div>
         )}
       </div>
