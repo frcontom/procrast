@@ -8,10 +8,10 @@ import { MiniTimer } from './MiniTimer'
 import { formatTime } from '../../lib/formatters'
 
 const NAV_ITEMS = [
+  { path: '/dashboard', label: 'Dashboard', icon: '📊' },
   { path: '/focus', label: 'Focus', icon: '◆' },
   { path: '/tasks', label: 'Metas', icon: '◎' },
   { path: '/habits', label: 'Hábitos', icon: '✓' },
-  { path: '/dashboard', label: 'Dashboard', icon: '📊' },
   { path: '/knowledge', label: 'Notas', icon: '📝' },
   { path: '/identity', label: 'Identidad', icon: '👤' },
   { path: '/coach', label: 'Coach', icon: '🎯' },
