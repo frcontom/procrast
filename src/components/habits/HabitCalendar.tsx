@@ -13,7 +13,7 @@ const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 export function HabitCalendar({ habits, logs, year, month, onDayClick }: Props) {
   const daysInMonth = new Date(year, month, 0).getDate()
   const firstDay = new Date(year, month - 1, 1).getDay()
-  const today = new Date().toISOString().slice(0, 10)
+  const today = new Date().toLocaleDateString('en-CA')
 
   const days = Array.from({ length: daysInMonth }, (_, i) => {
     const day = i + 1
