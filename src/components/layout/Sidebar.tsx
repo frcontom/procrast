@@ -103,6 +103,21 @@ export function Sidebar() {
       {/* Mini Timer */}
       <MiniTimer />
 
+      {/* Navegación */}
+      <nav className="flex-1 overflow-y-auto py-3 space-y-0.5 px-3 border-t border-white/10">
+        {NAV_ITEMS.map(({ path, label, icon }) => (
+          <NavLink key={path} to={path} className="block">
+            {({ isActive }) => (
+              <div className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all relative ${isActive ? 'text-white bg-white/10 font-medium' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}>
+                {isActive && <div className="absolute left-0 top-1 bottom-1 w-1 rounded-r-full bg-accent" />}
+                <span className="w-5 text-center text-base">{icon}</span>
+                <span>{label}</span>
+              </div>
+            )}
+          </NavLink>
+        ))}
+      </nav>
+
       {/* 🏆 Meta Diaria */}
       <div className="px-3 py-3 border-t border-white/10">
         <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.5px] text-text-secondary mb-2.5">
@@ -186,21 +201,6 @@ export function Sidebar() {
           </div>
         </div>
       )}
-
-      {/* Navegación */}
-      <nav className="flex-1 overflow-y-auto py-3 space-y-0.5 px-3 border-t border-white/10">
-        {NAV_ITEMS.map(({ path, label, icon }) => (
-          <NavLink key={path} to={path} className="block">
-            {({ isActive }) => (
-              <div className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all relative ${isActive ? 'text-white bg-white/10 font-medium' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}>
-                {isActive && <div className="absolute left-0 top-1 bottom-1 w-1 rounded-r-full bg-accent" />}
-                <span className="w-5 text-center text-base">{icon}</span>
-                <span>{label}</span>
-              </div>
-            )}
-          </NavLink>
-        ))}
-      </nav>
 
       {/* Footer */}
       <div className="px-3 py-3 border-t border-white/10 shrink-0">
