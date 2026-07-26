@@ -100,8 +100,10 @@ export function Sidebar() {
         <span className="font-bold text-sm tracking-wider">FÉRREO</span>
       </div>
 
-      {/* Navegación */}
-      <nav className="flex-1 overflow-y-auto py-3 space-y-0.5 px-3">
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Navegación */}
+        <nav className="py-3 space-y-0.5 px-3">
         {NAV_ITEMS.map(({ path, label, icon }) => (
           <NavLink key={path} to={path} className="block">
             {({ isActive }) => (
@@ -212,6 +214,7 @@ export function Sidebar() {
           <NavLink to="/settings" className="flex-1 text-center text-[10px] text-text-secondary hover:text-white py-1.5 rounded bg-white/5 hover:bg-white/10 transition-all">⚙️</NavLink>
           <button onClick={() => signOut()} className="flex-1 text-center text-[10px] text-text-secondary hover:text-danger py-1.5 rounded bg-white/5 hover:bg-white/10 transition-all">⏻</button>
         </div>
+      </div>
       </div>
     </aside>
   )
