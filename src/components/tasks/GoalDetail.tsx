@@ -32,6 +32,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   const [todayMin, setTodayMin] = useState(0)
   const [editingSubtask, setEditingSubtask] = useState<TaskSubtask | null>(null)
   const [historySubtask, setHistorySubtask] = useState<TaskSubtask | null>(null)
+  const [importParentId, setImportParentId] = useState<string>('')
 
   const goalIcon = goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'
 
@@ -153,10 +154,10 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           <SubtaskForm onSave={(data) => {
             if (editingSubtask) onEditSubtask?.(editingSubtask.id, data)
             else onAddSubtask(data)
-          }} onImport={onImportSubtasks} editSubtask={editingSubtask} onCloseEdit={() => setEditingSubtask(null)} subtaskList={subtasks} onCleanAll={onCleanAll} />
+          }} onImport={(tasks) => { onImportSubtasks?.(tasks); setImportParentId('') }} editSubtask={editingSubtask} onCloseEdit={() => { setEditingSubtask(null); setImportParentId('') }} subtaskList={subtasks} onCleanAll={onCleanAll} defaultImportParentId={importParentId} />
         </div>
 
-        <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} onReorder={onReorderSubtasks} onSetDependency={onSetDependency} onStartPomodoro={onStartPomodoro} onShowHistory={setHistorySubtask} />
+        <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} onReorder={onReorderSubtasks} onSetDependency={onSetDependency} onStartPomodoro={onStartPomodoro} onShowHistory={setHistorySubtask} onBulkImport={(st) => setImportParentId(st.id)} />
       </div>
 
       {goal.notes && (

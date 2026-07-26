@@ -8,9 +8,10 @@ interface Props {
   onCloseEdit?: () => void
   subtaskList?: TaskSubtask[]
   onCleanAll?: () => void
+  defaultImportParentId?: string
 }
 
-export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtaskList, onCleanAll }: Props) {
+export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtaskList, onCleanAll, defaultImportParentId }: Props) {
   const [open, setOpen] = useState<'add' | 'import' | null>(null)
   const [name, setName] = useState('')
   const [minutes, setMinutes] = useState(30)
@@ -28,6 +29,13 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtas
       setDependsOn(editSubtask.depends_on || '')
     }
   }, [editSubtask])
+
+  useEffect(() => {
+    if (defaultImportParentId) {
+      setImportParentId(defaultImportParentId)
+      setOpen('import')
+    }
+  }, [defaultImportParentId])
 
   const openAdd = () => {
     setName('')
