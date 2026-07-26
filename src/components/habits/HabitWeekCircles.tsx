@@ -9,13 +9,17 @@ const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', '
 
 export function HabitWeekCircles({ habits, logs }: Props) {
   const today = new Date()
+  const todayStr = today.toLocaleDateString('en-CA')
   const weekStart = new Date(today)
   weekStart.setDate(today.getDate() - today.getDay())
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart)
     d.setDate(weekStart.getDate() + i)
-    const dateStr = d.toISOString().slice(0, 10)
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    const dateStr = `${y}-${m}-${day}`
     const dayMonth = `${d.getDate()}/${d.getMonth() + 1}`
     const doneCount = habits.filter((h) => logs.some((l) => l.habit_id === h.id && l.date === dateStr)).length
     return {
@@ -25,8 +29,8 @@ export function HabitWeekCircles({ habits, logs }: Props) {
       dayNum: d.getDate(),
       allDone: doneCount >= habits.length && habits.length > 0,
       someDone: doneCount > 0 && !(doneCount >= habits.length && habits.length > 0),
-      isPast: dateStr < today.toISOString().slice(0, 10),
-      isToday: dateStr === today.toISOString().slice(0, 10),
+      isPast: dateStr < todayStr,
+      isToday: dateStr === todayStr,
       doneCount,
       pct: habits.length > 0 ? Math.round((doneCount / habits.length) * 100) : 0,
     }
