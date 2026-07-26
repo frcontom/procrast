@@ -18,6 +18,7 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtas
   const [dependsOn, setDependsOn] = useState<string>('')
   const [importText, setImportText] = useState('')
   const [showClean, setShowClean] = useState(false)
+  const [importParentId, setImportParentId] = useState('')
 
   useEffect(() => {
     if (editSubtask) {
@@ -49,23 +50,18 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtas
 
   const handleImport = () => {
     const lines = importText.trim().split('\n').filter(Boolean)
-    const stack: { id: string; depth: number }[] = []
-    const tasks: { name: string; estimated_minutes: number; difficulty: string; depends_on?: string | null }[] = []
-    for (const raw of lines) {
-      const indent = raw.search(/\S/)
-      const line = raw.trim()
+    const tasks = lines.map((line) => {
       const [n, m] = line.split('|').map((s) => s.trim())
-      const name = n || 'tarea'
-      const estimated = m !== undefined ? parseInt(m) : 30
-      const minutes = isNaN(estimated) ? 30 : estimated
-      const task: any = { name, estimated_minutes: minutes, difficulty: 'normal' }
-      while (stack.length > 0 && stack[stack.length - 1].depth >= indent) stack.pop()
-      if (stack.length > 0) task.depends_on = stack[stack.length - 1].id
-      stack.push({ id: `_temp_${tasks.length}`, depth: indent })
-      tasks.push(task)
-    }
+      return {
+        name: n || 'tarea',
+        estimated_minutes: m !== undefined ? (isNaN(parseInt(m)) ? 30 : parseInt(m)) : 30,
+        difficulty: 'normal',
+        depends_on: importParentId || null,
+      }
+    })
     if (tasks.length > 0 && onImport) onImport(tasks)
     setImportText('')
+    setImportParentId('')
     setOpen(null)
   }
 
@@ -144,9 +140,21 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtas
               </form>
             ) : (
               <div className="space-y-3">
-                <div className="text-[11px] text-text-secondary leading-relaxed">Cada línea: <code className="text-accent">Nombre|Minutos</code><br />0 min = checklist · 2 espacios = indentar (hijo)</div>
+                <div className="text-[11px] text-text-secondary leading-relaxed">Cada línea: <code className="text-accent">Nombre|Minutos</code><br />0 min = checklist</div>
+                {subtaskList && subtaskList.length > 0 && (
+                  <div>
+                    <label className="text-[10px] text-text-secondary uppercase tracking-wider mb-1 block">Hacer todas hijas de</label>
+                    <select value={importParentId} onChange={(e) => setImportParentId(e.target.value)}
+                      className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent text-text-secondary">
+                      <option value="">— Ninguno (todas raíz) —</option>
+                      {subtaskList.map((s) => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <textarea value={importText} onChange={(e) => setImportText(e.target.value)}
-                  placeholder="Verbos TO BE|20&#10;  Verbos regulares|0&#10;  Verbos irregulares|15&#10;Vocabulario|30"
+                  placeholder="Verbos TO BE|20&#10;Vocabulario básico|30&#10;Listening A1|0"
                   className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent resize-none" rows={5} autoFocus />
                 <div className="flex gap-2">
                   <button onClick={handleImport}
