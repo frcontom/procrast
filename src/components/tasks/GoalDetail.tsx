@@ -20,12 +20,13 @@ interface Props {
   onSetDependency?: (id: string, dependsOn: string | null) => void
   onStartPomodoro?: (st: TaskSubtask) => void
   onCleanAll?: () => void
+  onLoadMoreSubtasks?: () => void
   onImportSubtasks?: (tasks: any[]) => void
 }
 
 const PRIORITY_COLORS: Record<string, string> = { critical: '#FF6B6B', high: '#FF9800', normal: '#60A5FA', low: '#4CAF50' }
 
-export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onEditSubtask, onReorderSubtasks, onSetDependency, onStartPomodoro, onCleanAll, onImportSubtasks }: Props) {
+export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onEditSubtask, onReorderSubtasks, onSetDependency, onStartPomodoro, onCleanAll, onLoadMoreSubtasks, onImportSubtasks }: Props) {
   const user = useUser()
   const [links, setLinks] = useState<any[]>([])
   const [todayMin, setTodayMin] = useState(0)
@@ -157,6 +158,11 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
         </div>
 
         <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} onReorder={onReorderSubtasks} onSetDependency={onSetDependency} onStartPomodoro={onStartPomodoro} onShowHistory={setHistorySubtask} onBulkImport={(st) => setImportParentId(st.id)} />
+        {onLoadMoreSubtasks && (
+          <button onClick={onLoadMoreSubtasks} className="w-full mt-2 py-2 rounded-lg text-[10px] font-medium bg-secondary/50 hover:bg-secondary text-text-secondary hover:text-white transition-all">
+            Cargar más tareas
+          </button>
+        )}
       </div>
 
       {goal.notes && (

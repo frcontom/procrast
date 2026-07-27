@@ -88,7 +88,6 @@ export function Sidebar() {
   // Cargar subtareas de hoy
   useEffect(() => {
     if (!user) return
-    const today = new Date().toLocaleDateString('en-CA')
     supabase.from('task_subtasks').select('id, name, goal_id, status, estimated_minutes, completed_minutes').eq('user_id', user.id).eq('status', 'pending').limit(10).then(({ data: subs }: any) => {
       if (subs) setTodaySubtasks(subs)
     })
