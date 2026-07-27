@@ -24,7 +24,7 @@ export function HabitsPage() {
 
   const monthKey = `${year}-${String(month).padStart(2, '0')}`
   const daysInMonth = new Date(year, month, 0).getDate()
-  const today = new Date().toISOString().slice(0, 10)
+  const today = new Date().toLocaleDateString('en-CA')
 
   const loadData = useCallback(() => {
     if (!user) return

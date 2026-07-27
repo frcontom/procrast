@@ -26,7 +26,7 @@ export function FocusPage() {
   useEffect(() => {
     if (!user) return
     sessionManager.setUser(user.id)
-    const today = new Date().toISOString().slice(0, 10)
+    const today = new Date().toLocaleDateString('en-CA')
     supabase.from('sessions').select('*').eq('user_id', user.id).order('started_at', { ascending: false }).limit(500).then(({ data }: any) => {
       if (data) setSessions(data)
     })
