@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../../supabase/client'
 import { useUser } from '../../supabase/auth'
 import type { TaskGoal, TaskSubtask } from '../../supabase/types'
@@ -33,6 +33,16 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   const [editingSubtask, setEditingSubtask] = useState<TaskSubtask | null>(null)
   const [historySubtask, setHistorySubtask] = useState<TaskSubtask | null>(null)
   const [importParentId, setImportParentId] = useState<string>('')
+  const loaderRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!onLoadMoreSubtasks || !loaderRef.current) return
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) onLoadMoreSubtasks()
+    }, { rootMargin: '200px' })
+    obs.observe(loaderRef.current)
+    return () => obs.disconnect()
+  }, [onLoadMoreSubtasks])
 
   const goalIcon = goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'
 
@@ -158,11 +168,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
         </div>
 
         <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} onReorder={onReorderSubtasks} onSetDependency={onSetDependency} onStartPomodoro={onStartPomodoro} onShowHistory={setHistorySubtask} onBulkImport={(st) => setImportParentId(st.id)} />
-        {onLoadMoreSubtasks && (
-          <button onClick={onLoadMoreSubtasks} className="w-full mt-2 py-2 rounded-lg text-[10px] font-medium bg-secondary/50 hover:bg-secondary text-text-secondary hover:text-white transition-all">
-            Cargar más tareas
-          </button>
-        )}
+        {onLoadMoreSubtasks && <div ref={loaderRef} className="h-4" />}
       </div>
 
       {goal.notes && (
