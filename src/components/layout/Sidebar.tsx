@@ -25,6 +25,7 @@ export function Sidebar() {
   const [streak, setStreak] = useState(0)
   const [gamification, setGamification] = useState<any>(null)
   const [activeGoals, setActiveGoals] = useState<any[]>([])
+  const [todaySubtasks, setTodaySubtasks] = useState<any[]>([])
 
   const goalSessions = 4
   const goalMinutes = 120
@@ -83,6 +84,21 @@ export function Sidebar() {
       }
     })
   }, [user])
+
+  // Cargar subtareas de hoy
+  useEffect(() => {
+    if (!user) return
+    const today = new Date().toLocaleDateString('en-CA')
+    supabase.from('task_subtasks').select('id, name, goal_id, status, estimated_minutes, completed_minutes').eq('user_id', user.id).eq('status', 'pending').limit(10).then(({ data: subs }: any) => {
+      if (subs) setTodaySubtasks(subs)
+    })
+  }, [user])
+
+  const toggleSubtask = async (id: string) => {
+    if (!user) return
+    await supabase.from('task_subtasks').update({ status: 'completed' }).eq('id', id)
+    setTodaySubtasks((prev) => prev.filter((s) => s.id !== id))
+  }
 
   const thresholds = [0, 100, 300, 600, 1000, 1500, 2100, 2800, 3600, 4500, 5500, 6600, 7800, 9100, 10500, 12000, 13600, 15300, 17100, 19000]
   const level = gamification?.level || 1
@@ -197,6 +213,26 @@ export function Sidebar() {
                 </div>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Tareas de hoy */}
+      {todaySubtasks.length > 0 && (
+        <div className="px-3 py-3 border-t border-white/10">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.5px] text-text-secondary mb-2.5">
+            <span className="text-accent">📋</span> Tareas de hoy
+          </div>
+          <div className="space-y-1 max-h-[160px] overflow-y-auto">
+            {todaySubtasks.map((st) => (
+              <div key={st.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group">
+                <button onClick={() => toggleSubtask(st.id)}
+                  className="w-4 h-4 rounded border border-white/20 hover:border-accent flex items-center justify-center text-[8px] shrink-0 transition-all">
+                </button>
+                <span className="text-[11px] text-text-secondary truncate flex-1">{st.name}</span>
+                {st.estimated_minutes > 0 && <span className="text-[8px] text-text-secondary/40">{st.estimated_minutes}min</span>}
+              </div>
+            ))}
           </div>
         </div>
       )}
