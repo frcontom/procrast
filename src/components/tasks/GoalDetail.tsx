@@ -33,6 +33,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   const [editingSubtask, setEditingSubtask] = useState<TaskSubtask | null>(null)
   const [historySubtask, setHistorySubtask] = useState<TaskSubtask | null>(null)
   const [importParentId, setImportParentId] = useState<string>('')
+  const [showCelebration, setShowCelebration] = useState(false)
   const loaderRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -50,6 +51,13 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   const totalCompleted = subtasks.reduce((a, s) => a + Math.min(s.completed_minutes, s.estimated_minutes), 0)
   const pct = Math.min(100, Math.round((totalCompleted / Math.max(1, totalEstimated)) * 100))
   const doneCount = subtasks.filter((s) => s.status === 'completed').length
+
+  useEffect(() => {
+    if (pct === 100 && !showCelebration && subtasks.length > 0 && doneCount === subtasks.length) {
+      setShowCelebration(true)
+      setTimeout(() => setShowCelebration(false), 5000)
+    }
+  }, [pct, doneCount, subtasks.length])
 
   const rhythm = calculateRhythm({
     startDate: new Date(goal.start_date || goal.created_at),
@@ -181,6 +189,17 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
 
     {historySubtask && (
       <SubtaskHistory subtask={historySubtask} onClose={() => setHistorySubtask(null)} />
+    )}
+
+    {showCelebration && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70" onClick={() => setShowCelebration(false)}>
+        <div className="bg-card rounded-2xl border border-white/10 p-8 w-full max-w-sm mx-4 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+          <div className="text-5xl mb-4 animate-bounce">🎉</div>
+          <h3 className="text-lg font-bold text-white mb-1">¡Meta completada!</h3>
+          <p className="text-sm text-text-secondary mb-3">{goal.name}</p>
+          <p className="text-xs text-[#28C76F]">Todas las subtareas están hechas ✅</p>
+        </div>
+      </div>
     )}
     </>
   )
