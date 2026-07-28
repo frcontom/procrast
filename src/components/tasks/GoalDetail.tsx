@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase/client'
 import { useUser } from '../../supabase/auth'
 import type { TaskGoal, TaskSubtask } from '../../supabase/types'
@@ -20,13 +20,12 @@ interface Props {
   onSetDependency?: (id: string, dependsOn: string | null) => void
   onStartPomodoro?: (st: TaskSubtask) => void
   onCleanAll?: () => void
-  onLoadMoreSubtasks?: () => void
   onImportSubtasks?: (tasks: any[]) => void
 }
 
 const PRIORITY_COLORS: Record<string, string> = { critical: '#FF6B6B', high: '#FF9800', normal: '#60A5FA', low: '#4CAF50' }
 
-export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onEditSubtask, onReorderSubtasks, onSetDependency, onStartPomodoro, onCleanAll, onLoadMoreSubtasks, onImportSubtasks }: Props) {
+export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onEditSubtask, onReorderSubtasks, onSetDependency, onStartPomodoro, onCleanAll, onImportSubtasks }: Props) {
   const user = useUser()
   const [links, setLinks] = useState<any[]>([])
   const [todayMin, setTodayMin] = useState(0)
@@ -34,16 +33,6 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   const [historySubtask, setHistorySubtask] = useState<TaskSubtask | null>(null)
   const [importParentId, setImportParentId] = useState<string>('')
   const [showCelebration, setShowCelebration] = useState(false)
-  const loaderRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!onLoadMoreSubtasks || !loaderRef.current) return
-    const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) onLoadMoreSubtasks()
-    }, { rootMargin: '200px' })
-    obs.observe(loaderRef.current)
-    return () => obs.disconnect()
-  }, [onLoadMoreSubtasks])
 
   const goalIcon = goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'
 
@@ -176,7 +165,6 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
         </div>
 
         <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} onReorder={onReorderSubtasks} onSetDependency={onSetDependency} onStartPomodoro={onStartPomodoro} onShowHistory={setHistorySubtask} onBulkImport={(st) => setImportParentId(st.id)} />
-        {onLoadMoreSubtasks && <div ref={loaderRef} className="h-4" />}
       </div>
 
       {goal.notes && (

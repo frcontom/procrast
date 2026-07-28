@@ -25,9 +25,6 @@ export function TasksPage() {
   const [editingGoal, setEditingGoal] = useState<TaskGoal | null>(null)
   const [tab, setTab] = useState<TabView>('metas')
   const [subtasks, setSubtasks] = useState<TaskSubtask[]>([])
-  const [subtaskPage, setSubtaskPage] = useState(0)
-  const [hasMoreSubtasks, setHasMoreSubtasks] = useState(true)
-  const PAGE_SIZE = 20
 
   const selectedGoal = goals.find((g) => g.id === selectedId) || null
 
@@ -38,14 +35,9 @@ export function TasksPage() {
     })
   }, [user])
 
-  const loadSubtasks = useCallback((goalId: string, page = 0) => {
-    const from = page * PAGE_SIZE
-    const to = from + PAGE_SIZE - 1
-    supabase.from('task_subtasks').select('*').eq('goal_id', goalId).order('sort_order').range(from, to).then(({ data }: any) => {
-      if (data) {
-        setSubtasks((prev) => page === 0 ? data : [...prev, ...data])
-        setHasMoreSubtasks(data.length >= PAGE_SIZE)
-      }
+  const loadSubtasks = useCallback((goalId: string) => {
+    supabase.from('task_subtasks').select('*').eq('goal_id', goalId).order('sort_order').then(({ data }: any) => {
+      if (data) setSubtasks(data)
     })
   }, [])
 
@@ -57,22 +49,14 @@ export function TasksPage() {
       if (found) {
         setSelectedId(goalParam)
         setTab('metas')
-        loadSubtasks(goalParam, 0)
+        loadSubtasks(goalParam)
       }
     }
   }, [searchParams, goals, loadSubtasks])
 
-  const loadMoreSubtasks = () => {
-    if (!selectedId || !hasMoreSubtasks) return
-    const nextPage = subtaskPage + 1
-    setSubtaskPage(nextPage)
-    loadSubtasks(selectedId, nextPage)
-  }
-
-  // Reset pagination when goal changes
+  // Reset when goal changes
   useEffect(() => {
-    setSubtaskPage(0)
-    setHasMoreSubtasks(true)
+    setSubtasks([])
   }, [selectedId])
 
   useEffect(() => { loadGoals() }, [loadGoals])
@@ -87,11 +71,10 @@ export function TasksPage() {
     if (needsRefresh === '1') {
       sessionStorage.removeItem('_refreshSubtasks')
       loadGoals()
-      if (selectedId) loadSubtasks(selectedId, 0)
+      if (selectedId) loadSubtasks(selectedId)
       else {
-        // Si selectedId no esta listo, esperar a goals y auto-select lo hara
         const gs = searchParams.get('goal')
-        if (gs) loadSubtasks(gs, 0)
+        if (gs) loadSubtasks(gs)
       }
     }
     // Clear return goal and subtask from session manager
@@ -236,8 +219,7 @@ export function TasksPage() {
                     const map = new Map(prev.map((s) => [s.id, s]))
                     return ids.map((id, i) => ({ ...map.get(id)!, sort_order: i }))
                   })
-                }}
-                onLoadMoreSubtasks={hasMoreSubtasks ? loadMoreSubtasks : undefined}
+                  }}
                 onStartPomodoro={startPomodoroFromSubtask}
               />
             ) : (
