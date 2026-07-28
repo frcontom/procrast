@@ -9,10 +9,11 @@ import { GoalDetail } from '../components/tasks/GoalDetail'
 import { GoalForm } from '../components/tasks/GoalForm'
 import { GoalHistory } from '../components/tasks/GoalHistory'
 import { TodayView } from '../components/tasks/TodayView'
+import { WeekView } from '../components/tasks/WeekView'
 import { sessionManager } from '../lib/sessionManager'
 import { useTimerStore } from '../store/useTimerStore'
 
-type TabView = 'metas' | 'hoy' | 'history'
+type TabView = 'metas' | 'hoy' | 'semana' | 'history'
 
 export function TasksPage() {
   const user = useUser()
@@ -170,12 +171,18 @@ export function TasksPage() {
           className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${tab === 'hoy' ? 'bg-[var(--accent)] text-white' : 'bg-secondary text-text-secondary hover:text-white'}`}>
           📅 Hoy
         </button>
+        <button onClick={() => setTab('semana')}
+          className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${tab === 'semana' ? 'bg-[var(--accent)] text-white' : 'bg-secondary text-text-secondary hover:text-white'}`}>
+          📋 Semana
+        </button>
       </div>
 
       {tab === 'history' ? (
         <GoalHistory />
       ) : tab === 'hoy' ? (
         <TodayView goals={activeGoals} onSelectGoal={selectGoal} />
+      ) : tab === 'semana' ? (
+        <WeekView />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="md:col-span-1">
