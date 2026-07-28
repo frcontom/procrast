@@ -31,18 +31,6 @@ export function TasksPage() {
 
   const selectedGoal = goals.find((g) => g.id === selectedId) || null
 
-  // Auto-select goal from ?goal= param on mount
-  useEffect(() => {
-    const goalParam = searchParams.get('goal')
-    if (goalParam && goals.length > 0) {
-      const found = goals.find((g) => g.id === goalParam)
-      if (found) {
-        setSelectedId(goalParam)
-        setTab('metas')
-      }
-    }
-  }, [searchParams, goals])
-
   const loadGoals = useCallback(() => {
     if (!user) return
     supabase.from('task_goals').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).then(({ data }: any) => {
@@ -60,6 +48,19 @@ export function TasksPage() {
       }
     })
   }, [])
+
+  // Auto-select goal from ?goal= param on mount
+  useEffect(() => {
+    const goalParam = searchParams.get('goal')
+    if (goalParam && goals.length > 0) {
+      const found = goals.find((g) => g.id === goalParam)
+      if (found) {
+        setSelectedId(goalParam)
+        setTab('metas')
+        loadSubtasks(goalParam, 0)
+      }
+    }
+  }, [searchParams, goals, loadSubtasks])
 
   const loadMoreSubtasks = () => {
     if (!selectedId || !hasMoreSubtasks) return
@@ -86,7 +87,12 @@ export function TasksPage() {
     if (needsRefresh === '1') {
       sessionStorage.removeItem('_refreshSubtasks')
       loadGoals()
-      if (selectedId) loadSubtasks(selectedId)
+      if (selectedId) loadSubtasks(selectedId, 0)
+      else {
+        // Si selectedId no esta listo, esperar a goals y auto-select lo hara
+        const gs = searchParams.get('goal')
+        if (gs) loadSubtasks(gs, 0)
+      }
     }
     // Clear return goal and subtask from session manager
     const store = useTimerStore.getState()
