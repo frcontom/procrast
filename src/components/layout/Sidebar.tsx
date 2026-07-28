@@ -26,6 +26,7 @@ export function Sidebar() {
   const [gamification, setGamification] = useState<any>(null)
   const [activeGoals, setActiveGoals] = useState<any[]>([])
   const [todaySubtasks, setTodaySubtasks] = useState<any[]>([])
+  const [suggestedTasks, setSuggestedTasks] = useState<any[]>([])
 
   const goalSessions = 4
   const goalMinutes = 120
@@ -97,7 +98,24 @@ export function Sidebar() {
     if (!user) return
     await supabase.from('task_subtasks').update({ status: 'completed' }).eq('id', id)
     setTodaySubtasks((prev) => prev.filter((s) => s.id !== id))
+    setSuggestedTasks((prev) => prev.filter((s) => s.id !== id))
   }
+
+  // Sugerir 3 subtareas
+  useEffect(() => {
+    if (!user) return
+    supabase.from('task_subtasks').select('id, name, goal_id, estimated_minutes, completed_minutes').eq('user_id', user.id).eq('status', 'pending').gt('estimated_minutes', 0).order('completed_minutes').order('created_at').limit(3).then(({ data: subs }: any) => {
+      if (subs && subs.length > 0) {
+        const goalIds = [...new Set(subs.map((s: any) => s.goal_id))]
+        supabase.from('task_goals').select('id, name').in('id', goalIds).then(({ data: goals }: any) => {
+          if (goals) {
+            const goalMap = Object.fromEntries(goals.map((g: any) => [g.id, g.name]))
+            setSuggestedTasks(subs.map((s: any) => ({ ...s, goal_name: goalMap[s.goal_id] || 'Meta' })))
+          }
+        })
+      }
+    })
+  }, [user])
 
   const thresholds = [0, 100, 300, 600, 1000, 1500, 2100, 2800, 3600, 4500, 5500, 6600, 7800, 9100, 10500, 12000, 13600, 15300, 17100, 19000]
   const level = gamification?.level || 1
@@ -230,6 +248,28 @@ export function Sidebar() {
                 </button>
                 <span className="text-[11px] text-text-secondary truncate flex-1">{st.name}</span>
                 {st.estimated_minutes > 0 && <span className="text-[8px] text-text-secondary/40">{st.estimated_minutes}min</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Sugeridas para hoy */}
+      {suggestedTasks.length > 0 && (
+        <div className="px-3 py-3 border-t border-white/10">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.5px] text-text-secondary mb-2.5">
+            <span className="text-accent">🎯</span> Sugeridas para hoy
+          </div>
+          <div className="space-y-1 max-h-[160px] overflow-y-auto">
+            {suggestedTasks.map((st) => (
+              <div key={st.id} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-colors group">
+                <button onClick={() => toggleSubtask(st.id)}
+                  className="w-4 h-4 rounded border border-white/20 hover:border-accent flex items-center justify-center text-[8px] shrink-0 transition-all">
+                </button>
+                <div className="flex-1 min-w-0">
+                  <span className="text-[11px] text-text-secondary truncate block">{st.name}</span>
+                  <span className="text-[8px] text-text-secondary/40">{st.goal_name} · {st.estimated_minutes}min</span>
+                </div>
               </div>
             ))}
           </div>
