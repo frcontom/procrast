@@ -174,7 +174,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                    onDragOver={(e) => handleDragOver(e, idx)}
                    onDrop={(e) => handleDrop(e, idx)}
                   onDragEnd={handleDragEnd}
-                  style={{ marginLeft: depth * 28 }}
+                  style={{ marginLeft: depth * 28, borderLeft: isDone ? '3px solid transparent' : `3px solid ${diff.color}40` }}
                   className={`group rounded-lg border transition-all cursor-grab active:cursor-grabbing ${
                     isDragging ? 'opacity-40 border-accent/50' : ''
                   } ${isOver ? 'border-accent/50 ring-1 ring-accent/30' : ''} ${
