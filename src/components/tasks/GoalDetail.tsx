@@ -20,12 +20,14 @@ interface Props {
   onSetDependency?: (id: string, dependsOn: string | null) => void
   onStartPomodoro?: (st: TaskSubtask) => void
   onCleanAll?: () => void
+  onExtendGoal?: (days: number) => void
+  onArchiveGoal?: () => void
   onImportSubtasks?: (tasks: any[]) => void
 }
 
 const PRIORITY_COLORS: Record<string, string> = { critical: '#FF6B6B', high: '#FF9800', normal: '#60A5FA', low: '#4CAF50' }
 
-export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onEditSubtask, onReorderSubtasks, onSetDependency, onStartPomodoro, onCleanAll, onImportSubtasks }: Props) {
+export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onEditSubtask, onReorderSubtasks, onSetDependency, onStartPomodoro, onCleanAll, onExtendGoal, onArchiveGoal, onImportSubtasks }: Props) {
   const user = useUser()
   const [links, setLinks] = useState<any[]>([])
   const [todayMin, setTodayMin] = useState(0)
@@ -33,6 +35,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   const [historySubtask, setHistorySubtask] = useState<TaskSubtask | null>(null)
   const [importParentId, setImportParentId] = useState<string>('')
   const [showCelebration, setShowCelebration] = useState(false)
+  const [showExpiredModal, setShowExpiredModal] = useState(false)
 
   const goalIcon = goal.icon && !goal.icon.startsWith('bi-') ? goal.icon : '🎯'
 
@@ -48,6 +51,17 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
     }
   }, [pct, doneCount, subtasks.length])
 
+  const today = new Date().toLocaleDateString('en-CA')
+  const deadlineStr = goal.deadline
+  const isExpired = goal.status === 'active' && deadlineStr < today && pct < 100
+  const daysOverdue = isExpired ? Math.round((Date.now() - new Date(deadlineStr).getTime()) / 86400000) : 0
+
+  useEffect(() => {
+    if (isExpired && !showExpiredModal && !showCelebration) {
+      setShowExpiredModal(true)
+    }
+  }, [isExpired])
+
   const rhythm = calculateRhythm({
     startDate: new Date(goal.start_date || goal.created_at),
     deadline: new Date(goal.deadline),
@@ -57,7 +71,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
 
   useEffect(() => {
     if (!user) return
-    const today = new Date().toISOString().slice(0, 10)
+    const today = new Date().toLocaleDateString('en-CA')
     supabase.from('task_pomodoro_links').select('*').eq('user_id', user.id).in('subtask_id', subtasks.map((s) => s.id)).gte('date', today).then(({ data }: any) => {
       if (data) setLinks(data)
     })
@@ -132,6 +146,19 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           ))}
         </div>
 
+        {isExpired && (
+          <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs text-[#EA5455] mb-3"
+            style={{ backgroundColor: 'rgba(234,84,85,0.15)', border: '1px solid rgba(234,84,85,0.4)' }}>
+            <span className="text-base shrink-0">🕐</span>
+            <span className="flex-1">
+              <strong>VENCIDA</strong> — Esta meta venció hace <strong>{daysOverdue} día(s)</strong>. {pct}% completado.
+            </span>
+            <button onClick={() => setShowExpiredModal(true)} className="shrink-0 px-2.5 py-1 rounded-md text-[10px] font-medium border border-[#EA5455]/40 text-[#EA5455] hover:bg-[#EA5455]/10 transition-all">
+              Opciones
+            </button>
+          </div>
+        )}
+
         <div id="tk-warning-banner">
         {rhythm.behind && (
           <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs text-[#EA5455] mb-3"
@@ -186,6 +213,34 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           <h3 className="text-lg font-bold text-white mb-1">¡Meta completada!</h3>
           <p className="text-sm text-text-secondary mb-3">{goal.name}</p>
           <p className="text-xs text-[#28C76F]">Todas las subtareas están hechas ✅</p>
+        </div>
+      </div>
+    )}
+
+    {showExpiredModal && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70" onClick={() => setShowExpiredModal(false)}>
+        <div className="bg-card rounded-2xl border border-white/10 p-6 w-full max-w-sm mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="text-3xl mb-3 text-center">🕐</div>
+          <h3 className="text-base font-bold text-white mb-1 text-center">Meta vencida</h3>
+          <p className="text-xs text-text-secondary text-center mb-5">"{goal.name}" venció hace {daysOverdue} día(s) con {pct}% completado.</p>
+          <div className="space-y-2">
+            <button onClick={() => { onExtendGoal?.(7); setShowExpiredModal(false) }}
+              className="w-full px-4 py-2.5 rounded-xl text-xs font-semibold bg-accent hover:opacity-90 text-white transition-all active:scale-[0.97]">
+              📅 Extender 7 días
+            </button>
+            <button onClick={() => { onExtendGoal?.(14); setShowExpiredModal(false) }}
+              className="w-full px-4 py-2.5 rounded-xl text-xs font-medium bg-secondary hover:bg-white/10 text-text-secondary hover:text-white transition-all active:scale-[0.97]">
+              📅 Extender 14 días
+            </button>
+            <button onClick={() => { onArchiveGoal?.(); setShowExpiredModal(false) }}
+              className="w-full px-4 py-2.5 rounded-xl text-xs font-medium border border-danger/20 text-danger/70 hover:bg-danger/10 transition-all active:scale-[0.97]">
+              🗂️ Archivar sin completar
+            </button>
+            <button onClick={() => setShowExpiredModal(false)}
+              className="w-full px-4 py-2 rounded-lg text-xs text-text-secondary/50 hover:text-white transition-all">
+              Seguir trabajando
+            </button>
+          </div>
         </div>
       </div>
     )}

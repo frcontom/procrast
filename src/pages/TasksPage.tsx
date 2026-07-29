@@ -220,6 +220,28 @@ export function TasksPage() {
                     return ids.map((id, i) => ({ ...map.get(id)!, sort_order: i }))
                   })
                   }}
+                onExtendGoal={async (days) => {
+                  if (!user || !selectedId) return
+                  const newDeadline = new Date()
+                  newDeadline.setDate(newDeadline.getDate() + days)
+                  await supabase.from('task_goals').update({ deadline: newDeadline.toLocaleDateString('en-CA') }).eq('id', selectedId)
+                  loadGoals()
+                }}
+                onArchiveGoal={async () => {
+                  if (!user || !selectedId) return
+                  await supabase.from('task_goals').update({ status: 'archived' }).eq('id', selectedId)
+                  // XP penalty if expired > 7 days
+                  const goal = goals.find((g) => g.id === selectedId)
+                  if (goal) {
+                    const daysOverdue = Math.round((Date.now() - new Date(goal.deadline).getTime()) / 86400000)
+                    if (daysOverdue >= 7) {
+                      const lostXp = Math.round((100 - (subtasks.reduce((a, s) => a + Math.min(s.completed_minutes, s.estimated_minutes), 0) / Math.max(1, subtasks.reduce((a, s) => a + s.estimated_minutes, 0))) * 100) * 0.5)
+                      if (lostXp > 0) { try { await supabase.rpc('add_xp', { p_xp: -lostXp }) } catch {} }
+                    }
+                  }
+                  setSelectedId(null)
+                  loadGoals()
+                }}
                 onStartPomodoro={startPomodoroFromSubtask}
               />
             ) : (
