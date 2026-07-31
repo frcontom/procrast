@@ -26,6 +26,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2}'],
+        globIgnores: ['**/goku/**'],
         navigateFallbackDenylist: [/^\/api\//],
       },
     }),
