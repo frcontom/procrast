@@ -31,7 +31,7 @@ export function GokuProgress({ pct }: Props) {
               <div className={`relative w-[72px] h-[72px] rounded-xl overflow-hidden border transition-all duration-500 ${isCurrent ? 'border-accent/40 ring-1 ring-accent/30 shadow-lg shadow-accent/20' : unlocked ? 'border-white/10' : 'border-white/[0.04]'}`}
                 title={`${stage.label} — ${stage.threshold}%`}>
                 <img src={stage.img} alt={stage.label}
-                  className="w-full h-full object-cover transition-all duration-500"
+                  className="w-full h-full object-contain transition-all duration-500"
                   style={{ filter: unlocked ? 'none' : 'grayscale(1) brightness(0.45)', opacity: unlocked ? 1 : 0.4 }} />
                 {unlocked && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-accent to-[#b388ff]" />}
                 {isCurrent && <div className="absolute inset-0 bg-accent/10 animate-pulse" />}
