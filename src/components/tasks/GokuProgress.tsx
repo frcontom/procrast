@@ -11,8 +11,8 @@ const STAGES = [
   { img: '/goku/goku_6.png', label: 'Voluntad', threshold: 50 },
   { img: '/goku/goku_7.png', label: 'Furia controlada', threshold: 60 },
   { img: '/goku/goku_8.png', label: 'Dominio', threshold: 70 },
-  { img: '/goku/goku_9.png', label: 'Maestría', threshold: 85 },
-  { img: '/goku/goku_10.png', label: 'Perfecto', threshold: 100 },
+  { img: '/goku/goku_9.png', label: 'Maestría', threshold: 80 },
+  { img: '/goku/goku_10.png', label: 'Perfecto', threshold: 90 },
 ]
 
 export function GokuProgress({ pct }: Props) {
@@ -25,7 +25,7 @@ export function GokuProgress({ pct }: Props) {
       <div className="flex items-start justify-between gap-0.5">
         {STAGES.map((stage, i) => {
           const unlocked = pct >= stage.threshold
-          const isCurrent = i > 0 && pct >= STAGES[i - 1].threshold && pct < stage.threshold
+          const isCurrent = unlocked && (i === STAGES.length - 1 || pct < STAGES[i + 1].threshold)
           return (
             <div key={stage.img} className="flex flex-col items-center gap-1 flex-1">
               <div className={`relative w-[110px] h-[110px] rounded-xl overflow-hidden border transition-all duration-500 ${isCurrent ? 'border-accent/40 ring-1 ring-accent/30 shadow-lg shadow-accent/20' : unlocked ? 'border-white/10' : 'border-white/[0.04]'}`}
