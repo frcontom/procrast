@@ -28,7 +28,7 @@ export function GokuProgress({ pct }: Props) {
           const isCurrent = i > 0 && pct >= STAGES[i - 1].threshold && pct < stage.threshold
           return (
             <div key={stage.img} className="flex flex-col items-center gap-1 flex-1">
-              <div className={`relative w-14 h-14 rounded-xl overflow-hidden border-2 transition-all duration-500 ${isCurrent ? 'border-accent/70 ring-2 ring-accent/40 shadow-lg shadow-accent/20' : unlocked ? 'border-white/20' : 'border-white/[0.06]'}`}
+              <div className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-500 ${isCurrent ? 'border-accent/70 ring-2 ring-accent/40 shadow-lg shadow-accent/20' : unlocked ? 'border-white/20' : 'border-white/[0.06]'}`}
                 title={`${stage.label} — ${stage.threshold}%`}>
                 <img src={stage.img} alt={stage.label}
                   className="w-full h-full object-cover transition-all duration-500"
@@ -36,7 +36,7 @@ export function GokuProgress({ pct }: Props) {
                 {unlocked && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-accent to-[#b388ff]" />}
                 {isCurrent && <div className="absolute inset-0 bg-accent/10 animate-pulse" />}
               </div>
-              <span className={`text-[8px] text-center leading-tight ${isCurrent ? 'text-accent font-semibold' : unlocked ? 'text-text-secondary/70' : 'text-text-secondary/30'}`}>
+              <span className={`text-[9px] text-center leading-tight ${isCurrent ? 'text-accent font-semibold' : unlocked ? 'text-text-secondary/70' : 'text-text-secondary/30'}`}>
                 {stage.label}
               </span>
             </div>
