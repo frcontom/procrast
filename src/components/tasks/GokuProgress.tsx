@@ -22,13 +22,13 @@ export function GokuProgress({ pct }: Props) {
         <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">🐉 Camino de Goku</span>
         <span className="text-[10px] text-accent font-bold tabular-nums">{pct}%</span>
       </div>
-      <div className="flex items-start justify-between gap-1.5 px-1">
+      <div className="flex items-start justify-between gap-0.5">
         {STAGES.map((stage, i) => {
           const unlocked = pct >= stage.threshold
           const isCurrent = i > 0 && pct >= STAGES[i - 1].threshold && pct < stage.threshold
           return (
             <div key={stage.img} className="flex flex-col items-center gap-1 flex-1">
-              <div className={`relative w-[72px] h-[72px] rounded-xl overflow-hidden border transition-all duration-500 ${isCurrent ? 'border-accent/40 ring-1 ring-accent/30 shadow-lg shadow-accent/20' : unlocked ? 'border-white/10' : 'border-white/[0.04]'}`}
+              <div className={`relative w-[84px] h-[84px] rounded-xl overflow-hidden border transition-all duration-500 ${isCurrent ? 'border-accent/40 ring-1 ring-accent/30 shadow-lg shadow-accent/20' : unlocked ? 'border-white/10' : 'border-white/[0.04]'}`}
                 title={`${stage.label} — ${stage.threshold}%`}>
                 <img src={stage.img} alt={stage.label}
                   className="w-full h-full object-contain transition-all duration-500"
