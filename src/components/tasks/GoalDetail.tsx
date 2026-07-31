@@ -7,6 +7,7 @@ import { formatMinutes } from '../../lib/formatters'
 import { SubtaskList } from './SubtaskList'
 import { SubtaskForm } from './SubtaskForm'
 import { SubtaskHistory } from './SubtaskHistory'
+import { GokuProgress } from './GokuProgress'
 import { HexCalendar } from './HexCalendar'
 
 interface Props {
@@ -173,6 +174,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
       </div>
 
       <div id="tk-calendar" className="bg-card rounded-xl border border-white/10 p-4">
+        <GokuProgress pct={pct} />
         <HexCalendar
           startDate={goal.start_date || goal.created_at.slice(0, 10)}
           deadline={goal.deadline}
