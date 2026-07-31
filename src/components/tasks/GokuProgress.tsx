@@ -28,7 +28,7 @@ export function GokuProgress({ pct }: Props) {
           const isCurrent = i > 0 && pct >= STAGES[i - 1].threshold && pct < stage.threshold
           return (
             <div key={stage.img} className="flex flex-col items-center gap-1 flex-1">
-              <div className={`relative w-[84px] h-[84px] rounded-xl overflow-hidden border transition-all duration-500 ${isCurrent ? 'border-accent/40 ring-1 ring-accent/30 shadow-lg shadow-accent/20' : unlocked ? 'border-white/10' : 'border-white/[0.04]'}`}
+              <div className={`relative w-[100px] h-[100px] rounded-xl overflow-hidden border transition-all duration-500 ${isCurrent ? 'border-accent/40 ring-1 ring-accent/30 shadow-lg shadow-accent/20' : unlocked ? 'border-white/10' : 'border-white/[0.04]'}`}
                 title={`${stage.label} — ${stage.threshold}%`}>
                 <img src={stage.img} alt={stage.label}
                   className="w-full h-full object-contain transition-all duration-500"
