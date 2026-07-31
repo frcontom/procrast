@@ -3,16 +3,16 @@ interface Props {
 }
 
 const STAGES = [
-  { img: '/goku/goku_1.png', label: 'Goku bebé', threshold: 0 },
-  { img: '/goku/goku_2.png', label: 'Goku niño', threshold: 10 },
-  { img: '/goku/goku_3.png', label: 'Goku joven', threshold: 20 },
-  { img: '/goku/goku_4.png', label: 'Goku adulto', threshold: 30 },
-  { img: '/goku/goku_5.png', label: 'Super Saiyan', threshold: 40 },
-  { img: '/goku/goku_6.png', label: 'SSJ2', threshold: 50 },
-  { img: '/goku/goku_7.png', label: 'SSJ3', threshold: 60 },
-  { img: '/goku/goku_8.png', label: 'SSJ God', threshold: 70 },
-  { img: '/goku/goku_9.png', label: 'SSJ Blue', threshold: 85 },
-  { img: '/goku/goku_10.png', label: 'Ultra Instinto', threshold: 100 },
+  { img: '/goku/goku_1.png', label: 'Despertar', threshold: 0 },
+  { img: '/goku/goku_2.png', label: 'Primer paso', threshold: 10 },
+  { img: '/goku/goku_3.png', label: 'Entrenamiento', threshold: 20 },
+  { img: '/goku/goku_4.png', label: 'Disciplina', threshold: 30 },
+  { img: '/goku/goku_5.png', label: 'Superación', threshold: 40 },
+  { img: '/goku/goku_6.png', label: 'Voluntad', threshold: 50 },
+  { img: '/goku/goku_7.png', label: 'Furia controlada', threshold: 60 },
+  { img: '/goku/goku_8.png', label: 'Dominio', threshold: 70 },
+  { img: '/goku/goku_9.png', label: 'Maestría', threshold: 85 },
+  { img: '/goku/goku_10.png', label: 'Perfecto', threshold: 100 },
 ]
 
 export function GokuProgress({ pct }: Props) {
