@@ -173,8 +173,11 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
         </div>
       </div>
 
-      <div id="tk-calendar" className="bg-card rounded-xl border border-white/10 p-4">
+      <div id="tk-goku" className="bg-card rounded-xl border border-white/10 p-4">
         <GokuProgress pct={pct} />
+      </div>
+
+      <div id="tk-calendar" className="bg-card rounded-xl border border-white/10 p-4">
         <HexCalendar
           startDate={goal.start_date || goal.created_at.slice(0, 10)}
           deadline={goal.deadline}
