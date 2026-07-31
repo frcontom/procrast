@@ -22,13 +22,13 @@ export function GokuProgress({ pct }: Props) {
         <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">🐉 Camino de Goku</span>
         <span className="text-[10px] text-accent font-bold tabular-nums">{pct}%</span>
       </div>
-      <div className="flex items-start justify-start gap-2 overflow-x-auto pb-1">
+      <div className="flex items-start justify-between gap-0.5">
         {STAGES.map((stage, i) => {
           const unlocked = pct >= stage.threshold
           const isCurrent = i > 0 && pct >= STAGES[i - 1].threshold && pct < stage.threshold
           return (
-            <div key={stage.img} className="flex flex-col items-center gap-1 shrink-0">
-              <div className={`relative w-[160px] h-[160px] rounded-xl overflow-hidden border transition-all duration-500 ${isCurrent ? 'border-accent/40 ring-1 ring-accent/30 shadow-lg shadow-accent/20' : unlocked ? 'border-white/10' : 'border-white/[0.04]'}`}
+            <div key={stage.img} className="flex flex-col items-center gap-1 flex-1">
+              <div className={`relative w-[84px] h-[84px] rounded-xl overflow-hidden border transition-all duration-500 ${isCurrent ? 'border-accent/40 ring-1 ring-accent/30 shadow-lg shadow-accent/20' : unlocked ? 'border-white/10' : 'border-white/[0.04]'}`}
                 title={`${stage.label} — ${stage.threshold}%`}>
                 <img src={stage.img} alt={stage.label}
                   className="w-full h-full object-contain transition-all duration-500"
@@ -36,7 +36,7 @@ export function GokuProgress({ pct }: Props) {
                 {unlocked && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-accent to-[#b388ff]" />}
                 {isCurrent && <div className="absolute inset-0 bg-accent/10 animate-pulse" />}
               </div>
-              <span className={`text-[11px] text-center leading-tight whitespace-nowrap ${isCurrent ? 'text-accent font-semibold' : unlocked ? 'text-text-secondary/70' : 'text-text-secondary/30'}`}>
+              <span className={`text-[9px] text-center leading-tight ${isCurrent ? 'text-accent font-semibold' : unlocked ? 'text-text-secondary/70' : 'text-text-secondary/30'}`}>
                 {stage.label}
               </span>
             </div>
