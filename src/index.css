@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+@theme {
+  --color-accent: #a66cff;
+  --color-accent-hover: #8551e0;
+  --color-secondary: #1a1a2e;
+  --color-card: #16213e;
+  --color-text-secondary: #a0a0b0;
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-danger: #f44336;
+}
+
 :root {
   --bg-primary: #0f0f1a;
   --bg-secondary: #1a1a2e;
