@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import type { TaskSubtask } from '../../supabase/types'
 import { formatMinutes } from '../../lib/formatters'
+import { findNextTask } from '../../lib/findNextTask'
 import { supabase } from '../../supabase/client'
 import { useUser } from '../../supabase/auth'
 
@@ -84,6 +85,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
   }, [user, subtasks])
 
   const tree = buildTree(subtasks)
+  const nextTask = findNextTask(subtasks)
 
   const handleDragStart = (e: React.DragEvent, idx: number) => {
     e.dataTransfer.effectAllowed = 'move'
@@ -156,6 +158,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
             const isDragging = dragIdx === idx
             const isOver = overIdx === idx
             const isDone = st.status === 'completed'
+            const isNext = nextTask?.id === st.id && !isDone
             const isChecklist = st.estimated_minutes === 0
             const diff = DIFFICULTY_BADGE[st.difficulty] || DIFFICULTY_BADGE.normal
             const depSubtask = st.depends_on ? subtasks.find((s) => s.id === st.depends_on) : null
@@ -178,7 +181,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                   className={`group rounded-lg border transition-all cursor-grab active:cursor-grabbing ${
                     isDragging ? 'opacity-40 border-accent/50' : ''
                   } ${isOver ? 'border-accent/50 ring-1 ring-accent/30' : ''} ${
-                    isDone ? 'bg-white/[0.02] border-white/5 opacity-55' : 'bg-secondary/70 border-white/[0.06] hover:bg-secondary hover:border-white/10'
+                    isNext ? 'border-accent/60 ring-2 ring-accent/30 shadow-lg shadow-accent/15 bg-accent/[0.07]' : isDone ? 'bg-white/[0.02] border-white/5 opacity-55' : 'bg-secondary/70 border-white/[0.06] hover:bg-secondary hover:border-white/10'
                   }`}
                 >
                   <div className="px-3 py-2.5">
@@ -198,6 +201,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                           <span className={`text-sm font-medium truncate ${isDone ? 'line-through text-text-secondary/60' : isLocked ? 'text-text-secondary/60' : 'text-white'}`}>
                             {st.name}
                           </span>
+                          {isNext && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-accent text-white font-bold uppercase tracking-wider shrink-0">Siguiente</span>}
                           <span className="text-xs shrink-0" title={diff.icon}>{diff.icon}</span>
                         </div>
 
@@ -229,7 +233,9 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                       <div className="flex items-center gap-0.5 shrink-0">
                         {!isChecklist && (
                           <button onClick={() => onStartPomodoro?.(st)}
-                            className="w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent transition-all">▶ {formatMinutes(st.estimated_minutes)}</button>
+                            className={`w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium transition-all ${isNext ? 'bg-accent text-white shadow-sm shadow-accent/30 hover:opacity-90' : 'bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent'}`}>
+                            {isNext ? '▶ Empezar' : `▶ ${formatMinutes(st.estimated_minutes)}`}
+                          </button>
                         )}
                         <div className={`flex items-center gap-0.5 ${isDone ? 'opacity-0 group-hover:opacity-100' : ''}`}>
                           {!isDone && (
