@@ -92,6 +92,7 @@ export function TasksPage() {
   const selectGoal = (id: string) => {
     setSelectedId(id)
     setTab('metas')
+    setSearchParams({ goal: id })
   }
 
   const saveGoal = async (data: any) => {
@@ -100,7 +101,10 @@ export function TasksPage() {
       await supabase.from('task_goals').update(data).eq('id', editingGoal.id)
     } else {
       const { data: newGoal }: any = await supabase.from('task_goals').insert({ user_id: user.id, ...data }).select().single()
-      if (newGoal) setSelectedId(newGoal.id)
+      if (newGoal) {
+        setSelectedId(newGoal.id)
+        setSearchParams({ goal: newGoal.id })
+      }
     }
     setShowForm(false)
     setEditingGoal(null)
