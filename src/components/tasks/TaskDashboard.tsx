@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../supabase/client'
 import { useUser } from '../../supabase/auth'
 import type { TaskGoal } from '../../supabase/types'
+import { formatMinutes } from '../../lib/formatters'
 
 interface Props {
   goals: TaskGoal[]
@@ -24,20 +25,24 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
   // Cargar conteo de subtareas por meta
   const [subtaskCounts, setSubtaskCounts] = useState<Record<string, number>>({})
   const [subtaskMinutes, setSubtaskMinutes] = useState<Record<string, number>>({})
+  const [subtaskCompleted, setSubtaskCompleted] = useState<Record<string, number>>({})
 
   useEffect(() => {
     if (!user || goals.length === 0) return
     const goalIds = goals.map((g) => g.id)
-    supabase.from('task_subtasks').select('goal_id, estimated_minutes').in('goal_id', goalIds).then(({ data }: any) => {
+    supabase.from('task_subtasks').select('goal_id, estimated_minutes, completed_minutes').in('goal_id', goalIds).then(({ data }: any) => {
       if (data) {
         const counts: Record<string, number> = {}
         const mins: Record<string, number> = {}
+        const done: Record<string, number> = {}
         data.forEach((st: any) => {
           counts[st.goal_id] = (counts[st.goal_id] || 0) + 1
           mins[st.goal_id] = (mins[st.goal_id] || 0) + (st.estimated_minutes || 0)
+          done[st.goal_id] = (done[st.goal_id] || 0) + Math.min(st.completed_minutes || 0, st.estimated_minutes || 0)
         })
         setSubtaskCounts(counts)
         setSubtaskMinutes(mins)
+        setSubtaskCompleted(done)
       }
     })
   }, [user, goals])
@@ -173,7 +178,9 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
               if (a.status !== b.status) return a.status === 'active' ? -1 : 1
               return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
             }).map((goal) => {
-              const goalPct = (subtaskMinutes[goal.id] || 0) > 0 ? Math.min(100, Math.round((totalFromLinks / (subtaskMinutes[goal.id] || 1)) * 100)) : 0
+              const goalEst = subtaskMinutes[goal.id] || 0
+              const goalDone = subtaskCompleted[goal.id] || 0
+              const goalPct = goalEst > 0 ? Math.min(100, Math.round((goalDone / goalEst) * 100)) : 0
               const status = goalPct >= 100 ? 'completed' : goalPct >= 40 ? 'on_track' : 'behind'
               const statusLabel = status === 'completed' ? 'Completado' : status === 'on_track' ? 'Al día' : 'Atrasado'
               const statusColor = status === 'completed' ? '#28C76F' : status === 'on_track' ? '#28C76F' : '#EA5455'
@@ -198,7 +205,7 @@ export function TaskDashboard({ goals, onSelectGoal }: Props) {
                       <div className="h-full rounded-full transition-all duration-500" style={{ width: `${goalPct}%`, backgroundColor: statusColor }} />
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-text-secondary">
-                      <span>{subtaskMinutes[goal.id] || 0}min estimados</span>
+                      <span>{formatMinutes(subtaskMinutes[goal.id] || 0)} estimados</span>
                       <span>·</span>
                       <span>{subtaskCounts[goal.id] || 0} tarea(s)</span>
                       <span>·</span>
