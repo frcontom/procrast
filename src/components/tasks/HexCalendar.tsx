@@ -4,6 +4,7 @@ interface Props {
   estimatedMinutes: number
   completedMinutes: number
   subtaskDays: string[]
+  subtaskDayMinutes?: Record<string, number>
 }
 
 function getDaysBetween(start: Date, end: Date): Date[] {
@@ -45,7 +46,7 @@ function countFailedDays(startDate: Date, endDate: Date, subtaskDays: string[], 
   return failed
 }
 
-export function HexCalendar({ startDate, deadline, estimatedMinutes, completedMinutes, subtaskDays }: Props) {
+export function HexCalendar({ startDate, deadline, estimatedMinutes, completedMinutes, subtaskDays, subtaskDayMinutes = {} }: Props) {
   const start = new Date(startDate)
   const end = new Date(deadline)
   const today = new Date()
@@ -92,6 +93,8 @@ export function HexCalendar({ startDate, deadline, estimatedMinutes, completedMi
           const isPast = date < today
           const completed = subtaskDays.filter((d) => d === dateStr).length > 0
           const failed = isPast && !completed
+          const dayMinutes = subtaskDayMinutes[dateStr] || 0
+          const dayPct = dayMinutes > 0 ? Math.min(100, Math.round((dayMinutes / dailyTarget) * 100)) : 0
 
           let bg = 'rgba(255,255,255,0.05)'
           let opacity = 0.5
@@ -112,7 +115,7 @@ export function HexCalendar({ startDate, deadline, estimatedMinutes, completedMi
           return (
             <div
               key={dateStr}
-              title={`${dateStr}${completed ? ' ✅' : failed ? ' ❌' : isToday ? ' 📍' : ''}`}
+              title={`${dateStr}${completed ? ' ✅' : failed ? ' ❌' : isToday ? ' 📍' : ''} — ${dayPct}% (${dayMinutes}min de ${dailyTarget}min)`}
               style={{
                 width: 58,
                 height: 64,
@@ -121,6 +124,7 @@ export function HexCalendar({ startDate, deadline, estimatedMinutes, completedMi
                 opacity,
                 outline,
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: 10,
@@ -130,6 +134,9 @@ export function HexCalendar({ startDate, deadline, estimatedMinutes, completedMi
               }}
             >
               {date.getDate()}
+              <span style={{ fontSize: 8, fontWeight: 700, color: dayPct >= 100 ? '#d9ffec' : completed ? '#eafff3' : dayPct > 0 ? '#FFD700' : 'rgba(255,255,255,0.25)' }}>
+                {dayPct}%
+              </span>
             </div>
           )
         })}

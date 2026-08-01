@@ -95,6 +95,11 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
   }, [user, subtasks])
 
   const subtaskDays = links.filter((l: any) => !l.subtask_name?.includes('(cancelado)')).map((l: any) => l.date)
+  const subtaskDayMinutes: Record<string, number> = {}
+  for (const l of links) {
+    if (l.subtask_name?.includes('(cancelado)')) continue
+    subtaskDayMinutes[l.date] = (subtaskDayMinutes[l.date] || 0) + (l.minutes || 0)
+  }
 
   return (
     <>
@@ -186,6 +191,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           estimatedMinutes={totalEstimated}
           completedMinutes={totalCompleted}
           subtaskDays={subtaskDays}
+          subtaskDayMinutes={subtaskDayMinutes}
         />
       </div>
 
