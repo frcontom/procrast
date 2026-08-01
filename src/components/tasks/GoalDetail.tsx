@@ -72,14 +72,16 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
 
   useEffect(() => {
     if (!user) return
-    const today = new Date().toLocaleDateString('en-CA')
-    supabase.from('task_pomodoro_links').select('*').eq('user_id', user.id).in('subtask_id', subtasks.map((s) => s.id)).gte('date', today).then(({ data }: any) => {
+    const startDate = (goal.start_date || goal.created_at).slice(0, 10)
+    supabase.from('task_pomodoro_links').select('*').eq('user_id', user.id).in('subtask_id', subtasks.map((s) => s.id)).gte('date', startDate).then(({ data }: any) => {
       if (data) setLinks(data)
     })
-    supabase.from('task_pomodoro_links').select('subtask_id, minutes, subtask_name').eq('user_id', user.id).in('subtask_id', subtasks.map((s) => s.id)).gte('date', today).then(({ data }: any) => {
+    supabase.from('task_pomodoro_links').select('subtask_id, minutes, subtask_name, date').eq('user_id', user.id).in('subtask_id', subtasks.map((s) => s.id)).gte('date', startDate).then(({ data }: any) => {
       if (data) {
+        const today = new Date().toLocaleDateString('en-CA')
         const bySubtask: Record<string, number> = {}
         for (const l of data) {
+          if (l.date !== today) continue
           bySubtask[l.subtask_id] = (bySubtask[l.subtask_id] || 0) + (l.minutes || 0)
         }
         let capped = 0
