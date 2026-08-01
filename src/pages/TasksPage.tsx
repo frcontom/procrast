@@ -57,6 +57,8 @@ export function TasksPage() {
         setTab('metas')
         loadSubtasks(goalParam)
       }
+    } else if (!goalParam) {
+      setSelectedId(null)
     }
   }, [searchParams, goals, loadSubtasks])
 
@@ -162,7 +164,7 @@ export function TasksPage() {
       </div>
 
       <div className="flex gap-2 mb-4">
-        <button onClick={() => { setTab('metas'); setSelectedId(null) }}
+        <button onClick={() => { setTab('metas'); setSelectedId(null); setSearchParams({}) }}
           className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all ${tab === 'metas' ? 'bg-[var(--accent)] text-white' : 'bg-secondary text-text-secondary hover:text-white'}`}>
           🏴 Metas
         </button>
