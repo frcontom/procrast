@@ -25,11 +25,12 @@ export function findNextTask(subtasks: TaskSubtask[]): TaskSubtask | null {
     return parent?.status === 'completed'
   })
 
-  if (available.length === 0) {
-    return [...pending].sort((a, b) => a.sort_order - b.sort_order)[0] || null
-  }
+  const pool = available.length > 0 ? available : pending
 
-  return available
+  const withPomodoro = pool.filter((s) => s.estimated_minutes > 0)
+  const chosen = withPomodoro.length > 0 ? withPomodoro : pool
+
+  return chosen
     .map((s) => ({ s, depth: getDepth(subtasks, s.id) }))
     .sort((a, b) => {
       if (a.depth !== b.depth) return a.depth - b.depth

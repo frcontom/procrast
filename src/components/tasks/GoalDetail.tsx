@@ -141,12 +141,12 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
                 <div className="text-[10px] text-text-secondary">{formatMinutes(nextTask.estimated_minutes)} · {nextTask.completed_minutes}/{nextTask.estimated_minutes}min</div>
               )}
             </div>
-            <button onClick={() => onStartPomodoro?.(nextTask)}
+            <button onClick={() => nextTask.estimated_minutes > 0 ? onStartPomodoro?.(nextTask) : onSubtaskToggle(nextTask.id, 'completed')}
               className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-medium text-white transition-all active:scale-[0.97]"
               style={{ backgroundColor: 'var(--accent)' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}>
-              ▶ Empezar ahora
+              {nextTask.estimated_minutes > 0 ? '▶ Empezar ahora' : '☑ Marcar hecho'}
             </button>
           </div>
         )}
