@@ -146,7 +146,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
               style={{ backgroundColor: 'var(--accent)' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}>
-              ▶ Empezar
+              ▶ Empezar ahora
             </button>
           </div>
         )}
