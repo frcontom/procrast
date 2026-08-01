@@ -18,7 +18,7 @@ type TabView = 'metas' | 'hoy' | 'semana' | 'history'
 export function TasksPage() {
   const user = useUser()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [goals, setGoals] = useState<TaskGoal[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
