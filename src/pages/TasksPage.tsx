@@ -41,6 +41,12 @@ export function TasksPage() {
     })
   }, [])
 
+  const syncGoalEstimate = async (goalId: string, subs: TaskSubtask[]) => {
+    const total = subs.reduce((a, s) => a + (s.estimated_minutes || 0), 0)
+    await supabase.from('task_goals').update({ estimated_minutes: total }).eq('id', goalId)
+    loadGoals()
+  }
+
   // Auto-select goal from ?goal= param on mount
   useEffect(() => {
     const goalParam = searchParams.get('goal')
@@ -183,22 +189,24 @@ export function TasksPage() {
                 goal={selectedGoal}
                 subtasks={subtasks}
                 onSubtaskToggle={(id, status) => updateSubtaskStatus(id, status)}
-                onSubtaskDelete={async (id) => { await supabase.from('task_subtasks').delete().eq('id', id); setSubtasks((p) => p.filter((s) => s.id !== id)) }}
+                onSubtaskDelete={async (id) => { await supabase.from('task_subtasks').delete().eq('id', id); const next = subtasks.filter((s) => s.id !== id); setSubtasks(next); if (selectedId) syncGoalEstimate(selectedId, next) }}
                 onAddSubtask={async (data) => {
                   if (!user) return
                   const { data: ns }: any = await supabase.from('task_subtasks').insert({ user_id: user.id, goal_id: selectedId!, sort_order: subtasks.length, ...data }).select().single()
-                  if (ns) setSubtasks((p) => [...p, ns])
+                  if (ns) { const next = [...subtasks, ns]; setSubtasks(next); if (selectedId) syncGoalEstimate(selectedId, next) }
                 }}
                 onEditSubtask={async (id, data) => {
                   if (!user) return
                   await supabase.from('task_subtasks').update(data).eq('id', id)
-                  setSubtasks((p) => p.map((s) => s.id === id ? { ...s, ...data } : s))
+                  const next = subtasks.map((s) => s.id === id ? { ...s, ...data } : s)
+                  setSubtasks(next)
+                  if (selectedId) syncGoalEstimate(selectedId, next)
                 }}
                 onImportSubtasks={async (tasks) => {
                   if (!user || !selectedId) return
                   const toInsert = tasks.map((t: any, i: number) => ({ user_id: user.id, goal_id: selectedId, sort_order: subtasks.length + i, ...t }))
                   const { data }: any = await supabase.from('task_subtasks').insert(toInsert).select()
-                  if (data) setSubtasks((prev) => [...prev, ...data])
+                  if (data) { const next = [...subtasks, ...data]; setSubtasks(next); syncGoalEstimate(selectedId, next) }
                 }}
                 onSetDependency={async (id, dependsOn) => {
                   if (!user) return
@@ -210,6 +218,7 @@ export function TasksPage() {
                   const ids = subtasks.map((s) => s.id)
                   await supabase.from('task_subtasks').delete().in('id', ids)
                   setSubtasks([])
+                  syncGoalEstimate(selectedId, [])
                 }}
                 onReorderSubtasks={async (ids) => {
                   if (!user) return
