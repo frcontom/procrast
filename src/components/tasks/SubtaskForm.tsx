@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { TaskSubtask } from '../../supabase/types'
+import { SearchableSelect } from './SearchableSelect'
 
 interface Props {
   onSave: (data: { name: string; estimated_minutes: number; difficulty: string; depends_on?: string | null }) => void
@@ -152,13 +153,14 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtas
                 {subtaskList && subtaskList.length > 0 && (
                   <div>
                     <label className="text-[10px] text-text-secondary uppercase tracking-wider mb-1 block">Hacer todas hijas de</label>
-                    <select value={importParentId} onChange={(e) => setImportParentId(e.target.value)}
-                      className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent text-text-secondary">
-                      <option value="">— Ninguno (todas raíz) —</option>
-                      {subtaskList.map((s) => (
-                        <option key={s.id} value={s.id}>{s.name}</option>
-                      ))}
-                    </select>
+                    <SearchableSelect
+                      options={subtaskList.map((s) => ({ value: s.id, label: s.name }))}
+                      value={importParentId}
+                      onChange={setImportParentId}
+                      placeholder="— Ninguno (todas raíz) —"
+                      searchPlaceholder="Buscar tarea…"
+                      emptyMessage="Sin tareas que coincidan"
+                    />
                   </div>
                 )}
                 <textarea value={importText} onChange={(e) => setImportText(e.target.value)}
