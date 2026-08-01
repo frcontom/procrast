@@ -25,7 +25,8 @@ export function GokuProgress({ pct }: Props) {
       <div className="flex items-start justify-between gap-0.5">
         {STAGES.map((stage, i) => {
           const unlocked = pct >= stage.threshold
-          const isCurrent = unlocked && (i === STAGES.length - 1 || pct < STAGES[i + 1].threshold)
+          const isCurrent = (i === 0 && pct <= STAGES[1].threshold) ||
+            (i > 0 && pct > stage.threshold && (i === STAGES.length - 1 || pct <= STAGES[i + 1].threshold))
           return (
             <div key={stage.img} className="flex flex-col items-center gap-1 flex-1">
               <div className={`relative w-full max-w-[140px] aspect-square rounded-xl overflow-hidden border transition-all duration-500 ${isCurrent ? 'border-accent/20 ring-1 ring-accent/10 shadow-lg shadow-accent/10' : unlocked ? 'border-white/[0.04]' : 'border-white/[0.02]'}`}
