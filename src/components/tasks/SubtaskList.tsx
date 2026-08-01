@@ -181,7 +181,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                   className={`group rounded-lg border transition-all cursor-grab active:cursor-grabbing ${
                     isDragging ? 'opacity-40 border-accent/50' : ''
                   } ${isOver ? 'border-accent/50 ring-1 ring-accent/30' : ''} ${
-                    isNext ? 'border-accent/60 ring-2 ring-accent/30 shadow-lg shadow-accent/15 bg-accent/[0.07]' : isDone ? 'bg-white/[0.02] border-white/5 opacity-55' : 'bg-secondary/70 border-white/[0.06] hover:bg-secondary hover:border-white/10'
+                    isNext ? 'border-accent/60 ring-2 ring-accent/30 shadow-lg shadow-accent/15 bg-accent/[0.07]' : isDone ? 'bg-white/[0.02] border-white/5 opacity-55' : isLocked ? 'bg-secondary/40 border-white/[0.03] opacity-45' : 'bg-secondary/70 border-white/[0.06] hover:bg-secondary hover:border-white/10'
                   }`}
                 >
                   <div className="px-3 py-2.5">
@@ -202,6 +202,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                             {st.name}
                           </span>
                           {isNext && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-accent text-white font-bold uppercase tracking-wider shrink-0">Siguiente</span>}
+                          {isLocked && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-white/10 text-text-secondary font-bold uppercase tracking-wider shrink-0">🔒 Bloqueada</span>}
                           <span className="text-xs shrink-0" title={diff.icon}>{diff.icon}</span>
                         </div>
 
@@ -232,9 +233,9 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
 
                       <div className="flex items-center gap-0.5 shrink-0">
                         {!isChecklist && (
-                          <button onClick={() => onStartPomodoro?.(st)}
-                            className={`w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium transition-all ${isNext ? 'bg-accent text-white shadow-sm shadow-accent/30 hover:opacity-90' : 'bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent'}`}>
-                            {isNext ? '▶ Empezar' : `▶ ${formatMinutes(st.estimated_minutes)}`}
+                          <button onClick={() => !isLocked && onStartPomodoro?.(st)} disabled={isLocked}
+                            className={`w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium transition-all ${isNext ? 'bg-accent text-white shadow-sm shadow-accent/30 hover:opacity-90' : isLocked ? 'bg-secondary border border-white/[0.06] text-text-secondary/30 cursor-not-allowed' : 'bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent'}`}>
+                            {isLocked ? '🔒 Bloqueada' : isNext ? '▶ Empezar' : `▶ ${formatMinutes(st.estimated_minutes)}`}
                           </button>
                         )}
                         <div className={`flex items-center gap-0.5 ${isDone ? 'opacity-0 group-hover:opacity-100' : ''}`}>
