@@ -28,7 +28,7 @@ export function GokuProgress({ pct }: Props) {
       </div>
       <div className="flex items-start justify-between gap-0.5">
         {STAGES.map((stage, i) => {
-          const unlocked = pct >= stage.threshold
+          const unlocked = pct > stage.threshold || i === currentIndex
           const isCurrent = i === currentIndex
           return (
             <div key={stage.img} className="flex flex-col items-center gap-1 flex-1">
