@@ -10,6 +10,7 @@ import { SubtaskForm } from './SubtaskForm'
 import { SubtaskHistory } from './SubtaskHistory'
 import { GokuProgress } from './GokuProgress'
 import { HexCalendar } from './HexCalendar'
+import { NextTaskCard } from './NextTaskCard'
 
 interface Props {
   goal: TaskGoal
@@ -131,24 +132,13 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
         </div>
 
         {nextTask && (
-          <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg mb-3"
-            style={{ backgroundColor: 'rgba(166,108,255,0.12)', border: '1px solid rgba(166,108,255,0.35)' }}>
-            <span className="text-base shrink-0">🎯</span>
-            <div className="flex-1 min-w-0">
-              <div className="text-[9px] uppercase tracking-wider text-accent font-semibold">Siguiente tarea</div>
-              <div className="text-sm font-semibold text-white truncate">{nextTask.name}</div>
-              {nextTask.estimated_minutes > 0 && (
-                <div className="text-[10px] text-text-secondary">{formatMinutes(nextTask.estimated_minutes)} · {nextTask.completed_minutes}/{nextTask.estimated_minutes}min</div>
-              )}
-            </div>
-            <button onClick={() => nextTask.estimated_minutes > 0 ? onStartPomodoro?.(nextTask) : onSubtaskToggle(nextTask.id, 'completed')}
-              className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-medium text-white transition-all active:scale-[0.97]"
-              style={{ backgroundColor: 'var(--accent)' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}>
-              {nextTask.estimated_minutes > 0 ? '▶ Empezar ahora' : '☑ Marcar hecho'}
-            </button>
-          </div>
+          <NextTaskCard
+            task={nextTask}
+            totalPending={subtasks.filter((s) => s.status !== 'completed').length}
+            goalName={goal.name}
+            onStart={(st) => onStartPomodoro?.(st)}
+            onComplete={(id) => onSubtaskToggle(id, 'completed')}
+          />
         )}
 
         <div id="tk-progress-bar" className="mb-3">
