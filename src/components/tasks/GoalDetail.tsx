@@ -131,16 +131,6 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           </div>
         </div>
 
-        {nextTask && (
-          <NextTaskCard
-            task={nextTask}
-            totalPending={subtasks.filter((s) => s.status !== 'completed').length}
-            goalName={goal.name}
-            onStart={(st) => onStartPomodoro?.(st)}
-            onComplete={(id) => onSubtaskToggle(id, 'completed')}
-          />
-        )}
-
         <div id="tk-progress-bar" className="mb-3">
           <div className="flex items-center gap-2 text-xs">
             <span className="tabular-nums text-text-secondary">{formatMinutes(totalCompleted)}/{formatMinutes(totalEstimated)}</span>
@@ -193,6 +183,16 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
         )}
         </div>
       </div>
+
+      {nextTask && (
+        <NextTaskCard
+          task={nextTask}
+          totalPending={subtasks.filter((s) => s.status !== 'completed').length}
+          goalName={goal.name}
+          onStart={(st) => onStartPomodoro?.(st)}
+          onComplete={(id) => onSubtaskToggle(id, 'completed')}
+        />
+      )}
 
       <div id="tk-goku" className="bg-card rounded-xl border border-white/10 p-4">
         <GokuProgress pct={pct} />
