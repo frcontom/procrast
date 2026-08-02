@@ -352,7 +352,7 @@ export function FullscreenPage() {
           </div>
         )}
 
-        <div id="fullscreenTimerRingContainer" className="relative w-[360px] h-[360px]">
+        <div id="fullscreenTimerRingContainer" className="relative w-[440px] h-[440px]">
           <div id="fullscreenRingTrack"
             className="absolute inset-0 rounded-full"
             style={{
@@ -371,7 +371,7 @@ export function FullscreenPage() {
             }}
           />
           <div id="fullscreenTimer"
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[80px] font-bold drop-shadow-lg transition-opacity duration-300"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[100px] font-bold drop-shadow-lg transition-opacity duration-300"
             style={{ color: showCelebration ? 'rgba(255,255,255,0.2)' : stateColor, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
             {formatTime(displaySeconds)}
           </div>
