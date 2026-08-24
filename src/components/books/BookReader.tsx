@@ -60,8 +60,9 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
         setCurrentPage(start)
         turnedAtRef.current = Date.now()
         onProgress(start, total)
-        await renderPage(start)
-        if (!cancelled) setLoading(false)
+        setLoading(false)
+        // el canvas ya está montado; renderizamos tras el pintado
+        requestAnimationFrame(() => renderPage(start))
       } catch (e: any) {
         if (!cancelled) {
           setError(e?.message || 'Error al abrir el PDF')
@@ -143,17 +144,24 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
       </div>
 
       <div ref={containerRef}
-        className="bg-black/40 rounded-xl border border-white/10 overflow-auto flex justify-center"
+        className="relative bg-black/40 rounded-xl border border-white/10 overflow-auto flex justify-center"
         style={{ maxHeight: '70vh' }}>
-        {loading ? (
-          <div className="py-20 text-center text-text-secondary text-sm">⏳ Cargando PDF…</div>
-        ) : error ? (
-          <div className="py-20 text-center text-sm px-6">
-            <div className="text-[#EA5455] mb-2">❌ {error}</div>
-            <div className="text-text-secondary text-xs">Verifica que el bucket "books" exista y que el archivo esté subido.</div>
+        <canvas ref={pageRef} className="max-w-full" style={{ width: '100%', maxWidth: 900 }} />
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+            <div className="text-center">
+              <div className="text-lg mb-2">⏳</div>
+              <div className="text-text-secondary text-sm">Cargando PDF…</div>
+            </div>
           </div>
-        ) : (
-          <canvas ref={pageRef} className="max-w-full" style={{ width: '100%', maxWidth: 900 }} />
+        )}
+        {!loading && error && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center px-6">
+              <div className="text-[#EA5455] mb-2 text-sm">❌ {error}</div>
+              <div className="text-text-secondary text-xs">Verifica que el bucket "books" exista y que el archivo esté subido.</div>
+            </div>
+          </div>
         )}
       </div>
 
