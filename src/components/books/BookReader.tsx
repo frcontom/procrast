@@ -18,6 +18,8 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const docRef = useRef<any>(null)
   const pageRef = useRef<HTMLCanvasElement>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [currentPage, setCurrentPage] = useState(Math.min(book.current_page || 1, Math.max(1, book.total_pages || 1)))
   const [totalPages, setTotalPages] = useState(book.total_pages || 0)
   const [loading, setLoading] = useState(true)
@@ -35,7 +37,7 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
     const canvas = pageRef.current
     const container = containerRef.current
     const containerWidth = container ? Math.max(container.clientWidth - 40, 400) : 700
-    const targetWidth = Math.min(containerWidth, 820)
+    const targetWidth = Math.min(containerWidth, isFullscreen ? 1200 : 820)
     const scale = targetWidth / baseViewport.width
     const viewport = page.getViewport({ scale })
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -116,6 +118,20 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
     return () => window.removeEventListener('resize', onResize)
   }, [currentPage, loading, renderPage])
 
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
+  }, [])
+
+  const toggleFullscreen = async () => {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen()
+    } else if (rootRef.current) {
+      await rootRef.current.requestFullscreen()
+    }
+  }
+
   // Registrar el tiempo de la última página al cerrar el lector
   useEffect(() => {
     const doc = docRef.current
@@ -132,7 +148,7 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
   const remaining = Math.max(0, totalPages - currentPage)
 
   return (
-    <div className="flex flex-col gap-3">
+    <div ref={rootRef} className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3 bg-card rounded-xl border border-white/10 px-4 py-3">
         <div className="min-w-0">
           <div className="text-sm font-bold text-white truncate">{book.title}</div>
@@ -148,6 +164,8 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
             className="w-14 bg-secondary border border-white/10 rounded-lg py-1.5 text-center text-sm text-white focus:outline-none focus:border-accent" />
           <button onClick={next} disabled={currentPage >= totalPages}
             className="w-10 h-10 rounded-lg bg-accent text-white hover:opacity-90 disabled:opacity-30 transition-all text-lg">›</button>
+          <button onClick={toggleFullscreen} title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+            className="w-10 h-10 rounded-lg bg-secondary border border-white/10 text-text-secondary hover:text-white transition-all text-lg">⛶</button>
         </div>
       </div>
 
@@ -165,7 +183,7 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
 
       <div ref={containerRef}
         className="relative bg-black/40 rounded-xl border border-white/10 overflow-auto flex justify-center"
-        style={{ maxHeight: '70vh' }}>
+        style={{ maxHeight: isFullscreen ? '88vh' : '70vh' }}>
         <canvas ref={pageRef} className="shadow-2xl" />
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60">
