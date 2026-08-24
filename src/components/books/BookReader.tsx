@@ -22,6 +22,7 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
   const [totalPages, setTotalPages] = useState(book.total_pages || 0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [jump, setJump] = useState('')
   const lastPageRef = useRef<number>(currentPage)
   const turnedAtRef = useRef<number>(Date.now())
   const secondsRef = useRef(0)
@@ -30,12 +31,19 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
     const doc = docRef.current
     if (!doc || !pageRef.current) return
     const page = await doc.getPage(pageNum)
-    const viewport = page.getViewport({ scale: 1.2 })
+    const baseViewport = page.getViewport({ scale: 1 })
     const canvas = pageRef.current
+    const container = containerRef.current
+    const containerWidth = container ? Math.max(container.clientWidth - 40, 400) : 700
+    const targetWidth = Math.min(containerWidth, 820)
+    const scale = targetWidth / baseViewport.width
+    const viewport = page.getViewport({ scale })
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
     const ctx = canvas.getContext('2d')!
-    const dpr = window.devicePixelRatio || 1
     canvas.width = viewport.width * dpr
     canvas.height = viewport.height * dpr
+    canvas.style.width = `${viewport.width}px`
+    canvas.style.height = `${viewport.height}px`
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     await page.render({ canvasContext: ctx, viewport }).promise
   }, [])
@@ -101,6 +109,13 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
     return () => window.removeEventListener('keydown', onKey)
   }, [currentPage])
 
+  useEffect(() => {
+    if (!docRef.current || loading) return
+    const onResize = () => renderPage(currentPage)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [currentPage, loading, renderPage])
+
   // Registrar el tiempo de la última página al cerrar el lector
   useEffect(() => {
     const doc = docRef.current
@@ -125,9 +140,14 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={prev} disabled={currentPage <= 1}
-            className="w-9 h-9 rounded-lg bg-secondary border border-white/10 text-text-secondary hover:text-white disabled:opacity-30 transition-all">←</button>
+            className="w-10 h-10 rounded-lg bg-secondary border border-white/10 text-text-secondary hover:text-white disabled:opacity-30 transition-all text-lg">‹</button>
+          <input type="number" min={1} max={totalPages || 1} value={jump}
+            onChange={(e) => setJump(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { const n = parseInt(jump); if (n >= 1 && n <= totalPages) { setJump(''); goToPage(n) } } }}
+            placeholder={String(currentPage)}
+            className="w-14 bg-secondary border border-white/10 rounded-lg py-1.5 text-center text-sm text-white focus:outline-none focus:border-accent" />
           <button onClick={next} disabled={currentPage >= totalPages}
-            className="w-9 h-9 rounded-lg bg-accent text-white hover:opacity-90 disabled:opacity-30 transition-all">→</button>
+            className="w-10 h-10 rounded-lg bg-accent text-white hover:opacity-90 disabled:opacity-30 transition-all text-lg">›</button>
         </div>
       </div>
 
@@ -146,7 +166,7 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
       <div ref={containerRef}
         className="relative bg-black/40 rounded-xl border border-white/10 overflow-auto flex justify-center"
         style={{ maxHeight: '70vh' }}>
-        <canvas ref={pageRef} className="max-w-full" style={{ width: '100%', maxWidth: 900 }} />
+        <canvas ref={pageRef} className="shadow-2xl" />
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60">
             <div className="text-center">
