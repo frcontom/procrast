@@ -18,6 +18,8 @@ export interface Database {
       gamification: { Row: Gamification; Insert: GamificationInsert; Update: GamificationUpdate }
       badges: { Row: Badge; Insert: BadgeInsert; Update: BadgeUpdate }
       mood_logs: { Row: MoodLog; Insert: MoodLogInsert }
+      books: { Row: Book; Insert: BookInsert; Update: BookUpdate }
+      book_reading_logs: { Row: BookReadingLog; Insert: BookReadingLogInsert }
     }
     Functions: {
       start_session: { Args: { p_activity_type: string; p_duration_minutes: number; p_strict_mode?: boolean }; Returns: any }
@@ -89,3 +91,10 @@ export interface BadgeUpdate { title?: string; description?: string; icon?: stri
 
 export interface MoodLog { id: string; user_id: string; session_id: string | null; before_mood: number | null; after_mood: number | null; note: string; created_at: string }
 export interface MoodLogInsert { user_id: string; session_id?: string | null; before_mood?: number | null; after_mood?: number | null; note?: string }
+
+export interface Book { id: string; user_id: string; title: string; author: string; total_pages: number; current_page: number; status: 'reading' | 'finished' | 'paused'; file_path: string; file_name: string; created_at: string; updated_at: string }
+export interface BookInsert { user_id: string; title: string; author?: string; total_pages?: number; current_page?: number; status?: 'reading' | 'finished' | 'paused'; file_path?: string; file_name?: string }
+export interface BookUpdate { title?: string; author?: string; total_pages?: number; current_page?: number; status?: 'reading' | 'finished' | 'paused'; file_path?: string; file_name?: string }
+
+export interface BookReadingLog { id: string; user_id: string; book_id: string; page_start: number; page_end: number; seconds: number; date: string; created_at: string }
+export interface BookReadingLogInsert { user_id: string; book_id: string; page_start: number; page_end: number; seconds?: number; date?: string }

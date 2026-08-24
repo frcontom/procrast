@@ -9,6 +9,7 @@ import { AnalyticsPage } from './pages/AnalyticsPage'
 import { KnowledgePage } from './pages/KnowledgePage'
 import { IdentityPage } from './pages/IdentityPage'
 import { CoachPage } from './pages/CoachPage'
+import { BooksPage } from './pages/BooksPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
       { path: 'knowledge', element: <KnowledgePage /> },
       { path: 'identity', element: <IdentityPage /> },
       { path: 'coach', element: <CoachPage /> },
+      { path: 'books', element: <BooksPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
