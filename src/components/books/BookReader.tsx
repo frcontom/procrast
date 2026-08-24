@@ -21,6 +21,7 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
   const [currentPage, setCurrentPage] = useState(Math.min(book.current_page || 1, Math.max(1, book.total_pages || 1)))
   const [totalPages, setTotalPages] = useState(book.total_pages || 0)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const lastPageRef = useRef<number>(currentPage)
   const turnedAtRef = useRef<number>(Date.now())
   const secondsRef = useRef(0)
@@ -42,19 +43,32 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    pdfjs.getDocument({ url }).promise.then(async (doc) => {
-      if (cancelled) return
-      docRef.current = doc
-      const total = doc.numPages
-      setTotalPages(total)
-      const start = Math.min(book.current_page || 1, total)
-      lastPageRef.current = start
-      setCurrentPage(start)
-      turnedAtRef.current = Date.now()
-      onProgress(start, total)
-      await renderPage(start)
-      setLoading(false)
-    }).catch(() => setLoading(false))
+    setError('')
+    ;(async () => {
+      try {
+        const res = await fetch(url)
+        if (!res.ok) throw new Error('No se pudo descargar el PDF (' + res.status + ')')
+        const buf = await res.arrayBuffer()
+        if (cancelled) return
+        const doc = await pdfjs.getDocument({ data: buf }).promise
+        if (cancelled) return
+        docRef.current = doc
+        const total = doc.numPages
+        setTotalPages(total)
+        const start = Math.min(book.current_page || 1, total)
+        lastPageRef.current = start
+        setCurrentPage(start)
+        turnedAtRef.current = Date.now()
+        onProgress(start, total)
+        await renderPage(start)
+        if (!cancelled) setLoading(false)
+      } catch (e: any) {
+        if (!cancelled) {
+          setError(e?.message || 'Error al abrir el PDF')
+          setLoading(false)
+        }
+      }
+    })()
     return () => { cancelled = true }
   }, [url])
 
@@ -133,6 +147,11 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
         style={{ maxHeight: '70vh' }}>
         {loading ? (
           <div className="py-20 text-center text-text-secondary text-sm">⏳ Cargando PDF…</div>
+        ) : error ? (
+          <div className="py-20 text-center text-sm px-6">
+            <div className="text-[#EA5455] mb-2">❌ {error}</div>
+            <div className="text-text-secondary text-xs">Verifica que el bucket "books" exista y que el archivo esté subido.</div>
+          </div>
         ) : (
           <canvas ref={pageRef} className="max-w-full" style={{ width: '100%', maxWidth: 900 }} />
         )}
