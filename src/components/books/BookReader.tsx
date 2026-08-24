@@ -97,6 +97,7 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
     turnedAtRef.current = Date.now()
     onProgress(pageNum, doc.numPages)
     await renderPage(pageNum)
+    if (containerRef.current) containerRef.current.scrollTop = 0
   }, [renderPage, onLogReading, onProgress])
 
   const next = () => goToPage(currentPage + 1)
