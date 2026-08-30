@@ -127,7 +127,7 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
   const prefetch = useCallback(async (pageNum: number) => {
     const doc = docRef.current
     if (!doc) return
-    const cap = isFullscreen ? 1200 : 820
+    const cap = isFullscreen ? 1600 : 1200
     const c = scrollRef.current || containerRef.current
     const cw = c ? Math.max(c.clientWidth - 32, 400) : 700
     const widthCap = Math.min(cw, cap)
@@ -141,8 +141,8 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
 
   // ---- MODO SCROLL CONTINUO ----
   const scrollWidthCap = useMemo(() => {
-    const cw = containerW > 0 ? Math.max(containerW - 32, 400) : 700
-    return Math.min(cw, isFullscreen ? 1200 : 820)
+    const cw = containerW > 0 ? Math.max(containerW - 48, 400) : 700
+    return Math.min(cw, isFullscreen ? 1600 : 1200)
   }, [containerW, isFullscreen])
 
   const pageRenderedH = useCallback((i: number) => {
@@ -232,7 +232,7 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
     if (!doc || !turnLeftRef.current) return
     const c = scrollRef.current || containerRef.current
     const cw = c ? Math.max(c.clientWidth - 32, 400) : 700
-    const widthCap = Math.min(cw, isFullscreen ? 1200 : 820)
+    const widthCap = Math.min(cw, isFullscreen ? 1600 : 1200)
     if (twoPage && pageNum < doc.numPages) {
       const half = widthCap / 2
       await Promise.all([
