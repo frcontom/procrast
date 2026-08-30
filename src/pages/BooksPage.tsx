@@ -3,6 +3,19 @@ import { supabase } from '../supabase/client'
 import { useUser } from '../supabase/auth'
 import type { Book } from '../supabase/types'
 import { BookReader } from '../components/books/BookReader'
+import { formatMinutes } from '../lib/formatters'
+
+function statusOf(b: Book): 'nuevo' | 'progress' | 'done' {
+  if (b.status === 'finished') return 'done'
+  if ((b.current_page || 0) > 0) return 'progress'
+  return 'nuevo'
+}
+
+const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
+  nuevo: { label: 'Sin empezar', color: '#60A5FA', bg: 'rgba(96,165,250,0.15)' },
+  progress: { label: 'En progreso', color: '#FF9800', bg: 'rgba(255,152,0,0.15)' },
+  done: { label: 'Terminado', color: '#28C76F', bg: 'rgba(40,199,111,0.15)' },
+}
 
 export function BooksPage() {
   const user = useUser()
@@ -15,11 +28,29 @@ export function BooksPage() {
   const [author, setAuthor] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [dragIdx, setDragIdx] = useState<number | null>(null)
+  const [overIdx, setOverIdx] = useState<number | null>(null)
+  const [totalMinutes, setTotalMinutes] = useState(0)
+  const [todayMinutes, setTodayMinutes] = useState(0)
+  const [sortBy, setSortBy] = useState<'custom' | 'progress'>('progress')
+
+  const loadBooks = () => {
+    if (!user) return
+    supabase.from('books').select('*').eq('user_id', user.id).order('sort_order', { ascending: true }).then(({ data }: any) => {
+      if (data) setBooks(data)
+    })
+  }
+
+  useEffect(() => { loadBooks() }, [user])
 
   useEffect(() => {
     if (!user) return
-    supabase.from('books').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).then(({ data }: any) => {
-      if (data) setBooks(data)
+    supabase.from('book_reading_logs').select('seconds, date').eq('user_id', user.id).then(({ data }: any) => {
+      if (data) {
+        setTotalMinutes(Math.round(data.reduce((a: number, l: any) => a + (l.seconds || 0), 0) / 60))
+        const today = new Date().toLocaleDateString('en-CA')
+        setTodayMinutes(Math.round(data.filter((l: any) => l.date === today).reduce((a: number, l: any) => a + (l.seconds || 0), 0) / 60))
+      }
     })
   }, [user])
 
@@ -34,6 +65,7 @@ export function BooksPage() {
       const { error: upErr } = await supabase.storage.from('books').upload(filePath, file, { contentType: 'application/pdf' })
       if (upErr) throw upErr
 
+      const nextOrder = books.length
       const { data: book, error } = await supabase.from('books').insert({
         user_id: user.id,
         title: title.trim(),
@@ -41,11 +73,12 @@ export function BooksPage() {
         file_path: filePath,
         file_name: file.name,
         status: 'reading',
-        current_page: 1,
+        current_page: 0,
+        sort_order: nextOrder,
       }).select().single()
       if (error) throw error
 
-      setBooks((prev) => [book, ...prev])
+      setBooks((prev) => [...prev, book])
       setShowForm(false)
       setTitle('')
       setAuthor('')
@@ -73,6 +106,7 @@ export function BooksPage() {
     const updates: any = { current_page: page }
     if (totalPages > 0 && reading.total_pages !== totalPages) updates.total_pages = totalPages
     if (page >= totalPages) updates.status = 'finished'
+    else if ((reading.status !== 'finished') && page > 0 && reading.status !== 'reading') updates.status = 'reading'
     await supabase.from('books').update(updates).eq('id', reading.id)
     setReading((prev) => prev ? { ...prev, ...updates } : prev)
     setBooks((prev) => prev.map((b) => b.id === reading.id ? { ...b, ...updates } : b))
@@ -97,6 +131,37 @@ export function BooksPage() {
     setBooks((prev) => prev.filter((b) => b.id !== id))
   }
 
+  const pctOf = (b: Book) => b.total_pages > 0 ? Math.min(100, Math.round((b.current_page / b.total_pages) * 100)) : 0
+
+  const ordered = [...books]
+  if (sortBy === 'progress') {
+    ordered.sort((a, b) => pctOf(b) - pctOf(a))
+  } else {
+    ordered.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+  }
+
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    e.dataTransfer.effectAllowed = 'move'
+    setDragIdx(idx)
+  }
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setOverIdx(idx)
+  }
+  const handleDrop = async (e: React.DragEvent, idx: number) => {
+    e.preventDefault()
+    if (dragIdx === null || dragIdx === idx) { setDragIdx(null); setOverIdx(null); return }
+    const list = [...ordered]
+    const [moved] = list.splice(dragIdx, 1)
+    list.splice(idx, 0, moved)
+    const updates = list.map((b, i) => supabase.from('books').update({ sort_order: i }).eq('id', b.id))
+    await Promise.all(updates)
+    setBooks(list.map((b, i) => ({ ...b, sort_order: i })))
+    setDragIdx(null)
+    setOverIdx(null)
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -108,6 +173,37 @@ export function BooksPage() {
           className="px-3 py-1.5 rounded-lg text-[11px] font-medium bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white transition-all">+ Subir libro</button>
       </div>
 
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-card rounded-xl border border-white/10 p-3 text-center">
+          <div className="text-lg font-bold text-white">{books.length}</div>
+          <div className="text-[10px] text-text-secondary uppercase tracking-wider">Libros</div>
+        </div>
+        <div className="bg-card rounded-xl border border-white/10 p-3 text-center">
+          <div className="text-lg font-bold text-[#FF9800]">{books.filter((b) => statusOf(b) === 'progress').length}</div>
+          <div className="text-[10px] text-text-secondary uppercase tracking-wider">En progreso</div>
+        </div>
+        <div className="bg-card rounded-xl border border-white/10 p-3 text-center">
+          <div className="text-lg font-bold text-[#28C76F]">{books.filter((b) => statusOf(b) === 'done').length}</div>
+          <div className="text-[10px] text-text-secondary uppercase tracking-wider">Terminados</div>
+        </div>
+        <div className="bg-card rounded-xl border border-white/10 p-3 text-center">
+          <div className="text-lg font-bold text-accent">{formatMinutes(totalMinutes)}</div>
+          <div className="text-[10px] text-text-secondary uppercase tracking-wider">Tiempo total · {todayMinutes}min hoy</div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-text-secondary uppercase tracking-wider">Ordenar:</span>
+        <button onClick={() => setSortBy('progress')}
+          className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${sortBy === 'progress' ? 'bg-[var(--accent)] text-white' : 'bg-secondary text-text-secondary hover:text-white'}`}>
+          📈 Más avanzados
+        </button>
+        <button onClick={() => setSortBy('custom')}
+          className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${sortBy === 'custom' ? 'bg-[var(--accent)] text-white' : 'bg-secondary text-text-secondary hover:text-white'}`}>
+          🖐️ Mi orden (drag & drop)
+        </button>
+      </div>
+
       {books.length === 0 ? (
         <div className="bg-card rounded-xl border border-white/10 p-12 text-center text-text-secondary text-sm">
           <div className="text-3xl mb-2">📚</div>
@@ -115,29 +211,47 @@ export function BooksPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {books.map((b) => {
-            const pct = b.total_pages > 0 ? Math.min(100, Math.round((b.current_page / b.total_pages) * 100)) : 0
+          {ordered.map((b, idx) => {
+            const pct = pctOf(b)
             const remaining = Math.max(0, b.total_pages - b.current_page)
+            const status = statusOf(b)
+            const meta = STATUS_META[status]
+            const isDragging = dragIdx === idx
+            const isOver = overIdx === idx
             return (
-              <div key={b.id} className="bg-card rounded-xl border border-white/10 p-4 hover:border-[var(--accent)] transition-all cursor-pointer"
+              <div key={b.id}
+                draggable={sortBy === 'custom'}
+                onDragStart={(e) => handleDragStart(e, idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDrop={(e) => handleDrop(e, idx)}
+                onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
+                className={`bg-card rounded-xl border border-white/10 p-4 transition-all cursor-pointer ${isDragging ? 'opacity-40 border-accent/50' : ''} ${isOver ? 'border-accent/60 ring-1 ring-accent/30' : ''} ${sortBy === 'custom' ? 'hover:border-[var(--accent)]' : 'hover:border-[var(--accent)]'}`}
                 onClick={() => openReader(b)}>
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="min-w-0">
-                    <div className="text-sm font-bold text-white truncate">{b.title}</div>
-                    {b.author && <div className="text-[11px] text-text-secondary truncate">{b.author}</div>}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      {sortBy === 'custom' && <span className="text-text-secondary/30 text-xs cursor-grab select-none">⠿</span>}
+                      <div className="text-sm font-bold text-white truncate">{b.title}</div>
+                    </div>
+                    {b.author && <div className="text-[11px] text-text-secondary truncate ml-4">{b.author}</div>}
                   </div>
-                  {b.status === 'finished' && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-success/20 text-success shrink-0">Terminado</span>}
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0"
+                    style={{ color: meta.color, backgroundColor: meta.bg }}>{meta.label}</span>
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-text-secondary mb-1.5">
-                  <span>Página {b.current_page} de {b.total_pages || '—'}</span>
-                  <span className="text-accent font-bold">{pct}%</span>
-                </div>
+                {pct > 0 ? (
+                  <div className="flex items-center justify-between text-[11px] text-text-secondary mb-1.5">
+                    <span>Página {b.current_page} de {b.total_pages}</span>
+                    <span className="font-bold" style={{ color: meta.color }}>{pct}%</span>
+                  </div>
+                ) : (
+                  <div className="text-[11px] text-text-secondary mb-1.5">Aún no has comenzado</div>
+                )}
                 <div className="w-full bg-secondary rounded-full h-2 overflow-hidden mb-1.5">
                   <div className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${pct}%`, background: 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
+                    style={{ width: `${pct}%`, background: pct >= 80 ? 'linear-gradient(90deg, #28C76F, #81E6A0)' : 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-text-secondary/60">
-                  <span>Quedan {remaining} pág.</span>
+                  <span>{pct > 0 ? `Quedan ${remaining} pág.` : `${b.total_pages || '?'} páginas`}</span>
                   <button onClick={(e) => { e.stopPropagation(); handleDelete(b.id) }}
                     className="text-danger/50 hover:text-danger transition-colors">🗑️</button>
                 </div>
