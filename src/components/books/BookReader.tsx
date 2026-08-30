@@ -206,6 +206,7 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
 
   useEffect(() => {
     if (viewMode !== 'scroll' || loading) return
+    renderedRef.current.clear()
     for (const p of scrollRange) {
       const canvas = scrollPageRefs.current[p]
       if (canvas && !renderedRef.current.has(p)) {
@@ -441,7 +442,14 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
             {scrollRange.map((p) => (
               <div key={p} style={{ position: 'absolute', top: offsets[p - 1], left: 0, right: 0, display: 'flex', justifyContent: 'center', padding: '6px 0' }}
                 onClick={handleCanvasClick}>
-                <canvas ref={(el) => { scrollPageRefs.current[p] = el! }} className="shadow-2xl rounded-sm" />
+                <canvas ref={(el) => {
+                  if (el) {
+                    scrollPageRefs.current[p] = el
+                  } else {
+                    delete scrollPageRefs.current[p]
+                    renderedRef.current.delete(p)
+                  }
+                }} className="shadow-2xl rounded-sm" />
               </div>
             ))}
           </div>
