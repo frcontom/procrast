@@ -368,20 +368,16 @@ export function BooksPage() {
                   </div>
                 )}
 
-                {pct > 0 ? (
-                  <div className="flex items-center justify-between text-[11px] text-text-secondary mb-1.5">
-                    <span>Página {b.current_page} de {b.total_pages}</span>
-                    <span className="font-bold" style={{ color: meta.color }}>{pct}%</span>
-                  </div>
-                ) : (
-                  <div className="text-[11px] text-text-secondary mb-1.5">Aún no has comenzado</div>
-                )}
+                <div className="flex items-center justify-between text-[11px] text-text-secondary mb-1.5">
+                  <span>{b.current_page}/{b.total_pages || '?'} páginas {pct === 0 && '· sin iniciar'}</span>
+                  <span className="font-bold" style={{ color: meta.color }}>{pct}%</span>
+                </div>
                 <div className="w-full bg-secondary rounded-full h-2 overflow-hidden mb-1.5">
                   <div className="h-full rounded-full transition-all duration-500"
                     style={{ width: `${pct}%`, background: pct >= 80 ? 'linear-gradient(90deg, #28C76F, #81E6A0)' : 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-text-secondary/60">
-                  <span>{pct > 0 ? `Quedan ${remaining} pág.` : `${b.total_pages || '?'} páginas`}</span>
+                  <span>{pct > 0 ? `Quedan ${remaining} pág.` : `${b.total_pages || '?'} páginas en total`}</span>
                   <span className="flex items-center gap-1.5">
                     {stats && stats.minutes > 0 && <span title={`${stats.minutes}min · ${stats.days} día(s)`}>⏱ {formatMinutes(stats.minutes)}</span>}
                     <button onClick={(e) => togglePin(e, b.id)} title={b.is_pinned ? 'Quitar de favoritos' : 'Marcar favorito'}
