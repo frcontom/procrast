@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import * as pdfjs from 'pdfjs-dist'
 import type { Book } from '../../supabase/types'
 import { supabase } from '../../supabase/client'
@@ -19,23 +19,28 @@ interface Props {
 export function BookReader({ book, url, onProgress, onLogReading }: Props) {
   const user = useUser()
   const containerRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const docRef = useRef<any>(null)
-  const pageRef = useRef<HTMLCanvasElement>(null)
-  const page2Ref = useRef<HTMLCanvasElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [currentPage, setCurrentPage] = useState(Math.min(book.current_page || 1, Math.max(1, book.total_pages || 1)))
   const [totalPages, setTotalPages] = useState(book.total_pages || 0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [jump, setJump] = useState('')
   const [zoom, setZoom] = useState(1)
+  const [viewMode, setViewMode] = useState<'scroll' | 'turn'>('scroll')
   const [twoPage, setTwoPage] = useState(false)
   const [bookmarks, setBookmarks] = useState<any[]>([])
   const [showBookmarks, setShowBookmarks] = useState(false)
   const [noteDraft, setNoteDraft] = useState('')
-  const lastPageRef = useRef<number>(currentPage)
+  const [pageHeights, setPageHeights] = useState<number[]>([])
+  const [scrollTop, setScrollTop] = useState(0)
+  const [transitioning, setTransitioning] = useState(false)
+
+  const currentPageRef = useRef<number>(Math.min(book.current_page || 1, Math.max(1, book.total_pages || 1)))
+  const [currentPage, setCurrentPage] = useState(currentPageRef.current)
   const turnedAtRef = useRef<number>(Date.now())
+  const renderedRef = useRef<Set<number>>(new Set())
 
   useEffect(() => {
     if (!user || !book.id) return
@@ -44,65 +49,7 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
     })
   }, [user, book.id])
 
-  const renderSingle = useCallback(async (canvas: HTMLCanvasElement, pageNum: number) => {
-    const doc = docRef.current
-    if (!doc) return
-    const page = await doc.getPage(pageNum)
-    const base = page.getViewport({ scale: 1 })
-    const container = containerRef.current
-    const containerWidth = container ? Math.max(container.clientWidth - 32, 400) : 700
-    const scale = zoom * Math.min(containerWidth, isFullscreen ? 1200 : 820) / base.width
-    const viewport = page.getViewport({ scale })
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    const ctx = canvas.getContext('2d')!
-    canvas.width = viewport.width * dpr
-    canvas.height = viewport.height * dpr
-    canvas.style.width = `${viewport.width}px`
-    canvas.style.height = `${viewport.height}px`
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    await page.render({ canvasContext: ctx, viewport }).promise
-  }, [zoom, isFullscreen])
-
-  const renderSpread = useCallback(async (canvas: HTMLCanvasElement, canvas2: HTMLCanvasElement, leftPage: number) => {
-    const doc = docRef.current
-    if (!doc) return
-    const container = containerRef.current
-    const cw = container ? Math.max(container.clientWidth - 32, 400) : 900
-    const half = cw / 2
-    const [p1, p2] = await Promise.all([doc.getPage(leftPage), doc.getPage(leftPage + 1)])
-    const b1 = p1.getViewport({ scale: 1 })
-    const b2 = p2.getViewport({ scale: 1 })
-    const scale = zoom * Math.min(half / b1.width, half / b2.width)
-    const v1 = p1.getViewport({ scale })
-    const v2 = p2.getViewport({ scale })
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    const draw = async (c: HTMLCanvasElement, viewport: any, page: any) => {
-      const ctx = c.getContext('2d')!
-      c.width = viewport.width * dpr
-      c.height = viewport.height * dpr
-      c.style.width = `${viewport.width}px`
-      c.style.height = `${viewport.height}px`
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      await page.render({ canvasContext: ctx, viewport }).promise
-    }
-    await Promise.all([draw(canvas, v1, p1), draw(canvas2, v2, p2)])
-  }, [zoom, isFullscreen])
-
-  const renderPage = useCallback(async (pageNum: number) => {
-    if (!docRef.current || !pageRef.current) return
-    if (twoPage && pageNum < docRef.current.numPages) {
-      await renderSpread(pageRef.current, page2Ref.current!, pageNum)
-    } else {
-      await renderSingle(pageRef.current, pageNum)
-      if (page2Ref.current) {
-        page2Ref.current.width = 1
-        page2Ref.current.height = 1
-        page2Ref.current.style.width = '0px'
-        page2Ref.current.style.height = '0px'
-      }
-    }
-  }, [twoPage, renderSingle, renderSpread])
-
+  // Cargar doc y calcular alturas base de cada página
   useEffect(() => {
     let cancelled = false
     setLoading(true)
@@ -118,13 +65,19 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
         docRef.current = doc
         const total = doc.numPages
         setTotalPages(total)
+        const heights: number[] = []
+        for (let i = 1; i <= total; i++) {
+          const page = await doc.getPage(i)
+          const vp = page.getViewport({ scale: 1 })
+          heights.push(vp.height)
+        }
+        setPageHeights(heights)
         const start = Math.min(book.current_page || 1, total)
-        lastPageRef.current = start
+        currentPageRef.current = start
         setCurrentPage(start)
         turnedAtRef.current = Date.now()
         onProgress(start, total)
         setLoading(false)
-        requestAnimationFrame(() => renderPage(start))
       } catch (e: any) {
         if (!cancelled) {
           setError(e?.message || 'Error al abrir el PDF')
@@ -135,24 +88,170 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
     return () => { cancelled = true }
   }, [url])
 
-  const goToPage = useCallback(async (pageNum: number) => {
+  // Render de una página al canvas (modo volteo)
+  const renderToCanvas = useCallback(async (canvas: HTMLCanvasElement, pageNum: number, widthCap: number): Promise<boolean> => {
+    const doc = docRef.current
+    if (!doc) return false
+    try {
+      const page = await doc.getPage(pageNum)
+      const base = page.getViewport({ scale: 1 })
+      const scale = zoom * widthCap / base.width
+      const viewport = page.getViewport({ scale })
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const ctx = canvas.getContext('2d')!
+      canvas.width = viewport.width * dpr
+      canvas.height = viewport.height * dpr
+      canvas.style.width = `${viewport.width}px`
+      canvas.style.height = `${viewport.height}px`
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      await page.render({ canvasContext: ctx, viewport }).promise
+      return true
+    } catch {
+      return false
+    }
+  }, [zoom])
+
+  // Precarga: renderiza N-1 y N+1 en segundo plano (canvas temporales)
+  const prefetch = useCallback(async (pageNum: number) => {
+    const doc = docRef.current
+    if (!doc) return
+    const cap = isFullscreen ? 1200 : 820
+    const c = scrollRef.current || containerRef.current
+    const cw = c ? Math.max(c.clientWidth - 32, 400) : 700
+    const widthCap = Math.min(cw, cap)
+    for (const p of [pageNum - 1, pageNum + 1]) {
+      if (p < 1 || p > doc.numPages || renderedRef.current.has(p)) continue
+      const tmp = document.createElement('canvas')
+      const ok = await renderToCanvas(tmp, p, widthCap)
+      if (ok) renderedRef.current.add(p)
+    }
+  }, [renderToCanvas, isFullscreen])
+
+  // ---- MODO SCROLL CONTINUO ----
+  const offsets = useMemo(() => {
+    const arr: number[] = []
+    let acc = 0
+    for (const h of pageHeights) { arr.push(acc); acc += h * zoom }
+    return arr
+  }, [pageHeights, zoom])
+
+  const totalScrollHeight = pageHeights.reduce((a, h) => a + h * zoom, 0)
+
+  const visiblePage = useMemo(() => {
+    if (pageHeights.length === 0) return 1
+    const mid = scrollTop + (scrollRef.current ? scrollRef.current.clientHeight / 2 : 0)
+    for (let i = 0; i < offsets.length; i++) {
+      if (mid >= offsets[i] && mid < offsets[i] + pageHeights[i] * zoom) return i + 1
+    }
+    return pageHeights.length
+  }, [scrollTop, offsets, pageHeights, zoom])
+
+  useEffect(() => {
+    if (viewMode !== 'scroll' || loading) return
+    if (visiblePage !== currentPageRef.current) {
+      const prev = currentPageRef.current
+      const elapsed = Math.round((Date.now() - turnedAtRef.current) / 1000)
+      if (elapsed > 0) onLogReading(prev, visiblePage, elapsed)
+      currentPageRef.current = visiblePage
+      setCurrentPage(visiblePage)
+      turnedAtRef.current = Date.now()
+      onProgress(visiblePage, totalPages)
+    }
+  }, [visiblePage, viewMode, loading, totalPages])
+
+  const onScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop((e.target as HTMLDivElement).scrollTop)
+  }, [])
+
+  // ---- Render virtualizado en scroll mode ----
+  const scrollRange = useMemo(() => {
+    if (pageHeights.length === 0) return []
+    const buffer = 2
+    const start = Math.max(1, visiblePage - buffer)
+    const end = Math.min(pageHeights.length, visiblePage + buffer)
+    const out: number[] = []
+    for (let i = start; i <= end; i++) out.push(i)
+    return out
+  }, [visiblePage, pageHeights.length])
+
+  const scrollPageRefs = useRef<Record<number, HTMLCanvasElement>>({})
+
+  useEffect(() => {
+    if (viewMode !== 'scroll' || loading) return
+    for (const p of scrollRange) {
+      const canvas = scrollPageRefs.current[p]
+      if (canvas && !renderedRef.current.has(p)) {
+        const c = scrollRef.current
+        const cw = c ? Math.max(c.clientWidth - 32, 400) : 700
+        renderToCanvas(canvas, p, Math.min(cw, isFullscreen ? 1200 : 820)).then((ok) => { if (ok) renderedRef.current.add(p) })
+      }
+    }
+  }, [scrollRange, viewMode, loading, renderToCanvas, zoom])
+
+  const scrollToPage = useCallback((pageNum: number) => {
+    if (viewMode !== 'scroll') return
+    const el = scrollRef.current
+    const off = offsets[pageNum - 1]
+    if (el && off !== undefined) {
+      el.scrollTo({ top: off - 10, behavior: 'smooth' })
+    }
+  }, [viewMode, offsets])
+
+  // ---- MODO VOLTEO ----
+  const turnLeftRef = useRef<HTMLCanvasElement>(null)
+  const turnRightRef = useRef<HTMLCanvasElement>(null)
+
+  const renderTurn = useCallback(async (pageNum: number) => {
+    const doc = docRef.current
+    if (!doc || !turnLeftRef.current) return
+    const c = scrollRef.current || containerRef.current
+    const cw = c ? Math.max(c.clientWidth - 32, 400) : 700
+    const widthCap = Math.min(cw, isFullscreen ? 1200 : 820)
+    if (twoPage && pageNum < doc.numPages) {
+      const half = widthCap / 2
+      await Promise.all([
+        renderToCanvas(turnLeftRef.current, pageNum, half),
+        turnRightRef.current ? renderToCanvas(turnRightRef.current, pageNum + 1, half) : Promise.resolve(),
+      ])
+    } else {
+      await renderToCanvas(turnLeftRef.current, pageNum, widthCap)
+      if (turnRightRef.current) { turnRightRef.current.width = 1; turnRightRef.current.height = 1; turnRightRef.current.style.width = '0px'; turnRightRef.current.style.height = '0px' }
+    }
+  }, [twoPage, renderToCanvas, isFullscreen])
+
+  const goToTurnPage = useCallback(async (pageNum: number) => {
     const doc = docRef.current
     if (!doc || pageNum < 1 || pageNum > doc.numPages) return
-    const prev = lastPageRef.current
+    const prev = currentPageRef.current
     const elapsed = Math.round((Date.now() - turnedAtRef.current) / 1000)
-    if (elapsed > 0 && pageNum !== prev) {
-      onLogReading(prev, pageNum, elapsed)
-    }
-    lastPageRef.current = pageNum
+    if (elapsed > 0 && pageNum !== prev) onLogReading(prev, pageNum, elapsed)
+    currentPageRef.current = pageNum
     setCurrentPage(pageNum)
     turnedAtRef.current = Date.now()
     onProgress(pageNum, doc.numPages)
-    await renderPage(pageNum)
-    if (containerRef.current) containerRef.current.scrollTop = 0
-  }, [renderPage, onLogReading, onProgress])
+    setTransitioning(true)
+    await renderTurn(pageNum)
+    setTimeout(() => setTransitioning(false), 180)
+    renderedRef.current.clear()
+    prefetch(pageNum)
+    if (scrollRef.current) scrollRef.current.scrollTop = 0
+  }, [renderTurn, onLogReading, onProgress, prefetch])
 
-  const next = () => goToPage(twoPage ? Math.min(currentPage + 2, totalPages) : currentPage + 1)
-  const prev = () => goToPage(twoPage ? Math.max(currentPage - 2, 1) : currentPage - 1)
+  useEffect(() => {
+    if (viewMode !== 'turn' || loading || !turnLeftRef.current) return
+    renderTurn(currentPageRef.current)
+    prefetch(currentPageRef.current)
+  }, [viewMode, loading, zoom, twoPage])
+
+  // ---- Navegación genérica ----
+  const next = () => {
+    if (viewMode === 'scroll') scrollToPage(visiblePage + 1)
+    else goToTurnPage(twoPage ? Math.min(currentPage + 2, totalPages) : currentPage + 1)
+  }
+  const prev = () => {
+    if (viewMode === 'scroll') scrollToPage(visiblePage - 1)
+    else goToTurnPage(twoPage ? Math.max(currentPage - 2, 1) : currentPage - 1)
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -161,14 +260,18 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [currentPage, twoPage])
+  }, [currentPage, viewMode, twoPage])
 
   useEffect(() => {
     if (!docRef.current || loading) return
-    const onResize = () => renderPage(currentPage)
+    const onResize = () => {
+      renderedRef.current.clear()
+      if (viewMode === 'scroll') { const el = scrollRef.current; if (el) setScrollTop(el.scrollTop) }
+      else renderTurn(currentPageRef.current)
+    }
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
-  }, [currentPage, loading, renderPage, zoom, twoPage])
+  }, [loading, viewMode, renderTurn])
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement)
@@ -176,30 +279,34 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
     return () => document.removeEventListener('fullscreenchange', onChange)
   }, [])
 
-  useEffect(() => {
-    if (!docRef.current || loading) return
-    renderPage(currentPage)
-  }, [zoom, twoPage])
-
   // Registrar el tiempo de la última página al cerrar el lector
   useEffect(() => {
-    const doc = docRef.current
-    if (!doc) return
     return () => {
       const elapsed = Math.round((Date.now() - turnedAtRef.current) / 1000)
-      if (elapsed > 0) {
-        onLogReading(lastPageRef.current, lastPageRef.current, elapsed)
-      }
+      if (elapsed > 0) onLogReading(currentPageRef.current, currentPageRef.current, elapsed)
     }
   }, [])
 
   const toggleFullscreen = async () => {
-    if (document.fullscreenElement) {
-      await document.exitFullscreen()
-    } else if (rootRef.current) {
-      await rootRef.current.requestFullscreen()
-    }
+    if (document.fullscreenElement) await document.exitFullscreen()
+    else if (rootRef.current) await rootRef.current.requestFullscreen()
   }
+
+  // Zoom por rueda (Ctrl+scroll) y clic en zonas
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault()
+      const factor = e.deltaY < 0 ? 0.1 : -0.1
+      setZoom((z) => Math.min(2, Math.max(0.5, +(z + factor).toFixed(2))))
+    }
+  }, [])
+
+  const handleCanvasClick = useCallback((e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    const x = e.clientX - rect.left
+    if (x > rect.width * 0.55) next()
+    else if (x < rect.width * 0.45) prev()
+  }, [currentPage, viewMode, twoPage])
 
   const toggleBookmark = async () => {
     if (!user) return
@@ -208,18 +315,11 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
       await supabase.from('book_bookmarks').delete().eq('id', existing.id)
       setBookmarks((prev) => prev.filter((b) => b.id !== existing.id))
     } else {
-      const { data } = await supabase.from('book_bookmarks').insert({
-        user_id: user.id,
-        book_id: book.id,
-        page: currentPage,
-        note: noteDraft.trim(),
-      }).select().single()
+      const { data } = await supabase.from('book_bookmarks').insert({ user_id: user.id, book_id: book.id, page: currentPage, note: noteDraft.trim() }).select().single()
       if (data) setBookmarks((prev) => [...prev, data])
     }
     setNoteDraft('')
   }
-
-  const gotoBookmark = (p: number) => { setShowBookmarks(false); goToPage(p) }
 
   const pct = totalPages > 0 ? Math.min(100, Math.round((currentPage / totalPages) * 100)) : 0
   const remaining = Math.max(0, totalPages - currentPage)
@@ -233,29 +333,35 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
           <div className="text-[11px] text-text-secondary">Página {currentPage} de {totalPages}</div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+          <button onClick={() => setViewMode(viewMode === 'scroll' ? 'turn' : 'scroll')}
+            className={`px-2 h-8 rounded-lg text-[10px] font-medium transition-all ${viewMode === 'scroll' ? 'bg-accent text-white' : 'bg-secondary border border-white/10 text-text-secondary hover:text-white'}`} title="Cambiar vista">
+            {viewMode === 'scroll' ? '⤓ Scroll' : '⇄ Voltear'}
+          </button>
           <button onClick={prev} disabled={currentPage <= 1}
-            className="w-9 h-9 rounded-lg bg-secondary border border-white/10 text-text-secondary hover:text-white disabled:opacity-30 transition-all text-lg">‹</button>
+            className="w-8 h-8 rounded-lg bg-secondary border border-white/10 text-text-secondary hover:text-white disabled:opacity-30 transition-all text-lg">‹</button>
           <input type="number" min={1} max={totalPages || 1} value={jump}
             onChange={(e) => setJump(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') { const n = parseInt(jump); if (n >= 1 && n <= totalPages) { setJump(''); goToPage(n) } } }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { const n = parseInt(jump); if (n >= 1 && n <= totalPages) { setJump(''); if (viewMode === 'scroll') scrollToPage(n); else goToTurnPage(n) } } }}
             placeholder={String(currentPage)}
-            className="w-14 bg-secondary border border-white/10 rounded-lg py-1.5 text-center text-sm text-white focus:outline-none focus:border-accent" />
+            className="w-12 bg-secondary border border-white/10 rounded-lg py-1.5 text-center text-sm text-white focus:outline-none focus:border-accent" />
           <button onClick={next} disabled={currentPage >= totalPages}
-            className="w-9 h-9 rounded-lg bg-accent text-white hover:opacity-90 disabled:opacity-30 transition-all text-lg">›</button>
+            className="w-8 h-8 rounded-lg bg-accent text-white hover:opacity-90 disabled:opacity-30 transition-all text-lg">›</button>
           <span className="text-white/15">|</span>
           <button onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.25).toFixed(2)))} title="Alejar"
-            className="w-8 h-8 rounded-lg bg-secondary border border-white/10 text-text-secondary hover:text-white transition-all">−</button>
-          <span className="text-[11px] text-text-secondary w-12 text-center tabular-nums">{Math.round(zoom * 100)}%</span>
-          <button onClick={() => setZoom((z) => Math.min(2, +(z + 0.25).toFixed(2)))} title="Acercar"
-            className="w-8 h-8 rounded-lg bg-secondary border border-white/10 text-text-secondary hover:text-white transition-all">+</button>
-          <button onClick={() => setTwoPage((t) => !t)} title="Vista doble página"
-            className={`w-8 h-8 rounded-lg text-xs transition-all ${twoPage ? 'bg-accent text-white' : 'bg-secondary border border-white/10 text-text-secondary hover:text-white'}`}>⧉</button>
+            className="w-7 h-8 rounded-lg bg-secondary border border-white/10 text-text-secondary hover:text-white transition-all">−</button>
+          <span className="text-[10px] text-text-secondary w-10 text-center tabular-nums">{Math.round(zoom * 100)}%</span>
+          <button onClick={() => setZoom((z) => Math.min(2, +(z + 0.25).toFixed(2)))} title="Acercar (o Ctrl+rueda)"
+            className="w-7 h-8 rounded-lg bg-secondary border border-white/10 text-text-secondary hover:text-white transition-all">+</button>
+          {viewMode === 'turn' && (
+            <button onClick={() => setTwoPage((t) => !t)} title="Vista doble página"
+              className={`w-7 h-8 rounded-lg text-xs transition-all ${twoPage ? 'bg-accent text-white' : 'bg-secondary border border-white/10 text-text-secondary hover:text-white'}`}>⧉</button>
+          )}
           <button onClick={() => setShowBookmarks((s) => !s)} title="Marcadores"
-            className={`w-8 h-8 rounded-lg text-xs transition-all ${showBookmarks || bookmarks.length > 0 ? 'bg-accent/20 text-accent' : 'bg-secondary border border-white/10 text-text-secondary hover:text-white'}`}>🔖 {bookmarks.length > 0 ? bookmarks.length : ''}</button>
+            className={`w-7 h-8 rounded-lg text-xs transition-all ${showBookmarks || bookmarks.length > 0 ? 'bg-accent/20 text-accent' : 'bg-secondary border border-white/10 text-text-secondary hover:text-white'}`}>🔖 {bookmarks.length > 0 ? bookmarks.length : ''}</button>
           <button onClick={toggleBookmark} title={hasBookmark ? 'Quitar marcador' : 'Marcar esta página'}
-            className={`w-8 h-8 rounded-lg text-xs transition-all ${hasBookmark ? 'bg-accent text-white' : 'bg-secondary border border-white/10 text-text-secondary hover:text-white'}`}>{hasBookmark ? '📍' : '☆'}</button>
+            className={`w-7 h-8 rounded-lg text-xs transition-all ${hasBookmark ? 'bg-accent text-white' : 'bg-secondary border border-white/10 text-text-secondary hover:text-white'}`}>{hasBookmark ? '📍' : '☆'}</button>
           <button onClick={toggleFullscreen} title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
-            className="w-8 h-8 rounded-lg bg-secondary border border-white/10 text-text-secondary hover:text-white transition-all text-lg">⛶</button>
+            className="w-7 h-8 rounded-lg bg-secondary border border-white/10 text-text-secondary hover:text-white transition-all text-base">⛶</button>
         </div>
       </div>
 
@@ -271,7 +377,7 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
             <div className="space-y-1.5 max-h-48 overflow-y-auto">
               {bookmarks.map((bm) => (
                 <div key={bm.id} className="flex items-center gap-2 text-xs">
-                  <button onClick={() => gotoBookmark(bm.page)}
+                  <button onClick={() => { setShowBookmarks(false); if (viewMode === 'scroll') scrollToPage(bm.page); else goToTurnPage(bm.page) }}
                     className="px-2 py-1 rounded bg-secondary hover:bg-accent/20 text-accent transition-all shrink-0">Pág {bm.page}</button>
                   <span className="text-text-secondary truncate flex-1">{bm.note || '—'}</span>
                   <button onClick={async () => { await supabase.from('book_bookmarks').delete().eq('id', bm.id); setBookmarks((p) => p.filter((b) => b.id !== bm.id)) }}
@@ -300,33 +406,68 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
         <div className="text-right text-[11px] text-accent font-bold mt-1">{pct}%</div>
       </div>
 
-      <div ref={containerRef}
-        className="relative bg-black/40 rounded-xl border border-white/10 overflow-auto flex justify-center items-start"
-        style={{ maxHeight: isFullscreen ? '88vh' : '70vh' }}>
-        <div className="flex justify-center gap-2 p-3">
-          <canvas ref={pageRef} className="shadow-2xl" />
-          <canvas ref={page2Ref} className="shadow-2xl" />
+      {/* MODO SCROLL */}
+      {viewMode === 'scroll' ? (
+        <div ref={scrollRef} onScroll={onScroll} onWheel={handleWheel}
+          className="relative bg-black/40 rounded-xl border border-white/10 overflow-auto"
+          style={{ maxHeight: isFullscreen ? '88vh' : '70vh' }}>
+          <div style={{ height: totalScrollHeight, position: 'relative' }}>
+            {scrollRange.map((p) => (
+              <div key={p} style={{ position: 'absolute', top: offsets[p - 1], left: 0, right: 0, display: 'flex', justifyContent: 'center', padding: '6px 0' }}
+                onClick={handleCanvasClick}>
+                <canvas ref={(el) => { scrollPageRefs.current[p] = el! }} className="shadow-2xl rounded-sm" />
+              </div>
+            ))}
+          </div>
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+              <div className="text-center">
+                <div className="text-lg mb-2">⏳</div>
+                <div className="text-text-secondary text-sm">Cargando PDF…</div>
+              </div>
+            </div>
+          )}
+          {!loading && error && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center px-6">
+                <div className="text-[#EA5455] mb-2 text-sm">❌ {error}</div>
+                <div className="text-text-secondary text-xs">Verifica que el bucket "books" exista y que el archivo esté subido.</div>
+              </div>
+            </div>
+          )}
         </div>
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-            <div className="text-center">
-              <div className="text-lg mb-2">⏳</div>
-              <div className="text-text-secondary text-sm">Cargando PDF…</div>
-            </div>
+      ) : (
+        /* MODO VOLTEO */
+        <div ref={scrollRef} onWheel={handleWheel}
+          className="relative bg-black/40 rounded-xl border border-white/10 overflow-auto flex justify-center items-start"
+          style={{ maxHeight: isFullscreen ? '88vh' : '70vh' }}>
+          <div className={`flex justify-center gap-2 p-3 transition-all duration-200 ${transitioning ? 'opacity-0 translate-x-3' : 'opacity-100 translate-x-0'}`}
+            onClick={handleCanvasClick}>
+            <canvas ref={turnLeftRef} className="shadow-2xl" />
+            <canvas ref={turnRightRef} className="shadow-2xl" />
           </div>
-        )}
-        {!loading && error && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center px-6">
-              <div className="text-[#EA5455] mb-2 text-sm">❌ {error}</div>
-              <div className="text-text-secondary text-xs">Verifica que el bucket "books" exista y que el archivo esté subido.</div>
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+              <div className="text-center">
+                <div className="text-lg mb-2">⏳</div>
+                <div className="text-text-secondary text-sm">Cargando PDF…</div>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+          {!loading && error && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center px-6">
+                <div className="text-[#EA5455] mb-2 text-sm">❌ {error}</div>
+                <div className="text-text-secondary text-xs">Verifica que el bucket "books" exista y que el archivo esté subido.</div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="text-center text-[10px] text-text-secondary/50">
-        Usa ← → del teclado o los botones para pasar página · el tiempo de lectura se registra al cambiar de página
+        {viewMode === 'scroll' ? 'Haz scroll para leer · clic en el borde derecho/izquierdo de la página para avanzar/retroceder · Ctrl+rueda para zoom'
+          : 'Usa ← → o clic en los bordes de la página · Ctrl+rueda para zoom · el tiempo se registra al cambiar de página'}
       </div>
     </div>
   )
