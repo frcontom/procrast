@@ -203,14 +203,24 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
   }, [visiblePage, pageDims.length])
 
   const scrollPageRefs = useRef<Record<number, HTMLCanvasElement>>({})
+  const renderingRef = useRef<Set<number>>(new Set())
+
+  // Invalida el caché de render solo cuando cambia la escala/zoom, no en cada scroll
+  useEffect(() => {
+    renderedRef.current.clear()
+    renderingRef.current.clear()
+  }, [zoom, scrollWidthCap, viewMode, loading])
 
   useEffect(() => {
     if (viewMode !== 'scroll' || loading) return
-    renderedRef.current.clear()
     for (const p of scrollRange) {
       const canvas = scrollPageRefs.current[p]
-      if (canvas && !renderedRef.current.has(p)) {
-        renderToCanvas(canvas, p, scrollWidthCap).then((ok) => { if (ok) renderedRef.current.add(p) })
+      if (canvas && !renderedRef.current.has(p) && !renderingRef.current.has(p)) {
+        renderingRef.current.add(p)
+        renderToCanvas(canvas, p, scrollWidthCap).then((ok) => {
+          renderingRef.current.delete(p)
+          if (ok && scrollPageRefs.current[p]) renderedRef.current.add(p)
+        })
       }
     }
   }, [scrollRange, viewMode, loading, renderToCanvas, zoom, scrollWidthCap])
@@ -442,7 +452,7 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
             {scrollRange.map((p) => (
               <div key={p} style={{ position: 'absolute', top: offsets[p - 1], left: 0, right: 0, display: 'flex', justifyContent: 'center', padding: '6px 0' }}
                 onClick={handleCanvasClick}>
-                <canvas ref={(el) => {
+                <canvas key={`${p}-${zoom}`} ref={(el) => {
                   if (el) {
                     scrollPageRefs.current[p] = el
                   } else {
