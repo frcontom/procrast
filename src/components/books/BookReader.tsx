@@ -33,7 +33,8 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
   const [bookmarks, setBookmarks] = useState<any[]>([])
   const [showBookmarks, setShowBookmarks] = useState(false)
   const [noteDraft, setNoteDraft] = useState('')
-  const [pageHeights, setPageHeights] = useState<number[]>([])
+  const [pageDims, setPageDims] = useState<{ w: number; h: number }[]>([])
+  const [containerW, setContainerW] = useState(0)
   const [scrollTop, setScrollTop] = useState(0)
   const [transitioning, setTransitioning] = useState(false)
 
@@ -65,13 +66,13 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
         docRef.current = doc
         const total = doc.numPages
         setTotalPages(total)
-        const heights: number[] = []
+        const dims: { w: number; h: number }[] = []
         for (let i = 1; i <= total; i++) {
           const page = await doc.getPage(i)
           const vp = page.getViewport({ scale: 1 })
-          heights.push(vp.height)
+          dims.push({ w: vp.width, h: vp.height })
         }
-        setPageHeights(heights)
+        setPageDims(dims)
         const start = Math.min(book.current_page || 1, total)
         currentPageRef.current = start
         setCurrentPage(start)
@@ -87,6 +88,17 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
     })()
     return () => { cancelled = true }
   }, [url])
+
+  // Observar ancho del contenedor de scroll
+  useEffect(() => {
+    const el = scrollRef.current || containerRef.current
+    if (!el) return
+    const update = () => setContainerW(el.clientWidth)
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [loading])
 
   // Render de una página al canvas (modo volteo)
   const renderToCanvas = useCallback(async (canvas: HTMLCanvasElement, pageNum: number, widthCap: number): Promise<boolean> => {
@@ -128,23 +140,39 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
   }, [renderToCanvas, isFullscreen])
 
   // ---- MODO SCROLL CONTINUO ----
+  const scrollWidthCap = useMemo(() => {
+    const cw = containerW > 0 ? Math.max(containerW - 32, 400) : 700
+    return Math.min(cw, isFullscreen ? 1200 : 820)
+  }, [containerW, isFullscreen])
+
+  const pageRenderedH = useCallback((i: number) => {
+    const d = pageDims[i]
+    if (!d) return 0
+    return (d.h * zoom * scrollWidthCap) / d.w
+  }, [pageDims, zoom, scrollWidthCap])
+
   const offsets = useMemo(() => {
     const arr: number[] = []
     let acc = 0
-    for (const h of pageHeights) { arr.push(acc); acc += h * zoom }
+    for (let i = 0; i < pageDims.length; i++) { arr.push(acc); acc += pageRenderedH(i) + 12 }
     return arr
-  }, [pageHeights, zoom])
+  }, [pageDims, pageRenderedH])
 
-  const totalScrollHeight = pageHeights.reduce((a, h) => a + h * zoom, 0)
+  const totalScrollHeight = useMemo(() => {
+    if (pageDims.length === 0) return 0
+    let acc = 0
+    for (let i = 0; i < pageDims.length; i++) acc += pageRenderedH(i) + 12
+    return acc
+  }, [pageDims, pageRenderedH])
 
   const visiblePage = useMemo(() => {
-    if (pageHeights.length === 0) return 1
+    if (pageDims.length === 0) return 1
     const mid = scrollTop + (scrollRef.current ? scrollRef.current.clientHeight / 2 : 0)
     for (let i = 0; i < offsets.length; i++) {
-      if (mid >= offsets[i] && mid < offsets[i] + pageHeights[i] * zoom) return i + 1
+      if (mid >= offsets[i] && mid < offsets[i] + pageRenderedH(i) + 12) return i + 1
     }
-    return pageHeights.length
-  }, [scrollTop, offsets, pageHeights, zoom])
+    return pageDims.length
+  }, [scrollTop, offsets, pageRenderedH, pageDims.length])
 
   useEffect(() => {
     if (viewMode !== 'scroll' || loading) return
@@ -165,14 +193,14 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
 
   // ---- Render virtualizado en scroll mode ----
   const scrollRange = useMemo(() => {
-    if (pageHeights.length === 0) return []
+    if (pageDims.length === 0) return []
     const buffer = 2
     const start = Math.max(1, visiblePage - buffer)
-    const end = Math.min(pageHeights.length, visiblePage + buffer)
+    const end = Math.min(pageDims.length, visiblePage + buffer)
     const out: number[] = []
     for (let i = start; i <= end; i++) out.push(i)
     return out
-  }, [visiblePage, pageHeights.length])
+  }, [visiblePage, pageDims.length])
 
   const scrollPageRefs = useRef<Record<number, HTMLCanvasElement>>({})
 
@@ -181,12 +209,10 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
     for (const p of scrollRange) {
       const canvas = scrollPageRefs.current[p]
       if (canvas && !renderedRef.current.has(p)) {
-        const c = scrollRef.current
-        const cw = c ? Math.max(c.clientWidth - 32, 400) : 700
-        renderToCanvas(canvas, p, Math.min(cw, isFullscreen ? 1200 : 820)).then((ok) => { if (ok) renderedRef.current.add(p) })
+        renderToCanvas(canvas, p, scrollWidthCap).then((ok) => { if (ok) renderedRef.current.add(p) })
       }
     }
-  }, [scrollRange, viewMode, loading, renderToCanvas, zoom])
+  }, [scrollRange, viewMode, loading, renderToCanvas, zoom, scrollWidthCap])
 
   const scrollToPage = useCallback((pageNum: number) => {
     if (viewMode !== 'scroll') return
