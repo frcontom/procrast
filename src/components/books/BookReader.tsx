@@ -21,9 +21,10 @@ interface Props {
   onProgress: (page: number, totalPages: number) => void
   onLogReading: (pageStart: number, pageEnd: number, seconds: number) => void
   dailyGoalMinutes?: number
+  onSessionEnd?: (info: { seconds: number; pagesRead: number }) => void
 }
 
-export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinutes = 30 }: Props) {
+export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinutes = 30, onSessionEnd }: Props) {
   const user = useUser()
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -47,6 +48,7 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
 
   const currentPageRef = useRef<number>(Math.min(book.current_page || 1, Math.max(1, book.total_pages || 1)))
   const [currentPage, setCurrentPage] = useState(currentPageRef.current)
+  const sessionStartPageRef = useRef<number>(currentPageRef.current)
   const turnedAtRef = useRef<number>(Date.now())
   const renderedRef = useRef<Set<number>>(new Set())
   const [sessionSeconds, setSessionSeconds] = useState(0)
@@ -346,6 +348,9 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
     return () => {
       const elapsed = Math.round((Date.now() - turnedAtRef.current) / 1000)
       if (elapsed > 0) onLogReading(currentPageRef.current, currentPageRef.current, elapsed)
+      if (onSessionEnd) {
+        onSessionEnd({ seconds: elapsed, pagesRead: Math.max(0, currentPageRef.current - sessionStartPageRef.current) })
+      }
     }
   }, [])
 

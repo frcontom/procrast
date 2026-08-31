@@ -12,6 +12,7 @@ export function BooksPage() {
   const [books, setBooks] = useState<Book[]>([])
   const [reading, setReading] = useState<Book | null>(null)
   const [readerUrl, setReaderUrl] = useState('')
+  const [sessionSummary, setSessionSummary] = useState<{ seconds: number; pagesRead: number } | null>(null)
   const [uploading, setUploading] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Book | null>(null)
@@ -491,7 +492,34 @@ export function BooksPage() {
               <span className="text-sm font-semibold text-white truncate">📖 {reading.title}</span>
               <button onClick={() => setReading(null)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-secondary text-text-secondary hover:text-white transition-all">✕ Cerrar</button>
             </div>
-            <BookReader book={reading} url={readerUrl} onProgress={handleProgress} onLogReading={handleLogReading} dailyGoalMinutes={30} />
+            <BookReader book={reading} url={readerUrl} onProgress={handleProgress} onLogReading={handleLogReading} dailyGoalMinutes={30} onSessionEnd={setSessionSummary} />
+          </div>
+        </div>
+      )}
+
+      {sessionSummary && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70" onClick={() => setSessionSummary(null)}>
+          <div className="bg-card rounded-xl border border-white/10 p-6 w-full max-w-sm mx-4 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="text-3xl mb-2">📚</div>
+            <h3 className="text-base font-bold text-white mb-1">Sesión terminada</h3>
+            <p className="text-[11px] text-text-secondary mb-4">{reading?.title}</p>
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              <div className="bg-secondary rounded-lg p-3">
+                <div className="text-lg font-bold text-accent">{Math.round(sessionSummary.seconds / 60)}min</div>
+                <div className="text-[10px] text-text-secondary uppercase tracking-wider mt-0.5">Leído hoy</div>
+              </div>
+              <div className="bg-secondary rounded-lg p-3">
+                <div className="text-lg font-bold text-white">{sessionSummary.pagesRead} pág.</div>
+                <div className="text-[10px] text-text-secondary uppercase tracking-wider mt-0.5">Avance en sesión</div>
+              </div>
+            </div>
+            <button onClick={() => setSessionSummary(null)}
+              className="w-full py-2 rounded-lg text-sm font-medium text-white transition-all"
+              style={{ backgroundColor: 'var(--accent)' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}>
+              Continuar
+            </button>
           </div>
         </div>
       )}
