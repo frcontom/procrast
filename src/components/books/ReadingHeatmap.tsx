@@ -90,8 +90,8 @@ export function ReadingHeatmap({ activity }: Props) {
                       <>
                         <span className="relative z-[1] text-[9px] leading-none">{d.date.getDate()}</span>
                         {failed && (
-                          <span className="absolute inset-0 flex items-center justify-center text-[16px] font-bold leading-none"
-                            style={{ color: 'rgba(234,84,85,0.85)' }}>✕</span>
+                          <span className="absolute inset-0 flex items-center justify-center text-[22px] font-bold leading-none"
+                            style={{ color: 'rgba(234,84,85,0.45)' }}>✕</span>
                         )}
                         {!failed && hasActivity && (
                           <span className="absolute bottom-[1px] left-0 right-0 text-center text-[6px] leading-none"
