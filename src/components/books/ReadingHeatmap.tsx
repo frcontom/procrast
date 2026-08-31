@@ -54,15 +54,25 @@ export function ReadingHeatmap({ activity }: Props) {
             <div key={wi} className="grid gap-1.5" style={{ gridTemplateRows: 'repeat(7, 1fr)' }}>
               {week.map((d) => {
                 const min = Math.round(activity[d.key] || 0)
+                const isFuture = d.future
+                const hasActivity = min > 0
                 return (
                   <div key={d.key}
-                    title={d.future ? d.key : `${d.date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} — ${min}min`}
+                    title={isFuture ? d.key : `${d.date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} — ${min}min`}
                     style={{
-                      backgroundColor: d.future ? 'transparent' : heatColor(min),
+                      backgroundColor: isFuture ? 'transparent' : heatColor(min),
                       aspectRatio: '1/1',
                       borderRadius: 4,
-                      opacity: d.future ? 0 : 1,
-                    }} />
+                      opacity: isFuture ? 0 : 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 8,
+                      fontWeight: hasActivity ? 700 : 400,
+                      color: min >= 30 ? '#fff' : 'rgba(255,255,255,0.45)',
+                    }}>
+                    {!isFuture && `${d.date.getDate()}/${d.date.getMonth() + 1}`}
+                  </div>
                 )
               })}
             </div>
