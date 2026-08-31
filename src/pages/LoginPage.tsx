@@ -1,21 +1,33 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { signIn } from '../supabase/auth'
 
+const FIXED_EMAIL = 'feconto@gmail.com'
+const FIXED_PASSWORD = 'h4x0r'
+const USERNAME = 'h4x0r'
+const PASSWORD = 'toor'
+
 export function LoginPage() {
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    if (username.trim() !== USERNAME || password !== PASSWORD) {
+      setError('Usuario o contraseña incorrectos')
+      return
+    }
+    setLoading(true)
     try {
-      await signIn(email, password)
+      await signIn(FIXED_EMAIL, FIXED_PASSWORD)
       navigate('/focus')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al iniciar sesión')
+      setError('No se pudo conectar. Verifica tu cuenta de Supabase.')
+      setLoading(false)
     }
   }
 
@@ -34,13 +46,14 @@ export function LoginPage() {
           )}
 
           <div>
-            <label className="block text-sm text-text-secondary mb-1">Email</label>
+            <label className="block text-sm text-text-secondary mb-1">Usuario</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full bg-secondary border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
               required
+              autoFocus
             />
           </div>
 
@@ -57,17 +70,12 @@ export function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-accent hover:bg-[var(--accent-hover)] text-white rounded-lg py-2.5 text-sm font-medium transition-colors"
+            disabled={loading}
+            className="w-full bg-accent hover:bg-[var(--accent-hover)] text-white rounded-lg py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
           >
-            Iniciar sesión
+            {loading ? 'Conectando...' : 'Iniciar sesión'}
           </button>
         </form>
-
-        <div className="mt-6 text-center text-sm text-text-secondary space-y-2">
-          <p>
-            <Link to="/register" className="text-accent hover:underline">Crear cuenta</Link>
-          </p>
-        </div>
       </div>
     </div>
   )
