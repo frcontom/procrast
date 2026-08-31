@@ -3,20 +3,9 @@ import { supabase } from '../supabase/client'
 import { useUser } from '../supabase/auth'
 import type { Book } from '../supabase/types'
 import { BookReader } from '../components/books/BookReader'
+import { ShelfBook, statusOf, STATUS_META } from '../components/books/ShelfBook'
 import { formatMinutes } from '../lib/formatters'
 import { XP } from '../lib/gamification'
-
-function statusOf(b: Book): 'nuevo' | 'progress' | 'done' {
-  if (b.status === 'finished') return 'done'
-  if ((b.current_page || 0) > 0) return 'progress'
-  return 'nuevo'
-}
-
-const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
-  nuevo: { label: 'Sin empezar', color: '#60A5FA', bg: 'rgba(96,165,250,0.15)' },
-  progress: { label: 'En progreso', color: '#FF9800', bg: 'rgba(255,152,0,0.15)' },
-  done: { label: 'Terminado', color: '#28C76F', bg: 'rgba(40,199,111,0.15)' },
-}
 
 export function BooksPage() {
   const user = useUser()
@@ -38,6 +27,7 @@ export function BooksPage() {
   const [todayMinutes, setTodayMinutes] = useState(0)
   const [streak, setStreak] = useState(0)
   const [sortBy, setSortBy] = useState<'custom' | 'progress'>('progress')
+  const [view, setView] = useState<'grid' | 'shelf'>('shelf')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [logsByBook, setLogsByBook] = useState<Record<string, { minutes: number; days: number; last: string }>>({})
 
@@ -287,6 +277,11 @@ export function BooksPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        <button onClick={() => setView(view === 'shelf' ? 'grid' : 'shelf')}
+          className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${view === 'shelf' ? 'bg-[var(--accent)] text-white' : 'bg-secondary text-text-secondary hover:text-white'}`}>
+          {view === 'shelf' ? '🏛️ Estantería' : '📋 Cuadrícula'}
+        </button>
+        <span className="text-white/20">|</span>
         <span className="text-[10px] text-text-secondary uppercase tracking-wider">Ordenar:</span>
         <button onClick={() => setSortBy('progress')}
           className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${sortBy === 'progress' ? 'bg-[var(--accent)] text-white' : 'bg-secondary text-text-secondary hover:text-white'}`}>
@@ -319,6 +314,43 @@ export function BooksPage() {
           <div className="text-3xl mb-2">📚</div>
           <p>Sube tu primer PDF para empezar a medir tu lectura</p>
         </div>
+      ) : view === 'shelf' ? (
+        (() => {
+          const sections = [
+            { key: 'progress', title: '📖 Leyendo', color: '#FF9800' },
+            { key: 'nuevo', title: '🆕 Por leer', color: '#60A5FA' },
+            { key: 'done', title: '✅ Terminados', color: '#28C76F' },
+          ]
+          return (
+            <div className="space-y-6">
+              {sections.map((sec) => {
+                const items = ordered.filter((b) => statusOf(b) === sec.key)
+                if (items.length === 0) return null
+                return (
+                  <div key={sec.key}>
+                    <div className="flex items-center gap-2 mb-2.5">
+                      <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: sec.color }}>{sec.title}</span>
+                      <span className="text-[10px] text-text-secondary/50">({items.length})</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                      {items.map((b) => (
+                        <ShelfBook
+                          key={b.id}
+                          book={b}
+                          stats={logsByBook[b.id]}
+                          onOpen={openReader}
+                          onTogglePin={togglePin}
+                          onEdit={openEdit}
+                          onDelete={handleDelete}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {ordered.map((b, idx) => {
