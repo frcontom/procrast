@@ -49,6 +49,7 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
   const currentPageRef = useRef<number>(Math.min(book.current_page || 1, Math.max(1, book.total_pages || 1)))
   const [currentPage, setCurrentPage] = useState(currentPageRef.current)
   const sessionStartPageRef = useRef<number>(currentPageRef.current)
+  const sessionStartRef = useRef<number>(Date.now())
   const turnedAtRef = useRef<number>(Date.now())
   const renderedRef = useRef<Set<number>>(new Set())
   const [sessionSeconds, setSessionSeconds] = useState(0)
@@ -71,7 +72,7 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
 
   useEffect(() => {
     const t = setInterval(() => {
-      const elapsed = Math.round((Date.now() - turnedAtRef.current) / 1000)
+      const elapsed = Math.round((Date.now() - sessionStartRef.current) / 1000)
       setSessionSeconds(elapsed)
     }, 1000)
     return () => clearInterval(t)
@@ -364,7 +365,8 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
       const elapsed = Math.min(600, Math.round((Date.now() - turnedAtRef.current) / 1000))
       if (elapsed >= 1) onLogReading(currentPageRef.current, currentPageRef.current, elapsed)
       if (onSessionEnd) {
-        onSessionEnd({ seconds: elapsed, pagesRead: Math.max(0, currentPageRef.current - sessionStartPageRef.current) })
+        const totalSession = Math.round((Date.now() - sessionStartRef.current) / 1000)
+        onSessionEnd({ seconds: totalSession, pagesRead: Math.max(0, currentPageRef.current - sessionStartPageRef.current) })
       }
     }
   }, [])
