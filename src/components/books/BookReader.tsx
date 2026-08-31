@@ -65,10 +65,10 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
   useEffect(() => {
     if (!user) return
     const today = new Date().toLocaleDateString('en-CA')
-    supabase.from('book_reading_logs').select('seconds, date').eq('user_id', user.id).eq('date', today).then(({ data }: any) => {
+    supabase.from('book_reading_logs').select('seconds, date').eq('user_id', user.id).eq('book_id', book.id).eq('date', today).then(({ data }: any) => {
       if (data) setTodaySeconds(data.reduce((a: number, l: any) => a + (l.seconds || 0), 0))
     })
-  }, [user])
+  }, [user, book.id])
 
   useEffect(() => {
     const t = setInterval(() => {
