@@ -19,7 +19,7 @@ export function ReadingHeatmap({ activity }: Props) {
   const start = new Date(today)
   start.setDate(start.getDate() - (weeks * 7 - 1))
   const anchor = new Date(start)
-  anchor.setDate(anchor.getDate() - anchor.getDay()) // domingo anterior
+  anchor.setDate(anchor.getDate() - anchor.getDay())
   for (let i = 0; i < weeks * 7; i++) {
     const d = new Date(anchor)
     d.setDate(anchor.getDate() + i)
@@ -41,23 +41,25 @@ export function ReadingHeatmap({ activity }: Props) {
         <span className="text-[10px] text-text-secondary">{totalDays} días con lectura · últimas {weeks} semanas</span>
       </div>
       <div className="flex gap-1">
-        <div className="flex flex-col justify-between text-[8px] text-text-secondary/50 pr-1">
+        <div className="flex flex-col justify-between text-[10px] text-text-secondary/50 pr-1.5">
           {DAY_NAMES.map((dn, i) => (
-            <span key={i} className="h-[14px] flex items-center">{dn}</span>
+            <span key={i} className="flex items-center leading-none">{dn}</span>
           ))}
         </div>
-        {weeksArr.map((week, wi) => (
-          <div key={wi} className="flex flex-col gap-1">
-            {week.map((d) => {
-              const min = Math.round(activity[d.key] || 0)
-              return (
-                <div key={d.key}
-                  title={`${d.date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} — ${min}min`}
-                  style={{ backgroundColor: heatColor(min), width: 14, height: 14, borderRadius: 3 }} />
-              )
-            })}
-          </div>
-        ))}
+        <div className="flex-1 grid gap-1" style={{ gridTemplateColumns: `repeat(${weeks}, 1fr)` }}>
+          {weeksArr.map((week, wi) => (
+            <div key={wi} className="grid gap-1" style={{ gridTemplateRows: 'repeat(7, 1fr)' }}>
+              {week.map((d) => {
+                const min = Math.round(activity[d.key] || 0)
+                return (
+                  <div key={d.key}
+                    title={`${d.date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} — ${min}min`}
+                    style={{ backgroundColor: heatColor(min), aspectRatio: '1/1', borderRadius: 4 }} />
+                )
+              })}
+            </div>
+          ))}
+        </div>
       </div>
       <div className="flex items-center gap-1.5 mt-3 text-[9px] text-text-secondary/60">
         <span>Menos</span>
