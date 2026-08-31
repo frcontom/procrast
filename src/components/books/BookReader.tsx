@@ -77,6 +77,21 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
     return () => clearInterval(t)
   }, [])
 
+  // Pausa el conteo cuando la pestaña no está visible (no cuenta tiempo de inactividad)
+  useEffect(() => {
+    const onVis = () => {
+      if (document.hidden) {
+        const elapsed = Math.round((Date.now() - turnedAtRef.current) / 1000)
+        if (elapsed >= 5) setTodaySeconds((s) => s + elapsed)
+        turnedAtRef.current = Date.now()
+      } else {
+        turnedAtRef.current = Date.now()
+      }
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [])
+
   // Cargar doc y calcular alturas base de cada página
   useEffect(() => {
     let cancelled = false
@@ -205,8 +220,8 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
     if (viewMode !== 'scroll' || loading) return
     if (visiblePage !== currentPageRef.current) {
       const prev = currentPageRef.current
-      const elapsed = Math.round((Date.now() - turnedAtRef.current) / 1000)
-      if (elapsed > 0) onLogReading(prev, visiblePage, elapsed)
+      const elapsed = Math.min(600, Math.round((Date.now() - turnedAtRef.current) / 1000))
+      if (elapsed >= 1) onLogReading(prev, visiblePage, elapsed)
       currentPageRef.current = visiblePage
       setCurrentPage(visiblePage)
       turnedAtRef.current = Date.now()
@@ -287,8 +302,8 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
     const doc = docRef.current
     if (!doc || pageNum < 1 || pageNum > doc.numPages) return
     const prev = currentPageRef.current
-    const elapsed = Math.round((Date.now() - turnedAtRef.current) / 1000)
-    if (elapsed > 0 && pageNum !== prev) onLogReading(prev, pageNum, elapsed)
+    const elapsed = Math.min(600, Math.round((Date.now() - turnedAtRef.current) / 1000))
+    if (elapsed >= 1 && pageNum !== prev) onLogReading(prev, pageNum, elapsed)
     currentPageRef.current = pageNum
     setCurrentPage(pageNum)
     turnedAtRef.current = Date.now()
@@ -346,8 +361,8 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
   // Registrar el tiempo de la última página al cerrar el lector
   useEffect(() => {
     return () => {
-      const elapsed = Math.round((Date.now() - turnedAtRef.current) / 1000)
-      if (elapsed > 0) onLogReading(currentPageRef.current, currentPageRef.current, elapsed)
+      const elapsed = Math.min(600, Math.round((Date.now() - turnedAtRef.current) / 1000))
+      if (elapsed >= 1) onLogReading(currentPageRef.current, currentPageRef.current, elapsed)
       if (onSessionEnd) {
         onSessionEnd({ seconds: elapsed, pagesRead: Math.max(0, currentPageRef.current - sessionStartPageRef.current) })
       }
@@ -432,21 +447,28 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
         </div>
       </div>
 
-      <div className="flex items-center gap-3 bg-card rounded-xl border border-white/10 px-4 py-2.5 flex-wrap">
-        <span className="flex items-center gap-1.5 text-[11px] font-bold text-white tabular-nums" title="Tiempo de esta sesión">
-          ⏱ {fmtClock(sessionSeconds)}
-        </span>
-        <span className="text-white/15">|</span>
-        <span className="text-[11px] text-text-secondary">Hoy: <strong className="text-accent tabular-nums">{Math.floor(todaySeconds / 60)}min</strong> / {dailyGoalMinutes}min</span>
-        <div className="flex-1 min-w-[120px]">
-          <div className="w-full bg-secondary rounded-full h-1.5 overflow-hidden">
-            <div className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${Math.min(100, Math.round((todaySeconds / 60 / Math.max(1, dailyGoalMinutes)) * 100))}%`, background: (todaySeconds / 60) >= dailyGoalMinutes ? '#28C76F' : 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
-          </div>
+      <div className="bg-card rounded-xl border border-white/10 px-4 py-3">
+        <div className="flex items-center justify-between text-[11px] mb-1.5 flex-wrap gap-1">
+          <span className="flex items-center gap-2">
+            <span className="text-text-secondary">Leídas: <strong className="text-white">{currentPage}</strong> / {totalPages}</span>
+            <span className="text-white/15">·</span>
+            <span className="text-text-secondary">Quedan <strong className="text-accent">{remaining} pág.</strong></span>
+          </span>
+          <span className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5 text-text-secondary tabular-nums" title="Tiempo de esta sesión">⏱ {fmtClock(sessionSeconds)}</span>
+            <span className="text-white/15">·</span>
+            <span className="text-text-secondary">Hoy: <strong className="text-accent tabular-nums">{Math.floor(todaySeconds / 60)}min</strong> / {dailyGoalMinutes}min</span>
+            {(todaySeconds / 60) >= dailyGoalMinutes && <span className="text-[11px] font-bold text-[#28C76F]">🎉</span>}
+          </span>
         </div>
-        {(todaySeconds / 60) >= dailyGoalMinutes && (
-          <span className="text-[11px] font-bold text-[#28C76F]">🎉 Meta de hoy cumplida</span>
-        )}
+        <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${pct}%`, background: 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
+        </div>
+        <div className="flex items-center justify-between mt-1">
+          <span className="text-[10px] text-text-secondary/60 tabular-nums">Hoy {Math.floor(todaySeconds / 60)}/{dailyGoalMinutes}min</span>
+          <span className="text-[11px] text-accent font-bold">{pct}%</span>
+        </div>
       </div>
 
       {showBookmarks && (
@@ -477,18 +499,6 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
           </div>
         </div>
       )}
-
-      <div className="bg-card rounded-xl border border-white/10 px-4 py-3">
-        <div className="flex items-center justify-between text-[11px] mb-1.5">
-          <span className="text-text-secondary">Leídas: <strong className="text-white">{currentPage}</strong> / {totalPages}</span>
-          <span className="text-text-secondary">Quedan <strong className="text-accent">{remaining} páginas</strong></span>
-        </div>
-        <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
-          <div className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${pct}%`, background: 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
-        </div>
-        <div className="text-right text-[11px] text-accent font-bold mt-1">{pct}%</div>
-      </div>
 
       {/* MODO SCROLL */}
       {viewMode === 'scroll' ? (

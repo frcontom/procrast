@@ -193,6 +193,7 @@ export function BooksPage() {
       page_start: pageStart,
       page_end: pageEnd,
       seconds,
+      date: new Date().toLocaleDateString('en-CA'),
     })
     // XP por lectura: 1 XP por minuto leído
     const xp = Math.round(seconds / 60)
