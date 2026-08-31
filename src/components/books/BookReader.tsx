@@ -9,14 +9,21 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url,
 ).toString()
 
+function fmtClock(sec: number): string {
+  const m = Math.floor(sec / 60)
+  const s = sec % 60
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+}
+
 interface Props {
   book: Book
   url: string
   onProgress: (page: number, totalPages: number) => void
   onLogReading: (pageStart: number, pageEnd: number, seconds: number) => void
+  dailyGoalMinutes?: number
 }
 
-export function BookReader({ book, url, onProgress, onLogReading }: Props) {
+export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinutes = 30 }: Props) {
   const user = useUser()
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -42,6 +49,8 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
   const [currentPage, setCurrentPage] = useState(currentPageRef.current)
   const turnedAtRef = useRef<number>(Date.now())
   const renderedRef = useRef<Set<number>>(new Set())
+  const [sessionSeconds, setSessionSeconds] = useState(0)
+  const [todaySeconds, setTodaySeconds] = useState(0)
 
   useEffect(() => {
     if (!user || !book.id) return
@@ -49,6 +58,22 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
       if (data) setBookmarks(data)
     })
   }, [user, book.id])
+
+  useEffect(() => {
+    if (!user) return
+    const today = new Date().toLocaleDateString('en-CA')
+    supabase.from('book_reading_logs').select('seconds, date').eq('user_id', user.id).eq('date', today).then(({ data }: any) => {
+      if (data) setTodaySeconds(data.reduce((a: number, l: any) => a + (l.seconds || 0), 0))
+    })
+  }, [user])
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      const elapsed = Math.round((Date.now() - turnedAtRef.current) / 1000)
+      setSessionSeconds(elapsed)
+    }, 1000)
+    return () => clearInterval(t)
+  }, [])
 
   // Cargar doc y calcular alturas base de cada página
   useEffect(() => {
@@ -400,6 +425,23 @@ export function BookReader({ book, url, onProgress, onLogReading }: Props) {
           <button onClick={toggleFullscreen} title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
             className="w-7 h-8 rounded-lg bg-secondary border border-white/10 text-text-secondary hover:text-white transition-all text-base">⛶</button>
         </div>
+      </div>
+
+      <div className="flex items-center gap-3 bg-card rounded-xl border border-white/10 px-4 py-2.5 flex-wrap">
+        <span className="flex items-center gap-1.5 text-[11px] font-bold text-white tabular-nums" title="Tiempo de esta sesión">
+          ⏱ {fmtClock(sessionSeconds)}
+        </span>
+        <span className="text-white/15">|</span>
+        <span className="text-[11px] text-text-secondary">Hoy: <strong className="text-accent tabular-nums">{Math.floor(todaySeconds / 60)}min</strong> / {dailyGoalMinutes}min</span>
+        <div className="flex-1 min-w-[120px]">
+          <div className="w-full bg-secondary rounded-full h-1.5 overflow-hidden">
+            <div className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${Math.min(100, Math.round((todaySeconds / 60 / Math.max(1, dailyGoalMinutes)) * 100))}%`, background: (todaySeconds / 60) >= dailyGoalMinutes ? '#28C76F' : 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
+          </div>
+        </div>
+        {(todaySeconds / 60) >= dailyGoalMinutes && (
+          <span className="text-[11px] font-bold text-[#28C76F]">🎉 Meta de hoy cumplida</span>
+        )}
       </div>
 
       {showBookmarks && (

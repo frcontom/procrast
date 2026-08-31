@@ -491,7 +491,7 @@ export function BooksPage() {
               <span className="text-sm font-semibold text-white truncate">📖 {reading.title}</span>
               <button onClick={() => setReading(null)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-secondary text-text-secondary hover:text-white transition-all">✕ Cerrar</button>
             </div>
-            <BookReader book={reading} url={readerUrl} onProgress={handleProgress} onLogReading={handleLogReading} />
+            <BookReader book={reading} url={readerUrl} onProgress={handleProgress} onLogReading={handleLogReading} dailyGoalMinutes={30} />
           </div>
         </div>
       )}
