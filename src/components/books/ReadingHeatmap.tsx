@@ -40,15 +40,15 @@ export function ReadingHeatmap({ activity }: Props) {
         <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">📅 Actividad de lectura</span>
         <span className="text-[10px] text-text-secondary">{totalDays} días con lectura · últimas {weeks} semanas</span>
       </div>
-      <div className="flex gap-1">
+      <div className="flex gap-1.5 max-w-[700px] mx-auto">
         <div className="flex flex-col justify-between text-[10px] text-text-secondary/50 pr-1.5">
           {DAY_NAMES.map((dn, i) => (
             <span key={i} className="flex items-center leading-none">{dn}</span>
           ))}
         </div>
-        <div className="flex-1 grid gap-1" style={{ gridTemplateColumns: `repeat(${weeks}, 1fr)` }}>
+        <div className="flex-1 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${weeks}, 1fr)` }}>
           {weeksArr.map((week, wi) => (
-            <div key={wi} className="grid gap-1" style={{ gridTemplateRows: 'repeat(7, 1fr)' }}>
+            <div key={wi} className="grid gap-1.5" style={{ gridTemplateRows: 'repeat(7, 1fr)' }}>
               {week.map((d) => {
                 const min = Math.round(activity[d.key] || 0)
                 return (
