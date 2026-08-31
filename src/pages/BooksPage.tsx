@@ -4,6 +4,7 @@ import { useUser } from '../supabase/auth'
 import type { Book } from '../supabase/types'
 import { BookReader } from '../components/books/BookReader'
 import { ShelfBook, statusOf, STATUS_META } from '../components/books/ShelfBook'
+import { ReadingHeatmap } from '../components/books/ReadingHeatmap'
 import { formatMinutes } from '../lib/formatters'
 import { XP } from '../lib/gamification'
 
@@ -30,7 +31,9 @@ export function BooksPage() {
   const [sortBy, setSortBy] = useState<'custom' | 'progress'>('progress')
   const [view, setView] = useState<'grid' | 'shelf'>('shelf')
   const [categoryFilter, setCategoryFilter] = useState('')
+  const [search, setSearch] = useState('')
   const [logsByBook, setLogsByBook] = useState<Record<string, { minutes: number; days: number; last: string }>>({})
+  const [activityMap, setActivityMap] = useState<Record<string, number>>({})
 
   const loadBooks = () => {
     if (!user) return
@@ -62,18 +65,37 @@ export function BooksPage() {
       setStreak(s)
 
       // Stats por libro
-      const byBook: Record<string, { minutes: number; days: Set<string>; last: string }> = {}
+      const byBook: Record<string, { minutes: number; days: Set<string>; last: string; pages: number; streak: number }> = {}
       for (const l of data) {
-        if (!byBook[l.book_id]) byBook[l.book_id] = { minutes: 0, days: new Set(), last: '' }
+        if (!byBook[l.book_id]) byBook[l.book_id] = { minutes: 0, days: new Set(), last: '', pages: 0, streak: 0 }
         byBook[l.book_id].minutes += (l.seconds || 0)
         byBook[l.book_id].days.add(l.date)
+        byBook[l.book_id].pages += Math.max(1, (l.page_end || 0) - (l.page_start || 0))
         if (l.date > byBook[l.book_id].last) byBook[l.book_id].last = l.date
       }
-      const out: Record<string, { minutes: number; days: number; last: string }> = {}
+      const out: Record<string, { minutes: number; days: number; last: string; speed?: number; streak?: number }> = {}
       for (const [k, v] of Object.entries(byBook)) {
-        out[k] = { minutes: Math.round(v.minutes / 60), days: v.days.size, last: v.last }
+        const speed = v.minutes > 0 ? v.pages / (v.minutes / 60) : undefined
+        out[k] = { minutes: Math.round(v.minutes / 60), days: v.days.size, last: v.last, speed }
+        // Racha por libro: días consecutivos con lectura de este libro
+        const daySet = [...v.days].sort()
+        const set = new Set(daySet)
+        let s = 0
+        const dd = new Date()
+        for (let i = 0; i < 365; i++) {
+          if (set.has(dd.toLocaleDateString('en-CA'))) { s++; dd.setDate(dd.getDate() - 1) }
+          else break
+        }
+        if (s > 0) out[k].streak = s
       }
       setLogsByBook(out)
+
+      // Mapa de actividad por fecha (minutos)
+      const act: Record<string, number> = {}
+      for (const l of data) {
+        act[l.date] = (act[l.date] || 0) + (l.seconds || 0) / 60
+      }
+      setActivityMap(act)
     })
   }, [user])
 
@@ -195,7 +217,14 @@ export function BooksPage() {
 
   const categories = [...new Set(books.map((b) => b.category).filter(Boolean))].sort()
 
-  const filtered = categoryFilter ? books.filter((b) => b.category === categoryFilter) : books
+  const filtered = books.filter((b) => {
+  if (categoryFilter && b.category !== categoryFilter) return false
+  if (search.trim()) {
+    const q = search.trim().toLowerCase()
+    if (!b.title.toLowerCase().includes(q) && !(b.author || '').toLowerCase().includes(q) && !(b.category || '').toLowerCase().includes(q)) return false
+  }
+  return true
+})
   const ordered = [...filtered]
   if (sortBy === 'progress') {
     ordered.sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0) || pctOf(b) - pctOf(a))
@@ -282,7 +311,14 @@ export function BooksPage() {
         </div>
       </div>
 
+      <ReadingHeatmap activity={activityMap} />
+
       <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1.5 bg-secondary border border-white/10 rounded-lg px-2.5 py-1.5">
+          <span className="text-text-secondary text-xs">🔍</span>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar libro…"
+            className="w-40 bg-transparent text-xs text-white placeholder:text-text-secondary/50 focus:outline-none" />
+        </div>
         <button onClick={() => setView(view === 'shelf' ? 'grid' : 'shelf')}
           className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${view === 'shelf' ? 'bg-[var(--accent)] text-white' : 'bg-secondary text-text-secondary hover:text-white'}`}>
           {view === 'shelf' ? '🏛️ Estantería' : '📋 Cuadrícula'}

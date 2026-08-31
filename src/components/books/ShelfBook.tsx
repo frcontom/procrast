@@ -18,7 +18,7 @@ export const STATUS_META: Record<string, { label: string; color: string; bg: str
 
 interface Props {
   book: Book
-  stats?: { minutes: number; days: number; last: string }
+  stats?: { minutes: number; days: number; last: string; speed?: number; streak?: number }
   onOpen: (book: Book) => void
   onTogglePin: (e: React.MouseEvent, id: string) => void
   onEdit: (e: React.MouseEvent, book: Book) => void
@@ -62,15 +62,24 @@ export function ShelfBook({ book, stats, onOpen, onTogglePin, onEdit, onDelete, 
         <div className="flex items-center justify-between mt-auto pt-1">
           <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider"
             style={{ color: meta.color, backgroundColor: meta.bg }}>{meta.label}</span>
-          <span className="text-[10px] font-bold" style={{ color: meta.color }}>{pct}%</span>
+          <span className="flex items-center gap-1.5">
+            {book.deadline && book.status !== 'finished' && (() => {
+              const daysLeft = Math.max(0, Math.round((new Date(book.deadline).getTime() - Date.now()) / 86400000))
+              return <span className="text-[9px] font-bold" style={{ color: daysLeft <= 3 ? '#EA5455' : '#a0a0b0' }} title={`Meta: ${book.deadline}`}>⏳ {daysLeft}d</span>
+            })()}
+            <span className="text-[10px] font-bold" style={{ color: meta.color }}>{pct}%</span>
+          </span>
         </div>
         <div className="w-full bg-secondary rounded-full h-1.5 overflow-hidden">
           <div className="h-full rounded-full transition-all duration-500"
             style={{ width: `${pct}%`, background: pct >= 80 ? 'linear-gradient(90deg, #28C76F, #81E6A0)' : 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
         </div>
         <div className="flex items-center justify-between text-[9px] text-text-secondary/60">
-          <span>{book.current_page}/{book.total_pages || '?'}</span>
           <span className="flex items-center gap-1">
+            {stats?.speed ? <span title="Velocidad">⚡ {stats.speed.toFixed(1)} pág/min</span> : <span>{book.current_page}/{book.total_pages || '?'}</span>}
+          </span>
+          <span className="flex items-center gap-1">
+            {stats && stats.streak && stats.streak > 0 && <span title="Racha del libro" style={{ color: '#FF6B6B' }}>🔥 {stats.streak}d</span>}
             {stats && stats.minutes > 0 && <span title={`${stats.minutes}min · ${stats.days} día(s)`}>⏱ {formatMinutes(stats.minutes)}</span>}
             <button onClick={(e) => onTogglePin(e, book.id)} className="hover:scale-110 transition-transform">📌</button>
             <button onClick={(e) => onEdit(e, book)} className="hover:scale-110 transition-transform">✏️</button>
