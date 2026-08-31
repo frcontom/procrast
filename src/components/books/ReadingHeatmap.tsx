@@ -75,13 +75,22 @@ export function ReadingHeatmap({ activity }: Props) {
                       borderRadius: 4,
                       opacity: d.future ? 0 : 1,
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
+                      gap: 1,
                       fontSize: 8,
                       fontWeight: hasActivity ? 700 : 400,
                       color: min >= 30 ? '#fff' : 'rgba(255,255,255,0.4)',
                     }}>
-                    {!d.future && d.date.getDate()}
+                    {!d.future && (
+                      <>
+                        <span className="text-[9px] leading-none">{d.date.getDate()}</span>
+                        <span className="text-[7px] leading-none" style={{ fontWeight: 600, color: hasActivity ? (min >= 30 ? '#fff' : '#a66cff') : 'transparent' }}>
+                          {hasActivity ? `${min}m` : '·'}
+                        </span>
+                      </>
+                    )}
                   </div>
                 )
               })}
