@@ -20,6 +20,7 @@ interface MonthData {
 
 export function ReadingHeatmap({ activity }: Props) {
   const today = new Date()
+  const todayKey = today.toLocaleDateString('en-CA')
   const year = today.getFullYear()
   const month = today.getMonth()
 
@@ -66,33 +67,35 @@ export function ReadingHeatmap({ activity }: Props) {
                 }
                 const min = Math.round(activity[d.key] || 0)
                 const hasActivity = min > 0
-                const failed = !d.future && !hasActivity
+                const isToday = !d.future && d.key === todayKey
+                const failed = !d.future && !hasActivity && !isToday
                 return (
                   <div key={d.key}
-                    title={failed ? `${d.date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} — sin lectura` : `${d.date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} — ${min}min`}
+                    title={failed ? `${d.date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} — sin lectura` : `${d.date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} — ${hasActivity ? min + 'min' : isToday ? 'hoy, aún sin leer' : 'sin lectura'}`}
                     style={{
+                      position: 'relative',
                       backgroundColor: d.future ? 'transparent' : heatColor(min),
                       aspectRatio: '1/1',
                       borderRadius: 4,
                       opacity: d.future ? 0 : 1,
+                      outline: isToday ? '1px solid rgba(166,108,255,0.9)' : 'none',
                       display: 'flex',
-                      flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: 1,
                       fontSize: 8,
                       fontWeight: hasActivity ? 700 : 400,
                       color: min >= 30 ? '#fff' : 'rgba(255,255,255,0.4)',
                     }}>
                     {!d.future && (
                       <>
-                        <span className="text-[9px] leading-none">{d.date.getDate()}</span>
-                        {failed ? (
-                          <span className="text-[8px] leading-none font-bold" style={{ color: 'rgba(234,84,85,0.7)' }}>✕</span>
-                        ) : (
-                          <span className="text-[7px] leading-none" style={{ fontWeight: 600, color: hasActivity ? (min >= 30 ? '#fff' : '#a66cff') : 'transparent' }}>
-                            {hasActivity ? `${min}m` : '·'}
-                          </span>
+                        <span className="relative z-[1] text-[9px] leading-none">{d.date.getDate()}</span>
+                        {failed && (
+                          <span className="absolute inset-0 flex items-center justify-center text-[16px] font-bold leading-none"
+                            style={{ color: 'rgba(234,84,85,0.85)' }}>✕</span>
+                        )}
+                        {!failed && hasActivity && (
+                          <span className="absolute bottom-[1px] left-0 right-0 text-center text-[6px] leading-none"
+                            style={{ fontWeight: 600, color: min >= 30 ? '#fff' : '#a66cff' }}>{min}m</span>
                         )}
                       </>
                     )}
