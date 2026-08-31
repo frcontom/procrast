@@ -11,6 +11,7 @@ function heatColor(minutes: number): string {
 }
 
 const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const DAY_LETTERS = ['D', 'L', 'M', 'X', 'J', 'V', 'S']
 
 interface MonthData {
   label: string
@@ -51,9 +52,12 @@ export function ReadingHeatmap({ activity }: Props) {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {months.map((mo, mi) => (
-          <div key={mi}>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: '#a66cff' }}>{mo.label}</span>
+          <div key={mi} className={`bg-secondary/30 rounded-xl p-2.5 ${mi > 0 ? 'lg:border-l lg:border-l-white/10 lg:rounded-l-none' : ''}`}>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-center mb-1.5" style={{ color: '#a66cff' }}>{mo.label}</div>
+            <div className="grid gap-1 mb-1" style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}>
+              {DAY_LETTERS.map((dl, i) => (
+                <span key={i} className="text-[8px] text-center text-text-secondary/40 leading-none">{dl}</span>
+              ))}
             </div>
             <div className="grid gap-1" style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}>
               {mo.days.map((d) => {
