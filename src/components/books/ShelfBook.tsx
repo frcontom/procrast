@@ -20,6 +20,7 @@ interface Props {
   book: Book
   stats?: { minutes: number; days: number; last: string; speed?: number; streak?: number }
   onOpen: (book: Book) => void
+  onDetails?: (book: Book) => void
   onTogglePin: (e: React.MouseEvent, id: string) => void
   onEdit: (e: React.MouseEvent, book: Book) => void
   onDelete: (id: string) => void
@@ -32,7 +33,7 @@ interface Props {
   onDragEnd?: () => void
 }
 
-export function ShelfBook({ book, stats, onOpen, onTogglePin, onEdit, onDelete, draggable, isDragging, isOver, onDragStart, onDragOver, onDrop, onDragEnd }: Props) {
+export function ShelfBook({ book, stats, onOpen, onDetails, onTogglePin, onEdit, onDelete, draggable, isDragging, isOver, onDragStart, onDragOver, onDrop, onDragEnd }: Props) {
   const [url, setUrl] = useState('')
   const pct = book.total_pages > 0 ? Math.min(100, Math.round((book.current_page / book.total_pages) * 100)) : 0
   const status = statusOf(book)
@@ -81,6 +82,7 @@ export function ShelfBook({ book, stats, onOpen, onTogglePin, onEdit, onDelete, 
           <span className="flex items-center gap-1">
             {stats && stats.streak && stats.streak > 0 && <span title="Racha del libro" style={{ color: '#FF6B6B' }}>🔥 {stats.streak}d</span>}
             {stats && stats.minutes > 0 && <span title={`${stats.minutes}min · ${stats.days} día(s)`}>⏱ {formatMinutes(stats.minutes)}</span>}
+            <button onClick={(e) => { e.stopPropagation(); onDetails?.(book) }} title="Detalles" className="hover:scale-110 transition-transform">ℹ️</button>
             <button onClick={(e) => onTogglePin(e, book.id)} className="hover:scale-110 transition-transform">📌</button>
             <button onClick={(e) => onEdit(e, book)} className="hover:scale-110 transition-transform">✏️</button>
             <button onClick={(e) => { e.stopPropagation(); onDelete(book.id) }} className="text-danger/50 hover:text-danger transition-colors">🗑️</button>

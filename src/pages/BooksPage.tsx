@@ -34,6 +34,8 @@ export function BooksPage() {
   const [search, setSearch] = useState('')
   const [logsByBook, setLogsByBook] = useState<Record<string, { minutes: number; days: number; last: string }>>({})
   const [activityMap, setActivityMap] = useState<Record<string, number>>({})
+  const [detailBook, setDetailBook] = useState<Book | null>(null)
+  const [chapters, setChapters] = useState<any[]>([])
 
   const loadBooks = () => {
     if (!user) return
@@ -273,6 +275,14 @@ export function BooksPage() {
     setShowForm(true)
   }
 
+  const openDetails = (b: Book) => {
+    setDetailBook(b)
+    if (!user) return
+    supabase.from('book_chapters').select('*').eq('user_id', user.id).eq('book_id', b.id).order('sort_order').then(({ data }: any) => {
+      setChapters(data || [])
+    })
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -381,6 +391,7 @@ export function BooksPage() {
                           book={b}
                           stats={logsByBook[b.id]}
                           onOpen={openReader}
+                          onDetails={openDetails}
                           onTogglePin={togglePin}
                           onEdit={openEdit}
                           onDelete={handleDelete}
@@ -556,6 +567,81 @@ export function BooksPage() {
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}>
               Continuar
             </button>
+          </div>
+        </div>
+      )}
+
+      {detailBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 overflow-y-auto" onClick={() => setDetailBook(null)}>
+          <div className="bg-card rounded-xl border border-white/10 p-5 w-full max-w-md mx-4 my-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="text-3xl shrink-0">📖</span>
+                <div className="min-w-0">
+                  <h3 className="text-base font-bold text-white leading-tight truncate">{detailBook.title}</h3>
+                  <div className="text-xs text-text-secondary">{detailBook.author || 'Sin autor'}</div>
+                </div>
+              </div>
+              <button onClick={() => setDetailBook(null)} className="text-text-secondary hover:text-white text-lg leading-none">&times;</button>
+            </div>
+
+            {detailBook.category && (
+              <div className="mb-2">
+                <span className="px-2 py-0.5 rounded bg-white/10 text-[10px] text-text-secondary">{detailBook.category}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="bg-secondary rounded-lg p-2.5 text-center">
+                <div className="text-base font-bold text-white">{detailBook.current_page}/{detailBook.total_pages || '?'}</div>
+                <div className="text-[9px] text-text-secondary uppercase tracking-wider mt-0.5">Páginas</div>
+              </div>
+              <div className="bg-secondary rounded-lg p-2.5 text-center">
+                <div className="text-base font-bold text-accent">{pctOf(detailBook)}%</div>
+                <div className="text-[9px] text-text-secondary uppercase tracking-wider mt-0.5">Avance</div>
+              </div>
+              <div className="bg-secondary rounded-lg p-2.5 text-center">
+                <div className="text-base font-bold text-white">
+                  {detailBook.deadline ? (() => {
+                    const days = Math.max(0, Math.round((new Date(detailBook.deadline).getTime() - Date.now()) / 86400000))
+                    return <span style={{ color: days <= 3 ? '#EA5455' : '#fff' }}>{days}d</span>
+                  })() : '—'}
+                </div>
+                <div className="text-[9px] text-text-secondary uppercase tracking-wider mt-0.5">Quedan</div>
+              </div>
+            </div>
+
+            <div className="mb-3">
+              <div className="text-[10px] text-text-secondary uppercase tracking-wider mb-1">Capitulos ({chapters.length})</div>
+              {chapters.length === 0 ? (
+                <div className="text-[11px] text-text-secondary/50">Aún no defines capítulos. Cada capítulo se marca como leído al pasar su página inicial.</div>
+              ) : (
+                <div className="space-y-1 max-h-40 overflow-y-auto">
+                  {chapters.map((ch, i) => {
+                    const done = detailBook.current_page >= ch.start_page
+                    const next = chapters[i + 1]
+                    const doneNext = next ? detailBook.current_page >= next.start_page : done
+                    return (
+                      <div key={ch.id} className="flex items-center gap-2 text-xs py-1 border-b border-white/5 last:border-0">
+                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] shrink-0 ${doneNext ? 'bg-success/20 text-success' : 'bg-secondary text-text-secondary/50'}`}>{doneNext ? '✓' : ''}</span>
+                        <span className={`truncate flex-1 ${doneNext ? 'text-white' : 'text-text-secondary'}`}>{ch.title}</span>
+                        <span className="text-text-secondary/50 text-[10px]">p{ch.start_page}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <button onClick={() => { setDetailBook(null); openReader(detailBook) }}
+                className="flex-1 py-2 rounded-lg text-sm font-medium text-white transition-all"
+                style={{ backgroundColor: 'var(--accent)' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--accent)'}>
+                📖 Continuar leyendo
+              </button>
+            </div>
           </div>
         </div>
       )}
