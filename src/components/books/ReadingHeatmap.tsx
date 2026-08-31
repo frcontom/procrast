@@ -14,25 +14,28 @@ const DAY_NAMES = ['D', 'L', 'M', 'X', 'J', 'V', 'S']
 
 export function ReadingHeatmap({ activity }: Props) {
   const today = new Date()
-  const weeks = 14
-  const days: { date: Date; key: string }[] = []
-  const start = new Date(today)
-  start.setDate(start.getDate() - (weeks * 7 - 1))
-  const anchor = new Date(start)
-  anchor.setDate(anchor.getDate() - anchor.getDay())
-  for (let i = 0; i < weeks * 7; i++) {
-    const d = new Date(anchor)
-    d.setDate(anchor.getDate() + i)
-    if (d > today) continue
-    days.push({ date: d, key: d.toLocaleDateString('en-CA') })
-  }
+  const weeks = 26
 
-  const weeksArr: { date: Date; key: string }[][] = []
+  // Último domingo (día 0 de la semana) que incluye hoy
+  const lastSunday = new Date(today)
+  lastSunday.setDate(today.getDate() - today.getDay())
+
+  // Cada semana: domingo (índice 0) a sábado (índice 6)
+  const weeksArr: { date: Date; key: string; future: boolean }[][] = []
   for (let w = 0; w < weeks; w++) {
-    weeksArr.push(days.slice(w * 7, w * 7 + 7))
+    const week: { date: Date; key: string; future: boolean }[] = []
+    const sunday = new Date(lastSunday)
+    sunday.setDate(lastSunday.getDate() - (weeks - 1 - w) * 7)
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(sunday)
+      date.setDate(sunday.getDate() + d)
+      const isFuture = date > today
+      week.push({ date, key: date.toLocaleDateString('en-CA'), future: isFuture })
+    }
+    weeksArr.push(week)
   }
 
-  const totalDays = days.filter((d) => (activity[d.key] || 0) > 0).length
+  const totalDays = Object.values(activity).filter((m) => m > 0).length
 
   return (
     <div className="bg-card rounded-xl border border-white/10 p-4">
@@ -40,7 +43,7 @@ export function ReadingHeatmap({ activity }: Props) {
         <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">📅 Actividad de lectura</span>
         <span className="text-[10px] text-text-secondary">{totalDays} días con lectura · últimas {weeks} semanas</span>
       </div>
-      <div className="flex gap-1.5 max-w-[700px] mx-auto">
+      <div className="flex gap-1.5 max-w-[900px] mx-auto">
         <div className="flex flex-col justify-between text-[10px] text-text-secondary/50 pr-1.5">
           {DAY_NAMES.map((dn, i) => (
             <span key={i} className="flex items-center leading-none">{dn}</span>
@@ -53,15 +56,20 @@ export function ReadingHeatmap({ activity }: Props) {
                 const min = Math.round(activity[d.key] || 0)
                 return (
                   <div key={d.key}
-                    title={`${d.date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} — ${min}min`}
-                    style={{ backgroundColor: heatColor(min), aspectRatio: '1/1', borderRadius: 4 }} />
+                    title={d.future ? d.key : `${d.date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} — ${min}min`}
+                    style={{
+                      backgroundColor: d.future ? 'transparent' : heatColor(min),
+                      aspectRatio: '1/1',
+                      borderRadius: 4,
+                      opacity: d.future ? 0 : 1,
+                    }} />
                 )
               })}
             </div>
           ))}
         </div>
       </div>
-      <div className="flex items-center gap-1.5 mt-3 text-[9px] text-text-secondary/60">
+      <div className="flex items-center gap-1.5 mt-3 text-[9px] text-text-secondary/60 justify-center">
         <span>Menos</span>
         <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', width: 12, height: 12, borderRadius: 3 }} />
         <div style={{ backgroundColor: 'rgba(166,108,255,0.25)', width: 12, height: 12, borderRadius: 3 }} />
