@@ -52,7 +52,7 @@ export function ReadingHeatmap({ activity }: Props) {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {months.map((mo, mi) => (
-          <div key={mi} className={`bg-secondary/30 rounded-xl p-2.5 ${mi > 0 ? 'lg:border-l lg:border-l-white/10 lg:rounded-l-none' : ''}`}>
+          <div key={mi} className={`p-2.5 ${mi > 0 ? 'lg:border-l lg:border-l-white/10' : ''}`}>
             <div className="text-[11px] font-bold uppercase tracking-wider text-center mb-1.5" style={{ color: '#a66cff' }}>{mo.label}</div>
             <div className="grid gap-1 mb-1" style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}>
               {DAY_LETTERS.map((dl, i) => (
