@@ -94,7 +94,7 @@ export function ReadingHeatmap({ activity }: Props) {
                             style={{ color: 'rgba(234,84,85,0.25)' }}>✕</span>
                         )}
                         {!failed && hasActivity && (
-                          <span className="absolute bottom-[1px] left-0 right-0 text-center text-[6px] leading-none"
+                          <span className="absolute bottom-[1px] left-0 right-0 text-center text-[8px] leading-none"
                             style={{ fontWeight: 600, color: min >= 30 ? '#fff' : '#a66cff' }}>{min}m</span>
                         )}
                       </>
