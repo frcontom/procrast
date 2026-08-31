@@ -408,6 +408,8 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
   const pct = totalPages > 0 ? Math.min(100, Math.round((currentPage / totalPages) * 100)) : 0
   const remaining = Math.max(0, totalPages - currentPage)
   const hasBookmark = bookmarks.some((b) => b.page === currentPage)
+  const todayTotalSeconds = todaySeconds + sessionSeconds
+  const todayMinutes = Math.floor(todayTotalSeconds / 60)
 
   return (
     <div ref={rootRef} className="flex flex-col gap-3">
@@ -459,8 +461,8 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
           <span className="flex items-center gap-2">
             <span className="flex items-center gap-1.5 text-text-secondary tabular-nums" title="Tiempo de esta sesión">⏱ {fmtClock(sessionSeconds)}</span>
             <span className="text-white/15">·</span>
-            <span className="text-text-secondary">Hoy: <strong className="text-accent tabular-nums">{Math.floor(todaySeconds / 60)}min</strong> / {dailyGoalMinutes}min</span>
-            {(todaySeconds / 60) >= dailyGoalMinutes && <span className="text-[11px] font-bold text-[#28C76F]">🎉</span>}
+            <span className="text-text-secondary">Hoy: <strong className="text-accent tabular-nums">{todayMinutes}min</strong> / {dailyGoalMinutes}min</span>
+            {todayMinutes >= dailyGoalMinutes && <span className="text-[11px] font-bold text-[#28C76F]">🎉</span>}
           </span>
         </div>
         <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
@@ -468,7 +470,7 @@ export function BookReader({ book, url, onProgress, onLogReading, dailyGoalMinut
             style={{ width: `${pct}%`, background: 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
         </div>
         <div className="flex items-center justify-between mt-1">
-          <span className="text-[10px] text-text-secondary/60 tabular-nums">Hoy {Math.floor(todaySeconds / 60)}/{dailyGoalMinutes}min</span>
+          <span className="text-[10px] text-text-secondary/60 tabular-nums">Hoy {todayMinutes}/{dailyGoalMinutes}min</span>
           <span className="text-[11px] text-accent font-bold">{pct}%</span>
         </div>
       </div>
