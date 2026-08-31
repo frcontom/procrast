@@ -66,9 +66,10 @@ export function ReadingHeatmap({ activity }: Props) {
                 }
                 const min = Math.round(activity[d.key] || 0)
                 const hasActivity = min > 0
+                const failed = !d.future && !hasActivity
                 return (
                   <div key={d.key}
-                    title={`${d.date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} — ${min}min`}
+                    title={failed ? `${d.date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} — sin lectura` : `${d.date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} — ${min}min`}
                     style={{
                       backgroundColor: d.future ? 'transparent' : heatColor(min),
                       aspectRatio: '1/1',
@@ -86,9 +87,13 @@ export function ReadingHeatmap({ activity }: Props) {
                     {!d.future && (
                       <>
                         <span className="text-[9px] leading-none">{d.date.getDate()}</span>
-                        <span className="text-[7px] leading-none" style={{ fontWeight: 600, color: hasActivity ? (min >= 30 ? '#fff' : '#a66cff') : 'transparent' }}>
-                          {hasActivity ? `${min}m` : '·'}
-                        </span>
+                        {failed ? (
+                          <span className="text-[8px] leading-none font-bold" style={{ color: 'rgba(234,84,85,0.7)' }}>✕</span>
+                        ) : (
+                          <span className="text-[7px] leading-none" style={{ fontWeight: 600, color: hasActivity ? (min >= 30 ? '#fff' : '#a66cff') : 'transparent' }}>
+                            {hasActivity ? `${min}m` : '·'}
+                          </span>
+                        )}
                       </>
                     )}
                   </div>
