@@ -7,6 +7,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString()
 
 const coverCache = new Map<string, string>()
+const COVER_VER = 'v2'
 
 interface Props {
   url: string
@@ -21,7 +22,8 @@ export function BookCover({ url, title, fallbackColor }: Props) {
   useEffect(() => {
     let cancelled = false
     setFailed(false)
-    const cached = coverCache.get(url)
+    const cacheKey = `${COVER_VER}:${url}`
+    const cached = coverCache.get(cacheKey)
     if (cached) {
       const img = new Image()
       img.src = cached
@@ -38,7 +40,7 @@ export function BookCover({ url, title, fallbackColor }: Props) {
         const doc = await pdfjs.getDocument({ data: buf }).promise
         const page = await doc.getPage(1)
         const base = page.getViewport({ scale: 1 })
-        const scale = 140 / base.width
+        const scale = 280 / base.width
         const viewport = page.getViewport({ scale })
         const canvas = canvasRef.current
         if (!canvas) return
@@ -47,7 +49,7 @@ export function BookCover({ url, title, fallbackColor }: Props) {
         canvas.height = viewport.height
         await page.render({ canvasContext: ctx as any, viewport } as any).promise
         const dataUrl = canvas.toDataURL('image/png')
-        coverCache.set(url, dataUrl)
+        coverCache.set(cacheKey, dataUrl)
       } catch {
         if (!cancelled) setFailed(true)
       }
