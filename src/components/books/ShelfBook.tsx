@@ -23,9 +23,16 @@ interface Props {
   onTogglePin: (e: React.MouseEvent, id: string) => void
   onEdit: (e: React.MouseEvent, book: Book) => void
   onDelete: (id: string) => void
+  draggable?: boolean
+  isDragging?: boolean
+  isOver?: boolean
+  onDragStart?: (e: React.DragEvent, id: string) => void
+  onDragOver?: (e: React.DragEvent, id: string) => void
+  onDrop?: (e: React.DragEvent, id: string) => void
+  onDragEnd?: () => void
 }
 
-export function ShelfBook({ book, stats, onOpen, onTogglePin, onEdit, onDelete }: Props) {
+export function ShelfBook({ book, stats, onOpen, onTogglePin, onEdit, onDelete, draggable, isDragging, isOver, onDragStart, onDragOver, onDrop, onDragEnd }: Props) {
   const [url, setUrl] = useState('')
   const pct = book.total_pages > 0 ? Math.min(100, Math.round((book.current_page / book.total_pages) * 100)) : 0
   const status = statusOf(book)
@@ -40,7 +47,12 @@ export function ShelfBook({ book, stats, onOpen, onTogglePin, onEdit, onDelete }
   }, [book.file_path])
 
   return (
-    <div className="group flex flex-col rounded-xl overflow-hidden border border-white/10 bg-card hover:border-[var(--accent)] transition-all cursor-pointer relative"
+    <div className={`group flex flex-col rounded-xl overflow-hidden border border-white/10 bg-card transition-all cursor-pointer relative ${isDragging ? 'opacity-40 border-accent/50' : ''} ${isOver ? 'border-accent/60 ring-1 ring-accent/30' : ''} hover:border-[var(--accent)] ${book.is_pinned ? 'border-[var(--accent)]/40' : ''}`}
+      draggable={draggable}
+      onDragStart={onDragStart ? (e) => onDragStart(e, book.id) : undefined}
+      onDragOver={onDragOver ? (e) => onDragOver(e, book.id) : undefined}
+      onDrop={onDrop ? (e) => onDrop(e, book.id) : undefined}
+      onDragEnd={onDragEnd}
       onClick={() => onOpen(book)}>
       {book.is_pinned && <span className="absolute top-2 right-2 z-10 text-sm">📌</span>}
       <BookCover url={url} title={book.title} fallbackColor={book.category ? '#156390' : '#16213e'} />

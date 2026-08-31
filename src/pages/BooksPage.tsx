@@ -21,8 +21,8 @@ export function BooksPage() {
   const [deadline, setDeadline] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
-  const [dragIdx, setDragIdx] = useState<number | null>(null)
-  const [overIdx, setOverIdx] = useState<number | null>(null)
+  const [dragId, setDragId] = useState<string | null>(null)
+  const [overId, setOverId] = useState<string | null>(null)
   const [totalMinutes, setTotalMinutes] = useState(0)
   const [todayMinutes, setTodayMinutes] = useState(0)
   const [streak, setStreak] = useState(0)
@@ -202,29 +202,34 @@ export function BooksPage() {
     ordered.sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0) || (a.sort_order ?? 0) - (b.sort_order ?? 0))
   }
 
-  const handleDragStart = (e: React.DragEvent, idx: number) => {
+  const handleDragStart = (e: React.DragEvent, id: string) => {
     e.dataTransfer.effectAllowed = 'move'
-    setDragIdx(idx)
+    e.dataTransfer.setData('text/plain', id)
+    setDragId(id)
   }
-  const handleDragOver = (e: React.DragEvent, idx: number) => {
+  const handleDragOver = (e: React.DragEvent, id: string) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
-    setOverIdx(idx)
+    setOverId(id)
   }
-  const handleDrop = async (e: React.DragEvent, idx: number) => {
+  const handleDrop = async (e: React.DragEvent, id: string) => {
     e.preventDefault()
-    if (dragIdx === null || dragIdx === idx) { setDragIdx(null); setOverIdx(null); return }
+    const fromId = dragId || e.dataTransfer.getData('text/plain')
+    if (!fromId || fromId === id) { setDragId(null); setOverId(null); return }
     const list = [...ordered]
-    const [moved] = list.splice(dragIdx, 1)
-    list.splice(idx, 0, moved)
+    const fromIdx = list.findIndex((b) => b.id === fromId)
+    const toIdx = list.findIndex((b) => b.id === id)
+    if (fromIdx < 0 || toIdx < 0) { setDragId(null); setOverId(null); return }
+    const [moved] = list.splice(fromIdx, 1)
+    list.splice(toIdx, 0, moved)
     const updates = list.map((b, i) => supabase.from('books').update({ sort_order: i }).eq('id', b.id))
     await Promise.all(updates)
     setBooks((prev) => prev.map((b) => {
       const found = list.findIndex((x) => x.id === b.id)
       return found >= 0 ? { ...b, sort_order: found } : b
     }))
-    setDragIdx(null)
-    setOverIdx(null)
+    setDragId(null)
+    setOverId(null)
   }
 
   const openEdit = (e: React.MouseEvent, b: Book) => {
@@ -342,6 +347,13 @@ export function BooksPage() {
                           onTogglePin={togglePin}
                           onEdit={openEdit}
                           onDelete={handleDelete}
+                          draggable={sortBy === 'custom'}
+                          isDragging={dragId === b.id}
+                          isOver={overId === b.id}
+                          onDragStart={handleDragStart}
+                          onDragOver={handleDragOver}
+                          onDrop={handleDrop}
+                          onDragEnd={() => { setDragId(null); setOverId(null) }}
                         />
                       ))}
                     </div>
@@ -353,13 +365,13 @@ export function BooksPage() {
         })()
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {ordered.map((b, idx) => {
+          {ordered.map((b) => {
             const pct = pctOf(b)
             const remaining = Math.max(0, b.total_pages - b.current_page)
             const status = statusOf(b)
             const meta = STATUS_META[status]
-            const isDragging = dragIdx === idx
-            const isOver = overIdx === idx
+            const isDragging = dragId === b.id
+            const isOver = overId === b.id
             const stats = logsByBook[b.id]
             const onTrack = b.deadline && b.total_pages > 0 && b.current_page < b.total_pages
               ? (() => {
@@ -372,10 +384,10 @@ export function BooksPage() {
             return (
               <div key={b.id}
                 draggable={sortBy === 'custom'}
-                onDragStart={(e) => handleDragStart(e, idx)}
-                onDragOver={(e) => handleDragOver(e, idx)}
-                onDrop={(e) => handleDrop(e, idx)}
-                onDragEnd={() => { setDragIdx(null); setOverIdx(null) }}
+                onDragStart={(e) => handleDragStart(e, b.id)}
+                onDragOver={(e) => handleDragOver(e, b.id)}
+                onDrop={(e) => handleDrop(e, b.id)}
+                onDragEnd={() => { setDragId(null); setOverId(null) }}
                 className={`bg-card rounded-xl border border-white/10 p-4 transition-all cursor-pointer ${isDragging ? 'opacity-40 border-accent/50' : ''} ${isOver ? 'border-accent/60 ring-1 ring-accent/30' : ''} hover:border-[var(--accent)] ${b.is_pinned ? 'border-[var(--accent)]/40' : ''}`}
                 onClick={() => openReader(b)}>
                 <div className="flex items-start justify-between gap-2 mb-2">
