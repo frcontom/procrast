@@ -46,60 +46,68 @@ export function BooksPage() {
 
   useEffect(() => { loadBooks() }, [user])
 
-  // Stats globales: tiempo total, hoy, racha
-  useEffect(() => {
-    if (!user) return
-    supabase.from('book_reading_logs').select('seconds, date, book_id').eq('user_id', user.id).then(({ data }: any) => {
-      if (!data) return
-      setTotalMinutes(Math.round(data.reduce((a: number, l: any) => a + (l.seconds || 0), 0) / 60))
-      const today = new Date().toLocaleDateString('en-CA')
-      setTodayMinutes(Math.round(data.filter((l: any) => l.date === today).reduce((a: number, l: any) => a + (l.seconds || 0), 0) / 60))
+  // Stats globales: tiempo total, hoy, racha, por libro, actividad
+  const applyStats = (data: any[]) => {
+    if (!data) return
+    const totalSec = data.reduce((a: number, l: any) => a + (l.seconds || 0), 0)
+    setTotalMinutes(Math.round(totalSec / 60))
+    const today = new Date().toLocaleDateString('en-CA')
+    const todaySec = data.filter((l: any) => l.date === today).reduce((a: number, l: any) => a + (l.seconds || 0), 0)
+    setTodayMinutes(Math.round(todaySec / 60))
 
-      // Racha: días consecutivos con lectura
-      const days = [...new Set(data.map((l: any) => l.date))].sort()
-      const daySet = new Set(days)
-      let s = 0
-      const d = new Date()
+    // Racha: días consecutivos con lectura
+    const days = [...new Set(data.map((l: any) => l.date))].sort()
+    const daySet = new Set(days)
+    let s = 0
+    const d = new Date()
+    for (let i = 0; i < 365; i++) {
+      if (daySet.has(d.toLocaleDateString('en-CA'))) { s++; d.setDate(d.getDate() - 1) }
+      else break
+    }
+    setStreak(s)
+
+    // Stats por libro (en segundos para sumar exacto)
+    const byBook: Record<string, { seconds: number; days: Set<string>; last: string; pages: number; streak: number }> = {}
+    for (const l of data) {
+      if (!byBook[l.book_id]) byBook[l.book_id] = { seconds: 0, days: new Set(), last: '', pages: 0, streak: 0 }
+      byBook[l.book_id].seconds += (l.seconds || 0)
+      byBook[l.book_id].days.add(l.date)
+      byBook[l.book_id].pages += Math.max(1, (l.page_end || 0) - (l.page_start || 0))
+      if (l.date > byBook[l.book_id].last) byBook[l.book_id].last = l.date
+    }
+    const out: Record<string, { minutes: number; days: number; last: string; speed?: number; streak?: number }> = {}
+    for (const [k, v] of Object.entries(byBook)) {
+      const speed = v.seconds > 0 ? v.pages / (v.seconds / 60) : undefined
+      out[k] = { minutes: Math.round(v.seconds / 60), days: v.days.size, last: v.last, speed }
+      // Racha por libro: días consecutivos con lectura de este libro
+      const daySet = [...v.days].sort()
+      const set = new Set(daySet)
+      let r = 0
+      const dd = new Date()
       for (let i = 0; i < 365; i++) {
-        if (daySet.has(d.toLocaleDateString('en-CA'))) { s++; d.setDate(d.getDate() - 1) }
+        if (set.has(dd.toLocaleDateString('en-CA'))) { r++; dd.setDate(dd.getDate() - 1) }
         else break
       }
-      setStreak(s)
+      if (r > 0) out[k].streak = r
+    }
+    setLogsByBook(out)
 
-      // Stats por libro
-      const byBook: Record<string, { minutes: number; days: Set<string>; last: string; pages: number; streak: number }> = {}
-      for (const l of data) {
-        if (!byBook[l.book_id]) byBook[l.book_id] = { minutes: 0, days: new Set(), last: '', pages: 0, streak: 0 }
-        byBook[l.book_id].minutes += (l.seconds || 0)
-        byBook[l.book_id].days.add(l.date)
-        byBook[l.book_id].pages += Math.max(1, (l.page_end || 0) - (l.page_start || 0))
-        if (l.date > byBook[l.book_id].last) byBook[l.book_id].last = l.date
-      }
-      const out: Record<string, { minutes: number; days: number; last: string; speed?: number; streak?: number }> = {}
-      for (const [k, v] of Object.entries(byBook)) {
-        const speed = v.minutes > 0 ? v.pages / (v.minutes / 60) : undefined
-        out[k] = { minutes: Math.round(v.minutes / 60), days: v.days.size, last: v.last, speed }
-        // Racha por libro: días consecutivos con lectura de este libro
-        const daySet = [...v.days].sort()
-        const set = new Set(daySet)
-        let s = 0
-        const dd = new Date()
-        for (let i = 0; i < 365; i++) {
-          if (set.has(dd.toLocaleDateString('en-CA'))) { s++; dd.setDate(dd.getDate() - 1) }
-          else break
-        }
-        if (s > 0) out[k].streak = s
-      }
-      setLogsByBook(out)
+    // Mapa de actividad por fecha (minutos)
+    const act: Record<string, number> = {}
+    for (const l of data) {
+      act[l.date] = (act[l.date] || 0) + (l.seconds || 0) / 60
+    }
+    setActivityMap(act)
+  }
 
-      // Mapa de actividad por fecha (minutos)
-      const act: Record<string, number> = {}
-      for (const l of data) {
-        act[l.date] = (act[l.date] || 0) + (l.seconds || 0) / 60
-      }
-      setActivityMap(act)
+  const loadStats = () => {
+    if (!user) return
+    supabase.from('book_reading_logs').select('seconds, date, book_id, page_start, page_end').eq('user_id', user.id).then(({ data }: any) => {
+      applyStats(data)
     })
-  }, [user])
+  }
+
+  useEffect(() => { loadStats() }, [user])
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -195,6 +203,7 @@ export function BooksPage() {
       seconds,
       date: new Date().toLocaleDateString('en-CA'),
     })
+    loadStats()
     // XP por lectura: 1 XP por minuto leído
     const xp = Math.round(seconds / 60)
     if (xp > 0) { try { await supabase.rpc('add_xp', { p_xp: xp }) } catch {} }
