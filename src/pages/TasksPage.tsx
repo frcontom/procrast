@@ -219,6 +219,11 @@ export function TasksPage() {
                   await supabase.from('task_subtasks').update({ depends_on: dependsOn }).eq('id', id)
                   setSubtasks((prev) => prev.map((s) => s.id === id ? { ...s, depends_on: dependsOn } : s))
                 }}
+                onSetCollapsed={async (id, collapsed) => {
+                  if (!user) return
+                  await supabase.from('task_subtasks').update({ collapsed }).eq('id', id)
+                  setSubtasks((prev) => prev.map((s) => s.id === id ? { ...s, collapsed } : s))
+                }}
                 onCleanAll={async () => {
                   if (!user || !selectedId) return
                   const ids = subtasks.map((s) => s.id)

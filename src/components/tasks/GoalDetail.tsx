@@ -21,6 +21,7 @@ interface Props {
   onEditSubtask?: (id: string, data: any) => void
   onReorderSubtasks?: (ids: string[]) => void
   onSetDependency?: (id: string, dependsOn: string | null) => void
+  onSetCollapsed?: (id: string, collapsed: boolean) => void
   onStartPomodoro?: (st: TaskSubtask) => void
   onCleanAll?: () => void
   onExtendGoal?: (days: number) => void
@@ -30,7 +31,7 @@ interface Props {
 
 const PRIORITY_COLORS: Record<string, string> = { critical: '#FF6B6B', high: '#FF9800', normal: '#60A5FA', low: '#4CAF50' }
 
-export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onEditSubtask, onReorderSubtasks, onSetDependency, onStartPomodoro, onCleanAll, onExtendGoal, onArchiveGoal, onImportSubtasks }: Props) {
+export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onEditSubtask, onReorderSubtasks, onSetDependency, onSetCollapsed, onStartPomodoro, onCleanAll, onExtendGoal, onArchiveGoal, onImportSubtasks }: Props) {
   const user = useUser()
   const [links, setLinks] = useState<any[]>([])
   const [todayMin, setTodayMin] = useState(0)
@@ -218,7 +219,7 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
           }} onImport={(tasks) => { onImportSubtasks?.(tasks); setImportParentId('') }} editSubtask={editingSubtask} onCloseEdit={() => { setEditingSubtask(null); setImportParentId('') }} subtaskList={subtasks} onCleanAll={onCleanAll} defaultImportParentId={importParentId} />
         </div>
 
-        <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} onReorder={onReorderSubtasks} onSetDependency={onSetDependency} onStartPomodoro={onStartPomodoro} onShowHistory={setHistorySubtask} onBulkImport={(st) => setImportParentId(st.id)} />
+        <SubtaskList subtasks={subtasks} onToggle={onSubtaskToggle} onDelete={onSubtaskDelete} onEdit={setEditingSubtask} onReorder={onReorderSubtasks} onSetDependency={onSetDependency} onSetCollapsed={onSetCollapsed} onStartPomodoro={onStartPomodoro} onShowHistory={setHistorySubtask} onBulkImport={(st) => setImportParentId(st.id)} />
       </div>
 
       {goal.notes && (

@@ -15,6 +15,7 @@ interface Props {
   onStartPomodoro?: (st: TaskSubtask) => void
   onShowHistory?: (st: TaskSubtask) => void
   onBulkImport?: (st: TaskSubtask) => void
+  onSetCollapsed?: (id: string, collapsed: boolean) => void
 }
 
 const DIFFICULTY_BADGE: Record<string, { icon: string; color: string }> = {
@@ -67,7 +68,7 @@ function sumSubtree(subtasks: TaskSubtask[], parentId: string): { estimated: num
   return { estimated, completed }
 }
 
-export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro, onShowHistory, onBulkImport }: Props) {
+export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro, onShowHistory, onBulkImport, onSetCollapsed }: Props) {
   const doneCount = subtasks.filter((s) => s.status === 'completed').length
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const [overIdx, setOverIdx] = useState<number | null>(null)
@@ -76,32 +77,11 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
   const [links, setLinks] = useState<any[]>([])
   const user = useUser()
 
-  const goalId = subtasks[0]?.goal_id || ''
-  const storageKey = `subtask-collapsed-${goalId}`
-  const [collapsed, setCollapsed] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey)
-      if (saved) return new Set(JSON.parse(saved))
-    } catch {}
-    // Por defecto colapsadas todas las que tienen hijos
-    const parents = new Set<string>()
-    for (const s of subtasks) {
-      if (s.depends_on && subtasks.some((x) => x.id === s.depends_on)) parents.add(s.depends_on)
-    }
-    return parents
-  })
-
-  useEffect(() => {
-    try { localStorage.setItem(storageKey, JSON.stringify([...collapsed])) } catch {}
-  }, [collapsed, storageKey])
+  // Estado de colapso viene de la DB (columna collapsed de cada subtarea)
+  const collapsed = new Set(subtasks.filter((s) => s.collapsed).map((s) => s.id))
 
   const toggleCollapse = (id: string) => {
-    setCollapsed((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+    onSetCollapsed?.(id, !collapsed.has(id))
   }
 
   useEffect(() => {
