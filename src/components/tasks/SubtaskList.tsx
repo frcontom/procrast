@@ -77,11 +77,25 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
   const [links, setLinks] = useState<any[]>([])
   const user = useUser()
 
-  // Estado de colapso viene de la DB (columna collapsed de cada subtarea)
-  const collapsed = new Set(subtasks.filter((s) => s.collapsed).map((s) => s.id))
+  // Estado de colapso: local optimista sincronizado con la DB
+  const [collapsedLocal, setCollapsedLocal] = useState<Set<string> | null>(null)
+  const collapsed = collapsedLocal ?? new Set(subtasks.filter((s) => s.collapsed).map((s) => s.id))
+
+  // Resincroniza el estado local cuando cambian las subtareas desde fuera
+  useEffect(() => {
+    setCollapsedLocal(null)
+  }, [subtasks])
 
   const toggleCollapse = (id: string) => {
-    onSetCollapsed?.(id, !collapsed.has(id))
+    const next = !collapsed.has(id)
+    setCollapsedLocal((prev) => {
+      const base = prev ?? new Set(subtasks.filter((s) => s.collapsed).map((s) => s.id))
+      const n = new Set(base)
+      if (next) n.add(id)
+      else n.delete(id)
+      return n
+    })
+    onSetCollapsed?.(id, next)
   }
 
   useEffect(() => {
