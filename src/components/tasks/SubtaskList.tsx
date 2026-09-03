@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import type { TaskSubtask } from '../../supabase/types'
 import { formatMinutes } from '../../lib/formatters'
 import { findNextTask } from '../../lib/findNextTask'
@@ -77,6 +77,21 @@ function getSubtreeIds(subtasks: TaskSubtask[], parentId: string): string[] {
   return ids
 }
 
+function getAncestors(subtasks: TaskSubtask[], id: string): string[] {
+  const ancestors: string[] = []
+  let current = subtasks.find((s) => s.id === id)
+  const visited = new Set<string>()
+  while (current?.depends_on) {
+    if (visited.has(current.depends_on)) break
+    visited.add(current.depends_on)
+    const parent = subtasks.find((s) => s.id === current!.depends_on)
+    if (!parent) break
+    ancestors.push(parent.id)
+    current = parent
+  }
+  return ancestors
+}
+
 export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro, onShowHistory, onBulkImport, onSetCollapsed }: Props) {
   const doneCount = subtasks.filter((s) => s.status === 'completed').length
   const [dragIdx, setDragIdx] = useState<number | null>(null)
@@ -95,6 +110,22 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
     setCollapsedLocal(null)
   }, [subtasks])
 
+  const tree = buildTree(subtasks)
+  const nextTask = findNextTask(subtasks)
+
+  // La rama de la tarea activa (siguiente o en progreso) siempre está expandida,
+  // ningún padre colapsado puede ocultarla
+  const autoExpanded = useMemo(() => {
+    const ids = new Set<string>()
+    for (const s of subtasks) {
+      const active = s.id === nextTask?.id || (s.completed_minutes > 0 && s.status !== 'completed')
+      if (active) {
+        for (const anc of getAncestors(subtasks, s.id)) ids.add(anc)
+      }
+    }
+    return ids
+  }, [subtasks, nextTask])
+
   // Expandir/colapsar expande/colapsa TODO el subárbol de una vez
   const toggleCollapse = (id: string, expand: boolean) => {
     const subtreeIds = getSubtreeIds(subtasks, id)
@@ -110,6 +141,12 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
     for (const sid of subtreeIds) {
       onSetCollapsed?.(sid, !expand)
     }
+  }
+
+  // Colapso efectivo: colapsado pero sin las ramas activas forzadas a expandirse
+  const effectiveCollapsed = new Set<string>()
+  for (const cid of collapsed) {
+    if (!autoExpanded.has(cid)) effectiveCollapsed.add(cid)
   }
 
   useEffect(() => {
@@ -129,15 +166,12 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
     }
   }, [subtasks])
 
-  const tree = buildTree(subtasks)
-  const nextTask = findNextTask(subtasks)
-
   // Ocultar descendientes de tareas colapsadas (cualquier nivel)
   const visibleTree = tree.filter((item) => {
     for (let i = 0; i < tree.length; i++) {
       const t = tree[i]
       if (t.node.id === item.node.id) break
-      if (t.hasChildren && collapsed.has(t.node.id) && t.depth < item.depth) return false
+      if (t.hasChildren && effectiveCollapsed.has(t.node.id) && t.depth < item.depth) return false
     }
     return true
   })
@@ -221,7 +255,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
             const diff = DIFFICULTY_BADGE[st.difficulty] || DIFFICULTY_BADGE.normal
             const depSubtask = st.depends_on ? subtasks.find((s) => s.id === st.depends_on) : null
             const isLocked = !!depSubtask && depSubtask.status !== 'completed'
-            const isCollapsed = collapsed.has(st.id)
+            const isCollapsed = effectiveCollapsed.has(st.id)
             const subtree = isChecklist ? sumSubtree(subtasks, st.id) : null
             const displayEstimated = isChecklist && subtree && (subtree.estimated > 0 || subtree.completed > 0) ? subtree.estimated : st.estimated_minutes
             const displayCompleted = isChecklist && subtree && (subtree.estimated > 0 || subtree.completed > 0) ? subtree.completed : st.completed_minutes
