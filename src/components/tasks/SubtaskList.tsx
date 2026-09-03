@@ -102,13 +102,14 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
   const user = useUser()
 
   // Estado de colapso: local optimista sincronizado con la DB
+  const goalId = subtasks[0]?.goal_id || ''
   const [collapsedLocal, setCollapsedLocal] = useState<Set<string> | null>(null)
   const collapsed = collapsedLocal ?? new Set(subtasks.filter((s) => s.collapsed).map((s) => s.id))
 
-  // Resincroniza el estado local cuando cambian las subtareas desde fuera
+  // Resincroniza el estado local SOLO cuando cambia la meta (no en cada toggle)
   useEffect(() => {
     setCollapsedLocal(null)
-  }, [subtasks])
+  }, [goalId])
 
   const tree = buildTree(subtasks)
   const nextTask = findNextTask(subtasks)
