@@ -68,6 +68,15 @@ function sumSubtree(subtasks: TaskSubtask[], parentId: string): { estimated: num
   return { estimated, completed }
 }
 
+function getSubtreeIds(subtasks: TaskSubtask[], parentId: string): string[] {
+  const ids: string[] = [parentId]
+  const children = subtasks.filter((s) => s.depends_on === parentId)
+  for (const c of children) {
+    ids.push(...getSubtreeIds(subtasks, c.id))
+  }
+  return ids
+}
+
 export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, onSetDependency, onStartPomodoro, onShowHistory, onBulkImport, onSetCollapsed }: Props) {
   const doneCount = subtasks.filter((s) => s.status === 'completed').length
   const [dragIdx, setDragIdx] = useState<number | null>(null)
@@ -86,16 +95,21 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
     setCollapsedLocal(null)
   }, [subtasks])
 
-  const toggleCollapse = (id: string) => {
-    const next = !collapsed.has(id)
+  // Expandir/colapsar expande/colapsa TODO el subárbol de una vez
+  const toggleCollapse = (id: string, expand: boolean) => {
+    const subtreeIds = getSubtreeIds(subtasks, id)
     setCollapsedLocal((prev) => {
       const base = prev ?? new Set(subtasks.filter((s) => s.collapsed).map((s) => s.id))
       const n = new Set(base)
-      if (next) n.add(id)
-      else n.delete(id)
+      for (const sid of subtreeIds) {
+        if (expand) n.delete(sid)
+        else n.add(sid)
+      }
       return n
     })
-    onSetCollapsed?.(id, next)
+    for (const sid of subtreeIds) {
+      onSetCollapsed?.(sid, !expand)
+    }
   }
 
   useEffect(() => {
@@ -105,6 +119,15 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
       if (data) setLinks(data)
     })
   }, [user, subtasks])
+
+  // Auto-completar: si completed_minutes >= estimated_minutes y no está marcada, se completa
+  useEffect(() => {
+    if (subtasks.length === 0) return
+    const toComplete = subtasks.filter((s) => s.status !== 'completed' && s.estimated_minutes > 0 && s.completed_minutes >= s.estimated_minutes)
+    for (const s of toComplete) {
+      onToggle(s.id, 'completed')
+    }
+  }, [subtasks])
 
   const tree = buildTree(subtasks)
   const nextTask = findNextTask(subtasks)
@@ -217,15 +240,15 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                   className={`group rounded-lg border transition-all cursor-grab active:cursor-grabbing ${
                     isDragging ? 'opacity-40 border-accent/50' : ''
                   } ${isOver ? 'border-accent/50 ring-1 ring-accent/30' : ''} ${
-                    isNext ? 'border-accent/60 ring-2 ring-accent/30 shadow-lg shadow-accent/15 bg-accent/[0.07]' : isDone ? 'bg-white/[0.02] border-white/5 opacity-55' : isLocked ? 'bg-secondary/40 border-white/[0.03] opacity-45' : 'bg-secondary/70 border-white/[0.06] hover:bg-secondary hover:border-white/10'
+                    isNext ? 'border-accent/60 ring-2 ring-accent/30 shadow-lg shadow-accent/15 bg-accent/[0.07]' : isDone ? 'bg-white/[0.02] border-white/5 opacity-55' : isLocked ? 'bg-secondary/50 border-white/[0.04] opacity-70' : 'bg-secondary/70 border-white/[0.06] hover:bg-secondary hover:border-white/10'
                   }`}
                 >
                   <div className="px-3 py-2.5">
                     <div className="flex items-start gap-1">
                       <span className="mt-1.5 text-text-secondary/20 group-hover:text-text-secondary/40 transition-colors cursor-grab active:cursor-grabbing text-xs select-none shrink-0">⠿</span>
                       <button
-                        onClick={() => !isLocked && onToggle(st.id, isDone ? 'pending' : 'completed')}
-                        className={`mt-0.5 w-4 h-4 rounded-sm flex items-center justify-center text-xs shrink-0 transition-all ${isLocked ? 'opacity-30 cursor-not-allowed' : ''} ${
+                        onClick={() => onToggle(st.id, isDone ? 'pending' : 'completed')}
+                        className={`mt-0.5 w-4 h-4 rounded-sm flex items-center justify-center text-xs shrink-0 transition-all ${
                           isDone ? 'bg-success/20 text-success' : isChecklist ? 'border border-white/30 hover:border-accent' : st.completed_minutes > 0 ? 'bg-warning/20 text-warning' : 'border border-white/20 hover:border-accent'
                         }`}
                       >
@@ -235,7 +258,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           {hasChildren && (
-                            <button onClick={() => toggleCollapse(st.id)}
+                            <button onClick={() => toggleCollapse(st.id, isCollapsed)}
                               className="w-4 h-4 shrink-0 rounded flex items-center justify-center text-[9px] bg-white/5 border border-white/10 text-text-secondary hover:text-white hover:border-accent/40 transition-all"
                               title={isCollapsed ? 'Expandir' : 'Colapsar'}>
                               {isCollapsed ? '▶' : '▼'}
@@ -250,7 +273,6 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                             {st.name}
                           </span>
                           {isNext && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-accent text-white font-bold uppercase tracking-wider shrink-0">Siguiente</span>}
-                          {isLocked && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-white/10 text-text-secondary font-bold uppercase tracking-wider shrink-0">🔒 Bloqueada</span>}
                           <span className="text-xs shrink-0" title={diff.icon}>{diff.icon}</span>
                         </div>
 
@@ -281,9 +303,9 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
 
                       <div className="flex items-center gap-0.5 shrink-0">
                         {!isChecklist && (
-                          <button onClick={() => !isLocked && onStartPomodoro?.(st)} disabled={isLocked}
-                            className={`w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium transition-all ${isNext ? 'bg-accent text-white shadow-sm shadow-accent/30 hover:opacity-90' : isLocked ? 'bg-secondary border border-white/[0.06] text-text-secondary/30 cursor-not-allowed' : 'bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent'}`}>
-                            {isLocked ? '🔒 Bloqueada' : isNext ? '▶ Empezar' : `▶ ${formatMinutes(st.estimated_minutes)}`}
+                          <button onClick={() => onStartPomodoro?.(st)}
+                            className={`w-auto h-7 flex items-center gap-1 px-2 rounded-md text-[10px] font-medium transition-all ${isNext ? 'bg-accent text-white shadow-sm shadow-accent/30 hover:opacity-90' : 'bg-secondary border border-white/[0.06] text-text-secondary hover:bg-accent/20 hover:border-accent/30 hover:text-accent'}`}>
+                            {isNext ? '▶ Empezar' : `▶ ${formatMinutes(st.estimated_minutes)}`}
                           </button>
                         )}
                         <div className={`flex items-center gap-0.5 ${isDone ? 'opacity-0 group-hover:opacity-100' : ''}`}>
