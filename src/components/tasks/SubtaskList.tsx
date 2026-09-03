@@ -76,6 +76,34 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
   const [links, setLinks] = useState<any[]>([])
   const user = useUser()
 
+  const goalId = subtasks[0]?.goal_id || ''
+  const storageKey = `subtask-collapsed-${goalId}`
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey)
+      if (saved) return new Set(JSON.parse(saved))
+    } catch {}
+    // Por defecto colapsadas todas las que tienen hijos
+    const parents = new Set<string>()
+    for (const s of subtasks) {
+      if (s.depends_on && subtasks.some((x) => x.id === s.depends_on)) parents.add(s.depends_on)
+    }
+    return parents
+  })
+
+  useEffect(() => {
+    try { localStorage.setItem(storageKey, JSON.stringify([...collapsed])) } catch {}
+  }, [collapsed, storageKey])
+
+  const toggleCollapse = (id: string) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
   useEffect(() => {
     if (!user || subtasks.length === 0) return
     const ids = subtasks.map((s) => s.id)
@@ -86,6 +114,16 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
 
   const tree = buildTree(subtasks)
   const nextTask = findNextTask(subtasks)
+
+  // Ocultar descendientes de tareas colapsadas (cualquier nivel)
+  const visibleTree = tree.filter((item) => {
+    for (let i = 0; i < tree.length; i++) {
+      const t = tree[i]
+      if (t.node.id === item.node.id) break
+      if (t.hasChildren && collapsed.has(t.node.id) && t.depth < item.depth) return false
+    }
+    return true
+  })
 
   const handleDragStart = (e: React.DragEvent, idx: number) => {
     e.dataTransfer.effectAllowed = 'move'
@@ -99,8 +137,8 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
   }
   const handleDrop = (e: React.DragEvent, idx: number) => {
     if (dragIdx === null || dragIdx === idx) return
-    const dragged = tree[dragIdx]?.node
-    const target = tree[idx]?.node
+    const dragged = visibleTree[dragIdx]?.node
+    const target = visibleTree[idx]?.node
     if (!dragged || !target) return
 
     if (e.shiftKey) {
@@ -110,8 +148,11 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
       }
     } else if (onReorder) {
       const flat = tree.map((t) => t.node)
-      const [moved] = flat.splice(dragIdx, 1)
-      flat.splice(idx, 0, moved)
+      const fromIdx = flat.findIndex((s) => s.id === dragged.id)
+      const toIdx = flat.findIndex((s) => s.id === target.id)
+      if (fromIdx < 0 || toIdx < 0) return
+      const [moved] = flat.splice(fromIdx, 1)
+      flat.splice(toIdx, 0, moved)
       onReorder(flat.map((s) => s.id))
     }
 
@@ -154,7 +195,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
         </div>
       ) : (
         <div className="space-y-1">
-          {tree.map(({ node: st, depth }, idx) => {
+          {visibleTree.map(({ node: st, depth, hasChildren }, idx) => {
             const isDragging = dragIdx === idx
             const isOver = overIdx === idx
             const isDone = st.status === 'completed'
@@ -163,6 +204,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
             const diff = DIFFICULTY_BADGE[st.difficulty] || DIFFICULTY_BADGE.normal
             const depSubtask = st.depends_on ? subtasks.find((s) => s.id === st.depends_on) : null
             const isLocked = !!depSubtask && depSubtask.status !== 'completed'
+            const isCollapsed = collapsed.has(st.id)
             const subtree = isChecklist ? sumSubtree(subtasks, st.id) : null
             const displayEstimated = isChecklist && subtree && (subtree.estimated > 0 || subtree.completed > 0) ? subtree.estimated : st.estimated_minutes
             const displayCompleted = isChecklist && subtree && (subtree.estimated > 0 || subtree.completed > 0) ? subtree.completed : st.completed_minutes
@@ -198,6 +240,18 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
+                          {hasChildren && (
+                            <button onClick={() => toggleCollapse(st.id)}
+                              className="w-4 h-4 shrink-0 rounded flex items-center justify-center text-[9px] bg-white/5 border border-white/10 text-text-secondary hover:text-white hover:border-accent/40 transition-all"
+                              title={isCollapsed ? 'Expandir' : 'Colapsar'}>
+                              {isCollapsed ? '▶' : '▼'}
+                            </button>
+                          )}
+                          {hasChildren && isCollapsed && (
+                            <span className="text-[8px] px-1 py-0.5 rounded bg-white/5 text-text-secondary/60 font-medium shrink-0">
+                              {subtasks.filter((s) => s.depends_on === st.id).length} hijo(s)
+                            </span>
+                          )}
                           <span className={`text-sm font-medium truncate ${isDone ? 'line-through text-text-secondary/60' : isLocked ? 'text-text-secondary/60' : 'text-white'}`}>
                             {st.name}
                           </span>
