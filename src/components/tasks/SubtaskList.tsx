@@ -167,15 +167,20 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
     }
   }, [subtasks])
 
-  // Ocultar descendientes de tareas colapsadas (cualquier nivel)
-  const visibleTree = tree.filter((item) => {
-    for (let i = 0; i < tree.length; i++) {
-      const t = tree[i]
-      if (t.node.id === item.node.id) break
-      if (t.hasChildren && effectiveCollapsed.has(t.node.id) && t.depth < item.depth) return false
+  // Ocultar descendientes de tareas colapsadas (cualquier nivel),
+  // saltando solo el subárbol real de la raíz colapsada (DFS en preorden)
+  const visibleTree: typeof tree = []
+  {
+    let skipDepth = -1
+    for (const item of tree) {
+      if (skipDepth >= 0 && item.depth > skipDepth) continue
+      if (skipDepth >= 0 && item.depth <= skipDepth) skipDepth = -1
+      visibleTree.push(item)
+      if (item.hasChildren && effectiveCollapsed.has(item.node.id)) {
+        skipDepth = item.depth
+      }
     }
-    return true
-  })
+  }
 
   const handleDragStart = (e: React.DragEvent, idx: number) => {
     e.dataTransfer.effectAllowed = 'move'
