@@ -11,7 +11,7 @@ interface UIStore {
 }
 
 export const useUIStore = create<UIStore>((set) => ({
-  sidebarOpen: true,
+  sidebarOpen: typeof window !== 'undefined' ? window.innerWidth >= 1024 : true,
   modalOpen: null,
   theme: 'dark',
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),

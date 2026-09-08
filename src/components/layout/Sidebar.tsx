@@ -21,6 +21,7 @@ const NAV_ITEMS = [
 export function Sidebar() {
   const user = useUser()
   const sidebarOpen = useUIStore((s) => s.sidebarOpen)
+  const toggleSidebar = useUIStore((s) => s.toggleSidebar)
   const [todaySessions, setTodaySessions] = useState(0)
   const [todayMinutes, setTodayMinutes] = useState(0)
   const [streak, setStreak] = useState(0)
@@ -127,11 +128,12 @@ export function Sidebar() {
   const xpPct = Math.min(100, ((totalXp - levelStart) / (levelEnd - levelStart)) * 100)
 
   return (
-    <aside className={`fixed left-0 top-0 h-screen bg-secondary z-40 transition-all duration-300 flex flex-col ${sidebarOpen ? 'w-56' : 'w-0 -translate-x-full'}`}>
+    <aside className={`fixed left-0 top-0 h-screen bg-secondary z-40 transition-all duration-300 flex flex-col w-56 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       {/* Logo */}
       <div className="flex items-center gap-2 px-4 h-12 border-b border-white/10 shrink-0">
         <span className="text-accent text-lg">⬡</span>
         <span className="font-bold text-sm tracking-wider">FÉRREO</span>
+        <button onClick={toggleSidebar} className="ml-auto text-text-secondary hover:text-white transition-colors text-lg lg:hidden" aria-label="Cerrar menú">✕</button>
       </div>
 
       {/* Scrollable content */}
