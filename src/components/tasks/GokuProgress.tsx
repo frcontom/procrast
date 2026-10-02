@@ -23,7 +23,9 @@ interface ImageSet {
 
 function collectSets(): ImageSet[] {
   const byFolder = new Map<string, string[]>()
-  const entries = Object.entries(rawImages).sort(([a], [b]) => a.localeCompare(b))
+  const entries = Object.entries(rawImages).sort(
+    ([a], [b]) => a.localeCompare(b, undefined, { numeric: true }),
+  )
   for (const [path, url] of entries) {
     const parts = path.split('/')
     const folder = parts[parts.length - 2]
