@@ -58,6 +58,7 @@ function buildStages(urls: string[]) {
     img,
     label: LABELS.length ? LABELS[i % LABELS.length] : `Etapa ${i + 1}`,
     threshold: Math.round((i * 100) / n),
+    end: Math.round(((i + 1) * 100) / n),
   }))
 }
 
@@ -73,10 +74,11 @@ export function GokuProgress({ pct }: Props) {
   const STAGES = buildStages(activeSet.urls)
   const folderName = activeSet.folder.charAt(0).toUpperCase() + activeSet.folder.slice(1)
 
-  // Cada foto representa 100/n% del avance; se activa la foto más cercana al progreso actual
+  // Cada foto cubre un tramo fijo 100/n% del avance; se activa SIEMPRE la foto cuyo
+  // tramo contiene el porcentaje real del curso (ej. 26% con 10 fotos → tramo 20-30%)
   const currentIndex = Math.min(
     STAGES.length - 1,
-    Math.max(0, Math.round((pct / 100) * STAGES.length)),
+    Math.max(0, Math.floor((pct / 100) * STAGES.length)),
   )
 
   return (
@@ -92,7 +94,7 @@ export function GokuProgress({ pct }: Props) {
           return (
             <div key={`${activeSet.folder}-${i}`} className="flex flex-col items-center gap-1 flex-1">
               <div className={`relative w-full max-w-[140px] aspect-square rounded-xl overflow-hidden border transition-all duration-500 ${isCurrent ? 'border-accent/20 ring-1 ring-accent/10 shadow-lg shadow-accent/10' : unlocked ? 'border-white/[0.04]' : 'border-white/[0.02]'}`}
-                title={`${stage.label} — ${stage.threshold}%`}>
+                title={`${stage.label} — ${stage.threshold}%–${stage.end}%`}>
                 <img src={stage.img} alt={stage.label}
                   className="w-full h-full object-contain transition-all duration-500"
                   style={{ filter: unlocked ? 'none' : 'grayscale(1) brightness(0.45)', opacity: unlocked ? 1 : 0.4 }} />
