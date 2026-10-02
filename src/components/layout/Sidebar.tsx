@@ -141,7 +141,7 @@ export function Sidebar() {
         {/* Navegación */}
         <nav className="py-3 space-y-0.5 px-3">
         {NAV_ITEMS.map(({ path, label, icon }) => (
-          <NavLink key={path} to={path} className="block">
+          <NavLink key={path} to={path} className="block" onClick={() => { if (window.innerWidth < 1024) toggleSidebar() }}>
             {({ isActive }) => (
               <div className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all relative ${isActive ? 'text-white bg-white/10 font-medium' : 'text-text-secondary hover:text-white hover:bg-white/5'}`}>
                 {isActive && <div className="absolute left-0 top-1 bottom-1 w-1 rounded-r-full bg-accent" />}

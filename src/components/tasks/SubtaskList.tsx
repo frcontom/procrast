@@ -276,7 +276,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                    onDragOver={(e) => handleDragOver(e, idx)}
                    onDrop={(e) => handleDrop(e, idx)}
                   onDragEnd={handleDragEnd}
-                  style={{ marginLeft: depth * 28, borderLeft: isDone ? '3px solid transparent' : `3px solid ${diff.color}40` }}
+                  style={{ marginLeft: Math.min(depth * 28, 84), borderLeft: isDone ? '3px solid transparent' : `3px solid ${diff.color}40` }}
                   className={`group rounded-lg border transition-all cursor-grab active:cursor-grabbing ${
                     isDragging ? 'opacity-40 border-accent/50' : ''
                   } ${isOver ? 'border-accent/50 ring-1 ring-accent/30' : ''} ${
@@ -316,7 +316,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                           <span className="text-xs shrink-0" title={diff.icon}>{diff.icon}</span>
                         </div>
 
-                        <div className="flex items-center gap-1.5 mt-1 text-xs w-full">
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1 text-xs w-full">
                           {(displayEstimated === 0 && displayCompleted === 0) ? (
                             <span className="text-text-secondary/40">—</span>
                           ) : (
@@ -326,7 +326,7 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
                               </span>
                               <span className="text-white/20 shrink-0">|</span>
                               <span className="tabular-nums text-text-secondary/60 shrink-0">⌛ {formatMinutes(displayEstimated)}</span>
-                              <div className="w-[75%] bg-white/5 rounded-full h-5 py-0.5 overflow-hidden ring-1 ring-white/5 relative">
+                              <div className="flex-1 min-w-[60px] bg-white/5 rounded-full h-5 py-0.5 overflow-hidden ring-1 ring-white/5 relative">
                                 <div className="h-full rounded-full transition-all duration-700"
                                   style={{ width: `${bestPct}%`, background: bestPct >= 100 ? 'linear-gradient(90deg, #28C76F, #81E6A0)' : bestPct >= 50 ? 'linear-gradient(90deg, #FF9800, #FFB74D)' : 'linear-gradient(90deg, var(--accent), #b388ff)' }} />
                                 {bestPct > displayPct && (
