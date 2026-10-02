@@ -1,21 +1,76 @@
+import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+
 interface Props {
   pct: number
 }
 
-const STAGES = [
-  { img: '/goku/goku_1.png', label: 'Despertar', threshold: 0 },
-  { img: '/goku/goku_2.png', label: 'Primer paso', threshold: 10 },
-  { img: '/goku/goku_3.png', label: 'Entrenamiento', threshold: 20 },
-  { img: '/goku/goku_4.png', label: 'Disciplina', threshold: 30 },
-  { img: '/goku/goku_5.png', label: 'Superación', threshold: 40 },
-  { img: '/goku/goku_6.png', label: 'Voluntad', threshold: 50 },
-  { img: '/goku/goku_7.png', label: 'Furia controlada', threshold: 60 },
-  { img: '/goku/goku_8.png', label: 'Dominio', threshold: 70 },
-  { img: '/goku/goku_9.png', label: 'Maestría', threshold: 80 },
-  { img: '/goku/goku_10.png', label: 'Perfecto', threshold: 90 },
+const rawImages = import.meta.glob('../../assets/power/*/*.{png,jpg,jpeg,webp,svg}', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>
+
+const LABELS = [
+  'Despertar', 'Primer paso', 'Entrenamiento', 'Disciplina', 'Superación',
+  'Voluntad', 'Furia controlada', 'Dominio', 'Maestría', 'Perfecto',
 ]
 
+interface ImageSet {
+  folder: string
+  urls: string[]
+}
+
+function collectSets(): ImageSet[] {
+  const byFolder = new Map<string, string[]>()
+  const entries = Object.entries(rawImages).sort(([a], [b]) => a.localeCompare(b))
+  for (const [path, url] of entries) {
+    const parts = path.split('/')
+    const folder = parts[parts.length - 2]
+    if (!folder) continue
+    if (!byFolder.has(folder)) byFolder.set(folder, [])
+    byFolder.get(folder)!.push(url)
+  }
+  const sets = [...byFolder.entries()].map(([folder, urls]) => ({ folder, urls }))
+  if (sets.length === 0) {
+    sets.push({
+      folder: 'goku',
+      urls: Array.from({ length: 10 }, (_, i) => `/goku/goku_${i + 1}.png`),
+    })
+  }
+  return sets
+}
+
+const SETS = collectSets()
+
+function pickSetIndex(current: number): number {
+  if (SETS.length <= 1) return 0
+  let next = Math.floor(Math.random() * SETS.length)
+  if (next === current) next = (next + 1) % SETS.length
+  return next
+}
+
+function buildStages(urls: string[]) {
+  const n = urls.length
+  return urls.map((img, i) => ({
+    img,
+    label: LABELS.length ? LABELS[i % LABELS.length] : `Etapa ${i + 1}`,
+    threshold: Math.round((i * 90) / Math.max(1, n - 1)),
+  }))
+}
+
 export function GokuProgress({ pct }: Props) {
+  const location = useLocation()
+  const [setIndex, setSetIndex] = useState(() => pickSetIndex(-1))
+
+  useEffect(() => {
+    setSetIndex((prev) => pickSetIndex(prev))
+  }, [location.pathname, location.search])
+
+  const activeSet = SETS[setIndex] ?? SETS[0]
+  const STAGES = buildStages(activeSet.urls)
+  const folderName = activeSet.folder.charAt(0).toUpperCase() + activeSet.folder.slice(1)
+
   const currentIndex = pct >= STAGES[STAGES.length - 1].threshold
     ? STAGES.length - 1
     : STAGES.reduce((acc, s, i) => (pct > s.threshold ? i : acc), 0)
@@ -23,7 +78,7 @@ export function GokuProgress({ pct }: Props) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">🐉 Camino de Goku</span>
+        <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">🐉 Camino de {folderName}</span>
         <span className="text-[10px] text-accent font-bold tabular-nums">{pct}%</span>
       </div>
       <div className="flex items-start justify-between gap-0.5">
@@ -31,7 +86,7 @@ export function GokuProgress({ pct }: Props) {
           const unlocked = pct > stage.threshold || i === currentIndex
           const isCurrent = i === currentIndex
           return (
-            <div key={stage.img} className="flex flex-col items-center gap-1 flex-1">
+            <div key={`${activeSet.folder}-${i}`} className="flex flex-col items-center gap-1 flex-1">
               <div className={`relative w-full max-w-[140px] aspect-square rounded-xl overflow-hidden border transition-all duration-500 ${isCurrent ? 'border-accent/20 ring-1 ring-accent/10 shadow-lg shadow-accent/10' : unlocked ? 'border-white/[0.04]' : 'border-white/[0.02]'}`}
                 title={`${stage.label} — ${stage.threshold}%`}>
                 <img src={stage.img} alt={stage.label}
