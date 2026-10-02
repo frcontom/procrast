@@ -57,7 +57,7 @@ function buildStages(urls: string[]) {
   return urls.map((img, i) => ({
     img,
     label: LABELS.length ? LABELS[i % LABELS.length] : `Etapa ${i + 1}`,
-    threshold: Math.round((i * 90) / Math.max(1, n - 1)),
+    threshold: Math.round((i * 100) / n),
   }))
 }
 
@@ -73,9 +73,11 @@ export function GokuProgress({ pct }: Props) {
   const STAGES = buildStages(activeSet.urls)
   const folderName = activeSet.folder.charAt(0).toUpperCase() + activeSet.folder.slice(1)
 
-  const currentIndex = pct >= STAGES[STAGES.length - 1].threshold
-    ? STAGES.length - 1
-    : STAGES.reduce((acc, s, i) => (pct > s.threshold ? i : acc), 0)
+  // Cada foto representa 100/n% del avance; se activa la foto más cercana al progreso actual
+  const currentIndex = Math.min(
+    STAGES.length - 1,
+    Math.max(0, Math.round((pct / 100) * STAGES.length)),
+  )
 
   return (
     <div>
@@ -85,7 +87,7 @@ export function GokuProgress({ pct }: Props) {
       </div>
       <div className="flex items-start justify-between gap-0.5">
         {STAGES.map((stage, i) => {
-          const unlocked = pct > stage.threshold || i === currentIndex
+          const unlocked = i <= currentIndex
           const isCurrent = i === currentIndex
           return (
             <div key={`${activeSet.folder}-${i}`} className="flex flex-col items-center gap-1 flex-1">
