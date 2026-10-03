@@ -114,8 +114,28 @@ export function TasksPage() {
   }
 
   const updateSubtaskStatus = async (id: string, status: string) => {
-    await supabase.from('task_subtasks').update({ status: status as 'pending' | 'completed' }).eq('id', id)
-    const updated = subtasks.map((s) => (s.id === id ? { ...s, status: status as 'pending' | 'completed' } : s))
+    const st = subtasks.find((s) => s.id === id)
+    // Tareas cortas (<10 min): al marcar check, se cuenta también el tiempo sin pasar por el pomodoro
+    const fillMinutes =
+      status === 'completed' &&
+      !!st &&
+      st.estimated_minutes > 0 &&
+      st.estimated_minutes < 10 &&
+      st.completed_minutes < st.estimated_minutes
+    const newCompleted = fillMinutes ? st!.estimated_minutes : undefined
+    await supabase
+      .from('task_subtasks')
+      .update({ status: status as 'pending' | 'completed', ...(newCompleted !== undefined ? { completed_minutes: newCompleted } : {}) })
+      .eq('id', id)
+    const updated = subtasks.map((s) =>
+      s.id === id
+        ? {
+            ...s,
+            status: status as 'pending' | 'completed',
+            ...(newCompleted !== undefined ? { completed_minutes: newCompleted } : {}),
+          }
+        : s,
+    )
     setSubtasks(updated)
     const allDone = updated.every((s) => s.status === 'completed')
     if (allDone && selectedId && selectedGoal?.status === 'active') {
