@@ -122,14 +122,9 @@ export function TasksPage() {
     const patch: Partial<TaskSubtask> = { status: status as 'pending' | 'completed' }
 
     if (status === 'completed') {
-      // Tareas cortas (<10 min): al marcar check, se cuenta también el tiempo sin pasar por el pomodoro.
-      // Lo acreditado se registra en check_minutes para poder revertirlo al desmarcar.
-      if (
-        st &&
-        st.estimated_minutes > 0 &&
-        st.estimated_minutes < 10 &&
-        st.completed_minutes < st.estimated_minutes
-      ) {
+      // Al marcar check se acredita todo el tiempo restante de la tarea (cualquier duración),
+      // registrado en check_minutes para poder revertirlo al desmarcar.
+      if (st && st.estimated_minutes > 0 && st.completed_minutes < st.estimated_minutes) {
         patch.completed_minutes = st.estimated_minutes
         patch.check_minutes = st.estimated_minutes - st.completed_minutes
       }
