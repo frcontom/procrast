@@ -101,6 +101,10 @@ export function TasksPage() {
     if (!user) return
     if (editingGoal) {
       await supabase.from('task_goals').update(data).eq('id', editingGoal.id)
+      if (data.status === 'completed') {
+        setSelectedId(null)
+        setSearchParams({})
+      }
     } else {
       const { data: newGoal }: any = await supabase.from('task_goals').insert({ user_id: user.id, ...data }).select().single()
       if (newGoal) {
@@ -298,6 +302,16 @@ export function TasksPage() {
           goal={editingGoal}
           onSave={saveGoal}
           onClose={() => { setShowForm(false); setEditingGoal(null) }}
+          onDelete={async (id) => {
+            await supabase.from('task_goals').delete().eq('id', id)
+            setShowForm(false)
+            setEditingGoal(null)
+            if (selectedId === id) {
+              setSelectedId(null)
+              setSearchParams({})
+            }
+            loadGoals()
+          }}
         />
       )}
     </div>

@@ -5,19 +5,21 @@ interface Props {
   goal?: TaskGoal | null
   onSave: (data: any) => void
   onClose: () => void
+  onDelete?: (id: string) => void
 }
 
 const ICONS = ['🎯', '📚', '💻', '🎵', '📈', '❤️', '☕', '✏️', '💪', '🧠']
 const COLORS = ['#FF6B6B', '#4CAF50', '#A66CFF', '#FF9800', '#156390', '#E91E63', '#00BCD4', '#8BC34A']
 const PRIORITIES = ['critical', 'high', 'normal', 'low'] as const
 
-export function GoalForm({ goal, onSave, onClose }: Props) {
+export function GoalForm({ goal, onSave, onClose, onDelete }: Props) {
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [form, setForm] = useState({
     name: goal?.name || '',
     description: goal?.description || '',
     deadline: goal?.deadline || '',
     start_date: goal?.start_date || new Date().toISOString().slice(0, 10),
-    estimated_minutes: 0,
+    estimated_minutes: goal?.estimated_minutes || 0,
     icon: goal?.icon || '🎯',
     color: goal?.color || '#FF6B6B',
     priority: goal?.priority || 'normal' as const,
@@ -28,6 +30,14 @@ export function GoalForm({ goal, onSave, onClose }: Props) {
     e.preventDefault()
     if (!form.name.trim() || !form.deadline) return
     onSave(form)
+  }
+
+  const handleFinish = () => {
+    onSave({ ...form, status: 'completed', completed_at: new Date().toISOString() })
+  }
+
+  const handleDelete = () => {
+    if (goal) onDelete?.(goal.id)
   }
 
   return (
@@ -111,6 +121,32 @@ export function GoalForm({ goal, onSave, onClose }: Props) {
               Cancelar
             </button>
           </div>
+
+          {goal && (
+            <div className="pt-3 border-t border-white/10 space-y-2">
+              <button type="button" onClick={handleFinish}
+                className="w-full py-2 rounded-lg text-sm font-medium bg-success/10 border border-success/30 text-success hover:bg-success/20 transition-all">
+                ✅ Marcar como finalizada
+              </button>
+              {confirmDelete ? (
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setConfirmDelete(false)}
+                    className="flex-1 py-2 rounded-lg text-sm bg-secondary text-text-secondary hover:text-white transition-all">
+                    Cancelar
+                  </button>
+                  <button type="button" onClick={handleDelete}
+                    className="flex-1 py-2 rounded-lg text-sm font-medium bg-danger/20 border border-danger/40 text-danger hover:bg-danger/30 transition-all">
+                    🗑️ Sí, eliminar
+                  </button>
+                </div>
+              ) : (
+                <button type="button" onClick={() => setConfirmDelete(true)}
+                  className="w-full py-2 rounded-lg text-xs text-danger/60 hover:text-danger hover:bg-danger/10 hover:border-danger/20 border border-transparent transition-all">
+                  🗑️ Eliminar meta
+                </button>
+              )}
+            </div>
+          )}
         </form>
       </div>
     </div>
