@@ -115,27 +115,29 @@ export function TasksPage() {
 
   const updateSubtaskStatus = async (id: string, status: string) => {
     const st = subtasks.find((s) => s.id === id)
-    // Tareas cortas (<10 min): al marcar check, se cuenta también el tiempo sin pasar por el pomodoro
-    const fillMinutes =
-      status === 'completed' &&
-      !!st &&
-      st.estimated_minutes > 0 &&
-      st.estimated_minutes < 10 &&
-      st.completed_minutes < st.estimated_minutes
-    const newCompleted = fillMinutes ? st!.estimated_minutes : undefined
-    await supabase
-      .from('task_subtasks')
-      .update({ status: status as 'pending' | 'completed', ...(newCompleted !== undefined ? { completed_minutes: newCompleted } : {}) })
-      .eq('id', id)
-    const updated = subtasks.map((s) =>
-      s.id === id
-        ? {
-            ...s,
-            status: status as 'pending' | 'completed',
-            ...(newCompleted !== undefined ? { completed_minutes: newCompleted } : {}),
-          }
-        : s,
-    )
+    const patch: Partial<TaskSubtask> = { status: status as 'pending' | 'completed' }
+
+    if (status === 'completed') {
+      // Tareas cortas (<10 min): al marcar check, se cuenta también el tiempo sin pasar por el pomodoro.
+      // Lo acreditado se registra en check_minutes para poder revertirlo al desmarcar.
+      if (
+        st &&
+        st.estimated_minutes > 0 &&
+        st.estimated_minutes < 10 &&
+        st.completed_minutes < st.estimated_minutes
+      ) {
+        patch.completed_minutes = st.estimated_minutes
+        patch.check_minutes = st.estimated_minutes - st.completed_minutes
+      }
+    } else if (st && (st.check_minutes ?? 0) > 0) {
+      // Desmarcar: se revierte SOLO el tiempo acreditado por check;
+      // el tiempo legítimo del pomodoro permanece.
+      patch.completed_minutes = Math.max(0, st.completed_minutes - st.check_minutes)
+      patch.check_minutes = 0
+    }
+
+    await supabase.from('task_subtasks').update(patch).eq('id', id)
+    const updated = subtasks.map((s) => (s.id === id ? { ...s, ...patch } : s))
     setSubtasks(updated)
     const allDone = updated.every((s) => s.status === 'completed')
     if (allDone && selectedId && selectedGoal?.status === 'active') {
