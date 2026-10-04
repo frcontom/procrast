@@ -106,21 +106,32 @@ export function SubtaskList({ subtasks, onToggle, onDelete, onEdit, onReorder, o
   const [collapsedLocal, setCollapsedLocal] = useState<Set<string> | null>(null)
   const collapsed = collapsedLocal ?? new Set(subtasks.filter((s) => s.collapsed).map((s) => s.id))
 
-  // Resincroniza el estado local SOLO cuando cambia la meta (no en cada toggle)
+  // Al entrar a una meta: todas las tareas con subtareas quedan colapsadas;
+  // la rama de la tarea activa se expande sola vía autoExpanded
   useEffect(() => {
-    setCollapsedLocal(null)
+    if (!goalId) {
+      setCollapsedLocal(null)
+      return
+    }
+    const parentIds = new Set(subtasks.map((s) => s.depends_on).filter(Boolean))
+    const parents = new Set<string>()
+    for (const s of subtasks) {
+      if (parentIds.has(s.id)) parents.add(s.id)
+    }
+    setCollapsedLocal(parents)
   }, [goalId])
 
   const tree = buildTree(subtasks)
   const nextTask = findNextTask(subtasks)
 
   // La rama de la tarea activa (siguiente o en progreso) siempre está expandida,
-  // ningún padre colapsado puede ocultarla
+  // ningún padre colapsado puede ocultarla (ni siquiera la tarea activa con subtareas)
   const autoExpanded = useMemo(() => {
     const ids = new Set<string>()
     for (const s of subtasks) {
       const active = s.id === nextTask?.id || (s.completed_minutes > 0 && s.status !== 'completed')
       if (active) {
+        ids.add(s.id)
         for (const anc of getAncestors(subtasks, s.id)) ids.add(anc)
       }
     }
