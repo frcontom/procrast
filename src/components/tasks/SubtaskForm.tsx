@@ -4,7 +4,7 @@ import { SearchableSelect } from './SearchableSelect'
 
 interface Props {
   onSave: (data: { name: string; estimated_minutes: number; difficulty: string; depends_on?: string | null }) => void
-  onImport?: (tasks: { name: string; estimated_minutes: number; difficulty: string }[]) => void
+  onImport?: (tasks: { name: string; estimated_minutes: number; difficulty: string; depends_on?: string | null; _parentIdx?: number | null }[]) => void
   editSubtask?: TaskSubtask | null
   onCloseEdit?: () => void
   subtaskList?: TaskSubtask[]
@@ -59,15 +59,30 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtas
 
   const handleImport = () => {
     const lines = importText.trim().split('\n').filter(Boolean)
-    const tasks = lines.map((line) => {
-      const [n, m] = line.split('|').map((s) => s.trim())
-      return {
-        name: n || 'tarea',
+    const tasks: { name: string; estimated_minutes: number; difficulty: string; depends_on: string | null; _parentIdx: number | null }[] = []
+    // Línea con guiones al inicio ("- tarea") queda como hija de la línea anterior:
+    // "-" = hija directa, "--" = nieta, etc. El guion indica profundidad (carpetas).
+    const stack: number[] = []
+    for (const line of lines) {
+      const dashMatch = line.match(/^(\s*)(-+)\s*(.*)$/)
+      const depth = dashMatch ? dashMatch[2].length : 0
+      const content = dashMatch ? dashMatch[3] : line
+      const [n, m] = content.split('|').map((s) => s.trim())
+      if (!n) continue
+      let parentIdx: number | null = null
+      for (let d = depth - 1; d >= 0; d--) {
+        if (stack[d] !== undefined) { parentIdx = stack[d]; break }
+      }
+      tasks.push({
+        name: n,
         estimated_minutes: m !== undefined ? (isNaN(parseInt(m)) ? 30 : parseInt(m)) : 30,
         difficulty: 'normal',
-        depends_on: importParentId || null,
-      }
-    })
+        depends_on: depth === 0 ? (importParentId || null) : null,
+        _parentIdx: depth === 0 ? null : parentIdx,
+      })
+      stack[depth] = tasks.length - 1
+      stack.length = depth + 1
+    }
     if (tasks.length > 0 && onImport) onImport(tasks)
     setImportText('')
     setImportParentId('')
@@ -149,7 +164,7 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtas
               </form>
             ) : (
               <div className="space-y-3">
-                <div className="text-[11px] text-text-secondary leading-relaxed">Cada línea: <code className="text-accent">Nombre|Minutos</code><br />0 min = checklist</div>
+                <div className="text-[11px] text-text-secondary leading-relaxed">Cada línea: <code className="text-accent">Nombre|Minutos</code> — 0 min = checklist<br />Con <code className="text-accent">- </code> al inicio queda como hija de la línea anterior (<code className="text-accent">--</code> = un nivel más adentro)</div>
                 {subtaskList && subtaskList.length > 0 && (
                   <div>
                     <label className="text-[10px] text-text-secondary uppercase tracking-wider mb-1 block">Hacer todas hijas de</label>

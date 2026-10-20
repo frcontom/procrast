@@ -231,9 +231,21 @@ export function TasksPage() {
                 }}
                 onImportSubtasks={async (tasks) => {
                   if (!user || !selectedId) return
-                  const toInsert = tasks.map((t: any, i: number) => ({ user_id: user.id, goal_id: selectedId, sort_order: subtasks.length + i, ...t }))
-                  const { data }: any = await supabase.from('task_subtasks').insert(toInsert).select()
-                  if (data) { const next = [...subtasks, ...data]; setSubtasks(next); syncGoalEstimate(selectedId, next) }
+                  // Inserta en orden (padres antes que hijos); _parentIdx enlaza hijos con su
+                  // padre dentro del mismo lote
+                  const inserted: any[] = []
+                  for (const t of tasks as any[]) {
+                    const { _parentIdx, depends_on, ...rest } = t
+                    const parentRef = _parentIdx != null ? inserted[_parentIdx]?.id ?? null : depends_on ?? null
+                    const { data: ns }: any = await supabase
+                      .from('task_subtasks')
+                      .insert({ user_id: user.id, goal_id: selectedId, sort_order: subtasks.length + inserted.length, ...rest, depends_on: parentRef })
+                      .select()
+                      .single()
+                    inserted.push(ns ?? null)
+                  }
+                  const ok = inserted.filter(Boolean)
+                  if (ok.length) { const next = [...subtasks, ...ok]; setSubtasks(next); syncGoalEstimate(selectedId, next) }
                 }}
                 onSetDependency={async (id, dependsOn) => {
                   if (!user) return
