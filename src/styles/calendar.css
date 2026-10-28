@@ -1,0 +1,90 @@
+/* FullCalendar adaptado al tema Férreo (oscuro) */
+.ferreo-calendar {
+  --fc-border-color: rgba(255, 255, 255, 0.08);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: rgba(255, 255, 255, 0.03);
+  --fc-today-bg-color: rgba(166, 108, 255, 0.1);
+  --fc-event-border-color: transparent;
+  --fc-list-event-hover-bg-color: rgba(255, 255, 255, 0.05);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.ferreo-calendar .fc-toolbar-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: capitalize;
+}
+
+.ferreo-calendar .fc-col-header-cell-cushion,
+.ferreo-calendar .fc-daygrid-day-number,
+.ferreo-calendar .fc-timegrid-slot-label-cushion,
+.ferreo-calendar .fc-list-day-text,
+.ferreo-calendar .fc-list-day-side-text {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.ferreo-calendar .fc-col-header-cell-cushion {
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  padding: 8px 4px;
+}
+
+.ferreo-calendar .fc-day-today .fc-daygrid-day-number {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Botones del header */
+.ferreo-calendar .fc-button {
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  text-transform: capitalize;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.7rem;
+  box-shadow: none !important;
+  transition: all 0.15s;
+}
+.ferreo-calendar .fc-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.ferreo-calendar .fc-button-primary:not(:disabled).fc-button-active,
+.ferreo-calendar .fc-button-primary:not(:disabled):active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.ferreo-calendar .fc-button-primary:disabled {
+  background: var(--bg-card);
+  opacity: 0.5;
+}
+
+/* Eventos */
+.ferreo-calendar .fc-event {
+  border-radius: 6px;
+  padding: 1px 4px;
+  font-size: 11px;
+  cursor: pointer;
+  border: none;
+}
+.ferreo-calendar .fc-event.is-done {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+.ferreo-calendar .fc-event-title { font-weight: 500; }
+.ferreo-calendar .fc-daygrid-day.fc-day:hover { background: rgba(255, 255, 255, 0.03); cursor: pointer; }
+
+/* Celdas y líneas */
+.ferreo-calendar .fc-scrollgrid { border-radius: 10px; overflow: hidden; }
+.ferreo-calendar a { color: inherit; }
+.ferreo-calendar .fc-timegrid-axis-cushion,
+.ferreo-calendar .fc-timegrid-slot-label-cushion { font-size: 10px; }
+
+/* Lista */
+.ferreo-calendar .fc-list { border-color: var(--fc-border-color); }
+.ferreo-calendar .fc-list-event td { color: var(--text-primary); }
+.ferreo-calendar .fc-list-empty { background: transparent; color: var(--text-secondary); }
