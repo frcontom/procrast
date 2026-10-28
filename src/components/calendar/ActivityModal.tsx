@@ -4,6 +4,23 @@ import { Modal } from '../shared/Modal'
 
 const COLORS = ['#a66cff', '#00bcd4', '#28c76f', '#ff9800', '#f44336', '#e91e63', '#3f51b5', '#8bc34a']
 
+// "HH:MM" -> minutos del día
+const toMin = (t: string) => {
+  const [h, m] = t.split(':').map(Number)
+  return h * 60 + m
+}
+// minutos del día -> "HH:MM"
+const toHHMM = (min: number) => {
+  const m = ((min % 1440) + 1440) % 1440
+  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+}
+const addMinutes = (t: string, mins: number) => toHHMM(toMin(t) + mins)
+const diffMinutes = (start: string, end: string) => {
+  let d = toMin(end) - toMin(start)
+  if (d < 0) d += 1440 // cruza medianoche
+  return d
+}
+
 interface Props {
   open: boolean
   date: string // "YYYY-MM-DD" preseleccionado
@@ -21,7 +38,7 @@ export function ActivityModal({ open, date, time, activity, onSave, onDelete, on
   const [color, setColor] = useState(COLORS[0])
   const [activityDate, setActivityDate] = useState(date)
   const [startTime, setStartTime] = useState('')
-  const [duration, setDuration] = useState(30)
+  const [endTime, setEndTime] = useState('')
 
   // Re-sembrar valores cada vez que se abre con otro contexto
   const seedKey = `${activity?.id ?? 'new'}-${date}-${time ?? ''}`
@@ -32,8 +49,9 @@ export function ActivityModal({ open, date, time, activity, onSave, onDelete, on
     setObjective(activity?.objective ?? '')
     setColor(activity?.color ?? COLORS[0])
     setActivityDate(activity?.activity_date ?? date)
-    setStartTime(activity?.start_time ?? time ?? '')
-    setDuration(activity?.duration_minutes ?? 30)
+    const start = activity?.start_time ?? time ?? ''
+    setStartTime(start)
+    setEndTime(start ? addMinutes(start, activity?.duration_minutes ?? 30) : '')
   }
 
   const submit = (e: React.FormEvent) => {
@@ -44,8 +62,8 @@ export function ActivityModal({ open, date, time, activity, onSave, onDelete, on
       objective: objective.trim(),
       color,
       activity_date: activityDate,
-      start_time: startTime,
-      duration_minutes: duration,
+      start_time: startTime || null,
+      duration_minutes: startTime && endTime ? Math.max(5, diffMinutes(startTime, endTime)) : 30,
     })
   }
 
@@ -79,12 +97,27 @@ export function ActivityModal({ open, date, time, activity, onSave, onDelete, on
             <input type="date" className={input} value={activityDate} onChange={(e) => setActivityDate(e.target.value)} />
           </div>
           <div>
-            <label className={label}>Hora</label>
-            <input type="time" className={input} value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+            <label className={label}>Hora inicio</label>
+            <input
+              type="time"
+              className={input}
+              value={startTime}
+              onChange={(e) => {
+                const v = e.target.value
+                // Mantener la misma duración al mover el inicio
+                if (v && startTime && endTime) {
+                  const dur = diffMinutes(startTime, endTime)
+                  setEndTime(addMinutes(v, dur))
+                } else if (v && !endTime) {
+                  setEndTime(addMinutes(v, 30))
+                }
+                setStartTime(v)
+              }}
+            />
           </div>
           <div>
-            <label className={label}>Minutos</label>
-            <input type="number" min={5} step={5} className={input} value={duration} onChange={(e) => setDuration(Number(e.target.value))} />
+            <label className={label}>Hora fin</label>
+            <input type="time" className={input} value={endTime} onChange={(e) => setEndTime(e.target.value)} />
           </div>
         </div>
 
