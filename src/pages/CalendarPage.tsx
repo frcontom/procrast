@@ -142,7 +142,7 @@ export function CalendarPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-4">
+    <div className="w-full space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-white flex items-center gap-2">
           <span className="text-accent">📅</span> Calendario
