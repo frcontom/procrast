@@ -22,6 +22,7 @@ export interface Database {
       book_reading_logs: { Row: BookReadingLog; Insert: BookReadingLogInsert }
       book_bookmarks: { Row: BookBookmark; Insert: BookBookmarkInsert }
       book_chapters: { Row: BookChapter; Insert: BookChapterInsert }
+      calendar_activities: { Row: CalendarActivity; Insert: CalendarActivityInsert; Update: CalendarActivityUpdate }
     }
     Functions: {
       start_session: { Args: { p_activity_type: string; p_duration_minutes: number; p_strict_mode?: boolean }; Returns: any }
@@ -106,3 +107,7 @@ export interface BookBookmarkInsert { user_id: string; book_id: string; page: nu
 
 export interface BookChapter { id: string; user_id: string; book_id: string; title: string; start_page: number; sort_order: number; created_at: string }
 export interface BookChapterInsert { user_id: string; book_id: string; title: string; start_page: number; sort_order?: number }
+
+export interface CalendarActivity { id: string; user_id: string; title: string; objective: string; color: string; activity_date: string; start_time: string; duration_minutes: number; done: boolean; created_at: string }
+export interface CalendarActivityInsert { user_id: string; title: string; objective?: string; color?: string; activity_date: string; start_time?: string; duration_minutes?: number; done?: boolean }
+export interface CalendarActivityUpdate { title?: string; objective?: string; color?: string; activity_date?: string; start_time?: string; duration_minutes?: number; done?: boolean }
