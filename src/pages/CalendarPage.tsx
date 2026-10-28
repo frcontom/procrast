@@ -3,12 +3,13 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import type { DateSelectArg, DatesSetArg, EventClickArg } from '@fullcalendar/core'
+import type { DateSelectArg, DatesSetArg, EventClickArg, EventDropArg } from '@fullcalendar/core'
+import type { EventResizeDoneArg } from '@fullcalendar/interaction'
 import esLocale from '@fullcalendar/core/locales/es'
 import { useCalendar } from '../hooks/useCalendar'
 import { ActivityModal } from '../components/calendar/ActivityModal'
 import { DayModal } from '../components/calendar/DayModal'
-import type { CalendarActivity } from '../supabase/types'
+import type { CalendarActivity, CalendarActivityUpdate } from '../supabase/types'
 import '../styles/calendar.css'
 
 // Rango visible por defecto: mes actual ± 1 (cubre lo que pinta la vista mensual)
@@ -91,6 +92,36 @@ export function CalendarPage() {
     setFormOpen(true)
   }
 
+  // Guarda el nuevo día/hora/duración tras arrastrar o redimensionar un evento.
+  const persistMove = async (
+    eventId: string,
+    newStart: Date | null,
+    newEnd: Date | null,
+    allDay: boolean
+  ) => {
+    if (!newStart) return
+    const activity_date = toISODate(newStart)
+    const patch: CalendarActivityUpdate = { activity_date }
+    if (allDay) {
+      patch.start_time = null
+    } else {
+      const pad = (n: number) => String(n).padStart(2, '0')
+      patch.start_time = `${pad(newStart.getHours())}:${pad(newStart.getMinutes())}`
+      if (newEnd) {
+        patch.duration_minutes = Math.max(5, Math.round((newEnd.getTime() - newStart.getTime()) / 60000))
+      }
+    }
+    await updateActivity(eventId, patch)
+  }
+
+  const handleEventDrop = (arg: EventDropArg) => {
+    persistMove(arg.event.id, arg.event.start, arg.event.end, arg.event.allDay)
+  }
+
+  const handleEventResize = (arg: EventResizeDoneArg) => {
+    persistMove(arg.event.id, arg.event.start, arg.event.end, arg.event.allDay)
+  }
+
   const openNewToday = () => {
     setEditing(null)
     setFormSeed({ date: toISODate(new Date()) })
@@ -137,12 +168,17 @@ export function CalendarPage() {
           height="auto"
           selectable
           selectMirror
+          editable
+          eventStartEditable
+          eventDurationEditable
           dayMaxEvents={3}
           nowIndicator
           events={events}
           datesSet={handleDatesSet}
           select={handleSelect}
           eventClick={handleEventClick}
+          eventDrop={handleEventDrop}
+          eventResize={handleEventResize}
           dateClick={(arg) => setDayModal(arg.dateStr.slice(0, 10))}
           moreLinkClick={(arg) => { setDayModal(toISODate(arg.date)); return 'none' }}
         />

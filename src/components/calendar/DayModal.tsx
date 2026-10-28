@@ -17,6 +17,13 @@ function formatDay(date: string) {
   return d.toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
+// "HH:MM" + minutos -> "HH:MM"
+function endTime(start: string, mins: number) {
+  const [h, m] = start.split(':').map(Number)
+  const total = ((h * 60 + m + mins) % 1440 + 1440) % 1440
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+}
+
 export function DayModal({ open, date, activities, onToggle, onEdit, onDelete, onAdd, onClose }: Props) {
   const sorted = [...activities].sort((a, b) => (a.start_time || '99').localeCompare(b.start_time || '99'))
   const doneCount = sorted.filter((a) => a.done).length
@@ -50,8 +57,7 @@ export function DayModal({ open, date, activities, onToggle, onEdit, onDelete, o
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className={`text-sm text-white ${a.done ? 'line-through opacity-50' : ''}`}>{a.title}</span>
-                {a.start_time && <span className="text-[10px] text-text-secondary">{a.start_time}</span>}
-                <span className="text-[10px] text-text-secondary/50">{a.duration_minutes}min</span>
+                {a.start_time && <span className="text-[10px] text-text-secondary">{a.start_time} – {endTime(a.start_time, a.duration_minutes || 30)}</span>}
               </div>
               {a.objective && <p className="text-[11px] text-text-secondary mt-0.5">{a.objective}</p>}
             </div>
