@@ -47,7 +47,6 @@ export function StudyReviewModal({ open, item, onReview, onAddRep, onClose }: Pr
   if (!item) return null
 
   const step = steps[idx]
-  const isLast = idx === steps.length - 1
   const next = () => { setRevealed(false); setIdx((i) => Math.min(i + 1, steps.length - 1)) }
 
   const grade = (q: number) => {
