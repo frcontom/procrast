@@ -18,7 +18,7 @@ export function GoalForm({ goal, onSave, onClose, onDelete }: Props) {
     name: goal?.name || '',
     description: goal?.description || '',
     deadline: goal?.deadline || '',
-    start_date: goal?.start_date || new Date().toISOString().slice(0, 10),
+    start_date: goal?.start_date || new Date().toLocaleDateString('en-CA'),
     estimated_minutes: goal?.estimated_minutes || 0,
     icon: goal?.icon || '🎯',
     color: goal?.color || '#FF6B6B',

@@ -7,6 +7,16 @@ interface Props {
   subtaskDayMinutes?: Record<string, number>
 }
 
+function parseLocalDate(s: string): Date {
+  const [y, m, d] = s.slice(0, 10).split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+function toLocalISO(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-`${pad(d.getMonth() + 1)}-`${pad(d.getDate())}`
+}
+
 function getDaysBetween(start: Date, end: Date): Date[] {
   const days: Date[] = []
   const current = new Date(start)
@@ -25,7 +35,7 @@ function getStreak(subtaskDays: string[], start: Date): number {
     const d = new Date(today)
     d.setDate(d.getDate() - i)
     if (d < start) break
-    const ds = d.toISOString().slice(0, 10)
+    const ds = toLocalISO(d)
     if (subtaskDays.includes(ds)) streak++
     else break
   }
@@ -38,7 +48,7 @@ function countFailedDays(startDate: Date, endDate: Date, subtaskDays: string[], 
   let failed = 0
   const current = new Date(startDate)
   while (current <= endDate && current < today) {
-    const ds = current.toISOString().slice(0, 10)
+    const ds = toLocalISO(current)
     const count = subtaskDays.filter((d) => d === ds).length
     if (count * dailyTarget < dailyTarget) failed++
     current.setDate(current.getDate() + 1)
@@ -47,14 +57,14 @@ function countFailedDays(startDate: Date, endDate: Date, subtaskDays: string[], 
 }
 
 export function HexCalendar({ startDate, deadline, estimatedMinutes, completedMinutes, subtaskDays, subtaskDayMinutes = {} }: Props) {
-  const start = new Date(startDate)
-  const end = new Date(deadline)
+  const start = parseLocalDate(startDate)
+  const end = parseLocalDate(deadline)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const days = getDaysBetween(start, end)
 
   const dailyTarget = Math.max(1, Math.round(estimatedMinutes / days.length))
-  const completedDays = days.filter((d) => d < today && subtaskDays.includes(d.toISOString().slice(0, 10))).length
+  const completedDays = days.filter((d) => d < today && subtaskDays.includes(toLocalISO(d))).length
   const futureDays = days.filter((d) => d >= today).length
   const failedDays = countFailedDays(start, end, subtaskDays, dailyTarget)
   const streak = getStreak(subtaskDays, start)
@@ -88,7 +98,7 @@ export function HexCalendar({ startDate, deadline, estimatedMinutes, completedMi
 
       <div className="flex flex-wrap gap-[5px] justify-center">
         {days.map((date) => {
-          const dateStr = date.toISOString().slice(0, 10)
+          const dateStr = toLocalISO(date)
           const isToday = date.getTime() === today.getTime()
           const isPast = date < today
           const completed = subtaskDays.filter((d) => d === dateStr).length > 0
