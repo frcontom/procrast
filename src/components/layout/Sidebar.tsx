@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { path: '/coach', label: 'Coach', icon: '🎯' },
   { path: '/books', label: 'Libros', icon: '📚' },
   { path: '/calendar', label: 'Calendario', icon: '📅' },
+  { path: '/study', label: 'Estudio', icon: '🧠' },
 ]
 
 export function Sidebar() {

@@ -23,6 +23,8 @@ export interface Database {
       book_bookmarks: { Row: BookBookmark; Insert: BookBookmarkInsert }
       book_chapters: { Row: BookChapter; Insert: BookChapterInsert }
       calendar_activities: { Row: CalendarActivity; Insert: CalendarActivityInsert; Update: CalendarActivityUpdate }
+      study_items: { Row: StudyItem; Insert: StudyItemInsert; Update: StudyItemUpdate }
+      study_reviews: { Row: StudyReview; Insert: StudyReviewInsert }
     }
     Functions: {
       start_session: { Args: { p_activity_type: string; p_duration_minutes: number; p_strict_mode?: boolean }; Returns: any }
@@ -111,3 +113,11 @@ export interface BookChapterInsert { user_id: string; book_id: string; title: st
 export interface CalendarActivity { id: string; user_id: string; title: string; objective: string; color: string; activity_date: string; start_time: string | null; duration_minutes: number; done: boolean; created_at: string }
 export interface CalendarActivityInsert { user_id: string; title: string; objective?: string; color?: string; activity_date: string; start_time?: string | null; duration_minutes?: number; done?: boolean }
 export interface CalendarActivityUpdate { title?: string; objective?: string; color?: string; activity_date?: string; start_time?: string | null; duration_minutes?: number; done?: boolean }
+
+export type StudyTechnique = 'recall' | 'feynman' | 'deliberate' | 'spaced'
+export interface StudyItem { id: string; user_id: string; title: string; subject: string; color: string; question: string; answer: string; feynman: string; feynman_gaps: string; skill: string; reps: number; ease: number; interval_days: number; repetitions: number; due_date: string; last_reviewed: string | null; created_at: string }
+export interface StudyItemInsert { user_id: string; title: string; subject?: string; color?: string; question?: string; answer?: string; feynman?: string; feynman_gaps?: string; skill?: string; reps?: number; ease?: number; interval_days?: number; repetitions?: number; due_date?: string; last_reviewed?: string | null }
+export interface StudyItemUpdate { title?: string; subject?: string; color?: string; question?: string; answer?: string; feynman?: string; feynman_gaps?: string; skill?: string; reps?: number; ease?: number; interval_days?: number; repetitions?: number; due_date?: string; last_reviewed?: string | null }
+
+export interface StudyReview { id: string; user_id: string; item_id: string; technique: StudyTechnique; quality: number; reviewed_at: string }
+export interface StudyReviewInsert { user_id: string; item_id: string; technique: StudyTechnique; quality?: number }
