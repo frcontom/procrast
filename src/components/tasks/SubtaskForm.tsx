@@ -111,7 +111,7 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtas
           className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-secondary hover:bg-white/10 text-text-secondary transition-all">📄 Masivo</button>
         {subtaskList && subtaskList.length > 0 && (
           <button onClick={() => setShowClean(true)}
-            className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium border border-danger/20 text-danger/60 hover:bg-danger/10 hover:border-danger/40 hover:text-danger transition-all">🧹</button>
+            className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium border border-danger/40 text-danger hover:bg-danger/10 hover:border-danger/60 transition-all" title="Borrar todas las tareas y subtareas">🗑 Borrar todo</button>
         )}
       </div>
 
@@ -197,8 +197,8 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtas
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowClean(false)}>
           <div className="bg-card rounded-xl border border-white/10 p-5 w-full max-w-xs mx-4 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
             <div className="text-3xl mb-3">🧹</div>
-            <h3 className="text-sm font-semibold text-white mb-1">¿Limpiar todas las tareas?</h3>
-            <p className="text-[11px] text-text-secondary mb-5">Se eliminarán todas las subtareas de esta meta. Esta acción no se puede deshacer.</p>
+            <h3 className="text-sm font-semibold text-white mb-1">¿Borrar todas las tareas?</h3>
+            <p className="text-[11px] text-text-secondary mb-5">Se eliminarán las {subtaskList?.length ?? 0} tareas y subtareas de esta meta. Esta acción no se puede deshacer.</p>
             <div className="flex gap-2">
               <button onClick={() => setShowClean(false)}
                 className="flex-1 px-4 py-2 rounded-lg text-xs font-medium bg-secondary hover:bg-white/10 text-text-secondary hover:text-white transition-all">
@@ -206,7 +206,7 @@ export function SubtaskForm({ onSave, onImport, editSubtask, onCloseEdit, subtas
               </button>
               <button onClick={() => { onCleanAll?.(); setShowClean(false) }}
                 className="flex-1 px-4 py-2 rounded-lg text-xs font-medium bg-danger hover:bg-danger/80 text-white transition-all">
-                Limpiar todo
+                Borrar todo
               </button>
             </div>
           </div>
