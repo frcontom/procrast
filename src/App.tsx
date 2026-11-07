@@ -11,6 +11,7 @@ import { IdentityPage } from './pages/IdentityPage'
 import { CoachPage } from './pages/CoachPage'
 import { BooksPage } from './pages/BooksPage'
 import { CalendarPage } from './pages/CalendarPage'
+import { StudyPage } from './pages/StudyPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { LoginPage } from './pages/LoginPage'
 import { FullscreenPage } from './pages/FullscreenPage'
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
       { path: 'coach', element: <CoachPage /> },
       { path: 'books', element: <BooksPage /> },
       { path: 'calendar', element: <CalendarPage /> },
+      { path: 'study', element: <StudyPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
