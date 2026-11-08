@@ -105,7 +105,7 @@ export class SessionManager {
             session_id: session.id,
             minutes: Math.round(elapsedSec / 60),
             elapsed_seconds: elapsedSec,
-            date: new Date().toISOString().slice(0, 10),
+            date: new Date().toLocaleDateString('en-CA'),
             subtask_name: store.sessionName + ' (cancelado)',
           })
         } catch {
@@ -114,7 +114,7 @@ export class SessionManager {
             subtask_id: this.currentSubtaskId,
             session_id: session.id,
             minutes: Math.round(elapsedSec / 60),
-            date: new Date().toISOString().slice(0, 10),
+            date: new Date().toLocaleDateString('en-CA'),
             subtask_name: store.sessionName + ' (cancelado)',
           })
         }
@@ -154,7 +154,7 @@ export class SessionManager {
           p_minutes: store.durationMinutes,
         })
         try {
-          await supabase.from('task_pomodoro_links').update({ elapsed_seconds: store.durationMinutes * 60 }).eq('session_id', session.id)
+          await supabase.from('task_pomodoro_links').update({ elapsed_seconds: store.durationMinutes * 60, date: new Date().toLocaleDateString('en-CA') }).eq('session_id', session.id)
         } catch {}
       }
 

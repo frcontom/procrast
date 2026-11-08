@@ -29,6 +29,11 @@ interface Props {
   onImportSubtasks?: (tasks: any[]) => void
 }
 
+// Día local del registro: el servidor guarda date en UTC y de noche cae un día adelantado.
+function linkDay(l: any): string {
+  return l.created_at ? new Date(l.created_at).toLocaleDateString('en-CA') : l.date
+}
+
 const PRIORITY_COLORS: Record<string, string> = { critical: '#FF6B6B', high: '#FF9800', normal: '#60A5FA', low: '#4CAF50' }
 
 export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, onAddSubtask, onEditSubtask, onReorderSubtasks, onSetDependency, onSetCollapsed, onStartPomodoro, onCleanAll, onExtendGoal, onArchiveGoal, onImportSubtasks }: Props) {
@@ -81,12 +86,12 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
     supabase.from('task_pomodoro_links').select('*').eq('user_id', user.id).in('subtask_id', subtasks.map((s) => s.id)).gte('date', startDate).then(({ data }: any) => {
       if (data) setLinks(data)
     })
-    supabase.from('task_pomodoro_links').select('subtask_id, minutes, subtask_name, date').eq('user_id', user.id).in('subtask_id', subtasks.map((s) => s.id)).gte('date', startDate).then(({ data }: any) => {
+    supabase.from('task_pomodoro_links').select('subtask_id, minutes, subtask_name, date, created_at').eq('user_id', user.id).in('subtask_id', subtasks.map((s) => s.id)).gte('date', startDate).then(({ data }: any) => {
       if (data) {
         const today = new Date().toLocaleDateString('en-CA')
         const bySubtask: Record<string, number> = {}
         for (const l of data) {
-          if (l.date !== today) continue
+          if (linkDay(l) !== today) continue
           bySubtask[l.subtask_id] = (bySubtask[l.subtask_id] || 0) + (l.minutes || 0)
         }
         let capped = 0
@@ -99,11 +104,11 @@ export function GoalDetail({ goal, subtasks, onSubtaskToggle, onSubtaskDelete, o
     })
   }, [user, subtasks])
 
-  const subtaskDays = links.filter((l: any) => !l.subtask_name?.includes('(cancelado)')).map((l: any) => l.date)
+  const subtaskDays = links.filter((l: any) => !l.subtask_name?.includes('(cancelado)')).map((l: any) => linkDay(l))
   const subtaskDayMinutes: Record<string, number> = {}
   for (const l of links) {
     if (l.subtask_name?.includes('(cancelado)')) continue
-    subtaskDayMinutes[l.date] = (subtaskDayMinutes[l.date] || 0) + (l.minutes || 0)
+    subtaskDayMinutes[linkDay(l)] = (subtaskDayMinutes[linkDay(l)] || 0) + (l.minutes || 0)
   }
 
   return (
