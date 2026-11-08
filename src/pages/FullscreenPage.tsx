@@ -6,9 +6,40 @@ import { sessionManager } from '../lib/sessionManager'
 import { playStartSound } from '../lib/sound'
 import { formatTime } from '../lib/formatters'
 
+import manifestJson from '../assets/focus/manifest.json'
+
 // @ts-ignore - Vite glob import
 const bgImageModules = import.meta.glob('/src/assets/focus/*.png', { eager: true, query: '?url', import: 'default' })
-const bgImages = Object.values(bgImageModules) as string[]
+
+// Lista de imágenes permitidas (manifest.json). Si está vacío, se usan todas las del folder.
+const manifestNames = new Set<string>(manifestJson.images ?? [])
+const bgImages = Object.entries(bgImageModules)
+  .filter(([path]) => manifestNames.size === 0 || manifestNames.has(path.split('/').pop() ?? ''))
+  .map(([, url]) => url as string)
+
+// Baraja Fisher-Yates: orden realmente aleatorio, sin patrón
+function shuffle<T>(arr: T[]): T[] {
+  const a = arr.slice()
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+// Mazo nuevo en cada sesión; la primera imagen nunca es la última vista antes.
+const LAST_BG_KEY = 'ferreo:lastFocusBg'
+function buildDeck(): string[] {
+  const deck = shuffle(bgImages)
+  try {
+    const last = localStorage.getItem(LAST_BG_KEY)
+    if (last && deck.length > 1 && deck[0] === last) {
+      const j = 1 + Math.floor(Math.random() * (deck.length - 1))
+      ;[deck[0], deck[j]] = [deck[j], deck[0]]
+    }
+  } catch {}
+  return deck
+}
 
 const GRADIENTS = [
   'linear-gradient(135deg,#0f0c29,#302b63,#24243e)',
@@ -165,13 +196,34 @@ export function FullscreenPage() {
     return () => document.removeEventListener('fullscreenchange', handler)
   }, [])
 
+  // Mazo barajado: se recorre entero sin repetir y se vuelve a barajar al terminar.
+  const deckRef = useRef<string[]>(buildDeck())
+  const deckPosRef = useRef(-1)
+  const [bgUrl, setBgUrl] = useState<string | null>(null)
+
   const pickBg = useCallback(() => {
-    setBgIndex((prev) => {
-      let next: number
-      do { next = Math.floor(Math.random() * GRADIENTS.length) }
-      while (next === prev && GRADIENTS.length > 1)
-      return next
-    })
+    if (deckRef.current.length === 0) {
+      setBgIndex((prev) => {
+        let next: number
+        do { next = Math.floor(Math.random() * GRADIENTS.length) }
+        while (next === prev && GRADIENTS.length > 1)
+        return next
+      })
+      return
+    }
+    deckPosRef.current += 1
+    if (deckPosRef.current >= deckRef.current.length) {
+      const last = deckRef.current[deckRef.current.length - 1]
+      deckRef.current = shuffle(bgImages)
+      if (deckRef.current.length > 1 && deckRef.current[0] === last) {
+        ;[deckRef.current[0], deckRef.current[1]] = [deckRef.current[1], deckRef.current[0]]
+      }
+      deckPosRef.current = 0
+    }
+    const url = deckRef.current[deckPosRef.current]
+    try { localStorage.setItem(LAST_BG_KEY, url) } catch {}
+    setBgUrl(url)
+    setBgIndex((i) => i + 1) // fuerza la animación de fade
   }, [])
 
   useEffect(() => {
@@ -318,7 +370,7 @@ export function FullscreenPage() {
   return (
     <div id="fullscreenOverlay" className="fixed inset-0 z-[2000] flex items-center justify-end overflow-hidden bg-black select-none">
       <div id="fullscreenBg" key={bgIndex} className="absolute inset-0 bg-contain bg-center bg-no-repeat z-0 animate-[bgFadeIn_1s_ease]"
-        style={{ backgroundImage: hasImages ? `url(${images[bgIndex % images.length]})` : GRADIENTS[bgIndex] }} />
+        style={{ backgroundImage: hasImages && bgUrl ? `url(${bgUrl})` : GRADIENTS[bgIndex % GRADIENTS.length] }} />
 
       <div className="absolute inset-0 bg-black/40 z-[1]" />
 
